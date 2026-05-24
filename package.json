@@ -19,6 +19,7 @@
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
     "regression": "node scripts/regression.mjs",
+    "verify:pages": "node scripts/verify-pages.mjs",
     "test:parity": "npm run test -w @dansword/core"
   },
   "engines": {
