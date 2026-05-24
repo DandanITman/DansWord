@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo.png" alt="DansWord logo" width="128" height="128" />
+</p>
+
 # DansWord
 
 **A non-profit educational project — a free Word alternative for everyone, open source for anyone to edit.**
