@@ -209,6 +209,7 @@ export function Ribbon({
             className={`ribbon-tab ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => onTabChange(tab.id)}
             data-tab={tab.id}
+            data-testid={`ribbon-tab-${tab.id}`}
           >
             {tab.label}
           </button>

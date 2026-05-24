@@ -21,6 +21,7 @@ npm run regression
 | `npm test` | Unit/component tests only |
 | `npm run test:unit` | Same as `npm test` |
 | `npm run test:e2e` | Playwright end-to-end tests |
+| `npm run test:e2e:headed` | E2e tests with visible browser |
 | `npm run test:visual` | Playwright visual snapshot tests |
 | `npm run test:visual:update` | Refresh visual baselines after intentional UI changes |
 
@@ -34,6 +35,8 @@ npx playwright install chromium
 ```
 
 Playwright browser install is required once per machine/CI image. The regression script assumes dependencies are already installed.
+
+**Note:** Playwright is a local project dependency, not a global command. Use `npm run test:e2e` or `npx playwright test` — running `playwright test` directly in PowerShell will fail with "not recognized".
 
 ## How the browser harness works
 

@@ -16,9 +16,13 @@
     "test": "npm run test:unit",
     "test:unit": "npm run test -w @dansword/core && npm run test -w @dansword/openxml && npm run test -w @dansword/desktop",
     "test:e2e": "playwright test tests/e2e",
+    "test:e2e:headed": "playwright test tests/e2e --headed",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
     "regression": "node scripts/regression.mjs",
+    "pre-deploy": "node scripts/pre-deploy.mjs",
+    "pre-deploy:ci": "node scripts/pre-deploy-ci.mjs",
+    "release-notes": "node scripts/generate-release-notes.mjs",
     "verify:pages": "node scripts/verify-pages.mjs",
     "test:parity": "npm run test -w @dansword/core"
   },

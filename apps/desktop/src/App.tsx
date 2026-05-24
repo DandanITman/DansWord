@@ -54,6 +54,11 @@ function extOf(path: string) {
   return idx >= 0 ? path.slice(idx + 1).toLowerCase() : '';
 }
 
+function suggestedSavePath(defaultDir: string, name: string, ext = 'docx') {
+  const base = name.replace(/\.[^.]+$/, '') || 'Untitled';
+  return `${defaultDir}\\${base}.${ext}`;
+}
+
 function newComment(text: string, anchorText?: string): DocumentComment {
   return {
     id: crypto.randomUUID(),
@@ -233,7 +238,7 @@ export default function App() {
     let targetPath = pathOverride ?? filePath;
     if (!targetPath || forceDialog) {
       const defaultDir = await window.dansword.getDefaultSaveDir();
-      const suggested = targetPath ?? `${defaultDir}\\${fileName.endsWith('.dansword') ? fileName : `${fileName.replace(/\.[^.]+$/, '')}.dansword`}`;
+      const suggested = targetPath ?? suggestedSavePath(defaultDir, fileName, 'docx');
       targetPath = await window.dansword.saveFile(suggested);
       if (!targetPath) return false;
     }
@@ -322,6 +327,8 @@ export default function App() {
   const newFromTemplate = useCallback((templateId: string) => {
     const tpl = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
     openDocumentEnvelope(createDocumentEnvelope(tpl.content), null, 'Untitled');
+    setEditorSyncKey((k) => k + 1);
+    setIsDirty(false);
     setBackstageOpen(false);
   }, [openDocumentEnvelope]);
 
@@ -385,6 +392,7 @@ export default function App() {
     if (!filePath) return;
     const snapshot = await window.dansword.loadRevision(filePath, id);
     setEnvelope(snapshot as DocumentEnvelope);
+    setEditorSyncKey((k) => k + 1);
     setIsDirty(true);
     setBackstageOpen(false);
   };
@@ -623,9 +631,13 @@ export default function App() {
           }}
           onExportDocx={async () => {
             const defaultDir = await window.dansword.getDefaultSaveDir();
-            const path = await window.dansword.saveFile(
-              `${defaultDir}\\${fileName.replace(/\.[^.]+$/, '')}.docx`,
-            );
+            const path = await window.dansword.saveFile(suggestedSavePath(defaultDir, fileName, 'docx'));
+            if (path) await saveDocument(path);
+            setBackstageOpen(false);
+          }}
+          onExportDansword={async () => {
+            const defaultDir = await window.dansword.getDefaultSaveDir();
+            const path = await window.dansword.saveFile(suggestedSavePath(defaultDir, fileName, 'dansword'));
             if (path) await saveDocument(path);
             setBackstageOpen(false);
           }}

@@ -4,7 +4,7 @@ const PORT = 5173;
 const BASE_URL = `http://localhost:${PORT}/test.html`;
 
 export default defineConfig({
-  testDir: './tests',
+  testIgnore: ['**/electron/**'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -40,7 +40,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium-desktop',
-      testMatch: ['e2e/**/*.spec.ts', 'visual/screens.spec.ts'],
+      testMatch: ['e2e/**/*.spec.ts', 'visual/screens.spec.ts', 'visual/extended.spec.ts'],
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 860 },

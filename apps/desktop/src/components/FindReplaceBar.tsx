@@ -68,10 +68,11 @@ export function FindReplaceBar({ editor, open, onClose }: FindReplaceBarProps) {
   };
 
   return (
-    <div className="find-replace-bar">
+    <div className="find-replace-bar" data-testid="find-replace-bar">
       <div className="find-field">
         <Search size={14} />
         <input
+          data-testid="find-input"
           value={findQuery}
           onChange={(e) => setFindQuery(e.target.value)}
           placeholder="Find"
@@ -81,6 +82,7 @@ export function FindReplaceBar({ editor, open, onClose }: FindReplaceBarProps) {
       <div className="find-field">
         <Replace size={14} />
         <input
+          data-testid="replace-input"
           value={replaceQuery}
           onChange={(e) => setReplaceQuery(e.target.value)}
           placeholder="Replace with"
@@ -88,7 +90,7 @@ export function FindReplaceBar({ editor, open, onClose }: FindReplaceBarProps) {
         />
       </div>
       <div className="find-actions">
-        <button className="icon-btn" onClick={findNext}>
+        <button className="icon-btn" onClick={findNext} data-testid="find-next">
           Next
         </button>
         <button className="icon-btn" onClick={findPrev}>
@@ -97,7 +99,7 @@ export function FindReplaceBar({ editor, open, onClose }: FindReplaceBarProps) {
         <button className="icon-btn" onClick={replaceOne}>
           Replace
         </button>
-        <button className="icon-btn" onClick={replaceAll}>
+        <button className="icon-btn" onClick={replaceAll} data-testid="replace-all">
           Replace All
         </button>
         <button className="icon-btn ghost-muted" onClick={onClose}>

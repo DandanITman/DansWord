@@ -90,7 +90,7 @@ ipcMain.handle('dialog:openFile', async () => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openFile'],
     filters: [
-      { name: 'Documents', extensions: ['dansword', 'docx', 'doc', 'txt', 'rtf'] },
+      { name: 'Documents', extensions: ['docx', 'dansword', 'doc', 'txt', 'rtf'] },
       { name: 'All Files', extensions: ['*'] },
     ],
   });
@@ -100,10 +100,10 @@ ipcMain.handle('dialog:openFile', async () => {
 
 ipcMain.handle('dialog:saveFile', async (_e, defaultPath?: string) => {
   const result = await dialog.showSaveDialog(mainWindow!, {
-    defaultPath: defaultPath ?? 'Untitled.dansword',
+    defaultPath: defaultPath ?? 'Untitled.docx',
     filters: [
-      { name: 'DansWord Document', extensions: ['dansword'] },
       { name: 'Word Document', extensions: ['docx'] },
+      { name: 'DansWord Native (.dansword)', extensions: ['dansword'] },
       { name: 'Rich Text', extensions: ['rtf'] },
       { name: 'HTML', extensions: ['html', 'htm'] },
       { name: 'PDF', extensions: ['pdf'] },

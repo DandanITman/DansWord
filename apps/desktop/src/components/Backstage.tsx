@@ -13,6 +13,7 @@ interface BackstageProps {
   onSave: () => void;
   onSaveAs: () => void;
   onExportDocx: () => void;
+  onExportDansword: () => void;
   onExportPdf: () => void;
   onPrint: () => void;
   settings: AppSettings;
@@ -39,7 +40,8 @@ const NAV: { id: BackstageSection; label: string }[] = [
 ];
 
 const EXPORT_FORMATS = [
-  { label: 'DOCX', desc: 'Microsoft Word format', action: 'docx' as const },
+  { label: 'DOCX', desc: 'Default — Microsoft Word format', action: 'docx' as const },
+  { label: '.dansword', desc: 'DansWord native format with version history', action: 'dansword' as const },
   { label: 'RTF', desc: 'Rich Text Format', action: 'rtf' as const },
   { label: 'HTML', desc: 'Web page with styling', action: 'html' as const },
   { label: 'PDF', desc: 'Print to PDF', action: 'pdf' as const },
@@ -54,6 +56,7 @@ export function Backstage({
   onSave,
   onSaveAs,
   onExportDocx,
+  onExportDansword,
   onExportPdf,
   onPrint,
   settings,
@@ -69,6 +72,7 @@ export function Backstage({
 }: BackstageProps) {
   const exportHandlers = {
     docx: onExportDocx,
+    dansword: onExportDansword,
     rtf: onExportRtf,
     html: onExportHtml,
     pdf: onExportPdf,
@@ -83,6 +87,7 @@ export function Backstage({
             <button
               key={item.id}
               className={section === item.id ? 'active' : ''}
+              data-testid={`backstage-nav-${item.id}`}
               onClick={() => onSectionChange(item.id)}
             >
               {item.label}
@@ -177,7 +182,9 @@ export function Backstage({
           {section === 'save' && (
             <>
               <h2>Save</h2>
-              <p className="backstage-subtitle">Save changes to the current file or choose a new location.</p>
+              <p className="backstage-subtitle">
+                Documents save as DOCX by default — compatible with Microsoft Word and easy to share.
+              </p>
               <div className="action-row">
                 <button className="icon-btn primary" onClick={onSave}>
                   Save
@@ -191,12 +198,16 @@ export function Backstage({
           {section === 'export' && (
             <>
               <h2>Export</h2>
-              <p className="backstage-subtitle">Save a copy in another format.</p>
+              <p className="backstage-subtitle">
+                Save a copy in another format. Try the native .dansword format for version history and
+                full DansWord features.
+              </p>
               <div className="export-grid">
                 {EXPORT_FORMATS.map((fmt) => (
                   <button
                     key={fmt.action}
                     className="export-card"
+                    data-testid={`export-${fmt.action}`}
                     onClick={exportHandlers[fmt.action]}
                   >
                     <span className="export-card-title">{fmt.label}</span>

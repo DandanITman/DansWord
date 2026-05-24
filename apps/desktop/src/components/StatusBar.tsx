@@ -30,7 +30,7 @@ export function StatusBar({
       <div className="status-bar-left">
         <span>{langLabel}</span>
         <span className="status-divider" />
-        <span>{words.toLocaleString()} words</span>
+        <span data-testid="status-word-count">{words.toLocaleString()} words</span>
         {trackChangesEnabled && (
           <>
             <span className="status-divider" />
@@ -77,7 +77,7 @@ export function StatusBar({
           onChange={(e) => onZoomChange(Number(e.target.value))}
         />
         <button className="status-zoom-btn" onClick={() => onZoomChange(Math.min(200, zoom + 10))}>+</button>
-        <span className="status-zoom-pct">{zoom}%</span>
+        <span className="status-zoom-pct" data-testid="status-zoom-pct">{zoom}%</span>
       </div>
     </div>
   );

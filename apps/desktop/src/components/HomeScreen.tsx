@@ -212,6 +212,7 @@ export function HomeScreen({
                   <button
                     key={template.id}
                     className="home-tpl-card"
+                    data-testid={`home-template-${template.id}`}
                     onClick={() => onNewFromTemplate(template.id)}
                   >
                     <div className="home-tpl-thumb" style={{ borderColor: meta.color }}>
@@ -227,10 +228,10 @@ export function HomeScreen({
 
         <section className="home-docs-panel">
           <div className="home-tabs">
-            <button className={tab === 'recent' ? 'active' : ''} onClick={() => setTab('recent')}>
+            <button className={tab === 'recent' ? 'active' : ''} onClick={() => setTab('recent')} data-testid="home-tab-recent">
               <Clock size={14} /> Recent
             </button>
-            <button className={tab === 'favorites' ? 'active' : ''} onClick={() => setTab('favorites')}>
+            <button className={tab === 'favorites' ? 'active' : ''} onClick={() => setTab('favorites')} data-testid="home-tab-favorites">
               <Star size={14} /> Favorites
             </button>
           </div>
@@ -259,7 +260,7 @@ export function HomeScreen({
                 </thead>
                 <tbody>
                   {displayed.map((file) => (
-                    <tr key={file.path} className="home-doc-row">
+                    <tr key={file.path} className="home-doc-row" data-testid="home-recent-row">
                       <td>
                         <button className="home-doc-link" onClick={() => onOpenRecent(file.path)}>
                           <span className="home-doc-icon">

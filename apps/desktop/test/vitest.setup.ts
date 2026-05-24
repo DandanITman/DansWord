@@ -15,7 +15,7 @@ const mockHarness = {
 
 window.dansword = {
   openFile: async () => null,
-  saveFile: async (defaultPath?: string) => defaultPath ?? 'C:\\DansWordTest\\Untitled.dansword',
+  saveFile: async (defaultPath?: string) => defaultPath ?? 'C:\\DansWordTest\\Untitled.docx',
   openFolder: async () => 'C:\\DansWordTest',
   readFile: async () => new Uint8Array(),
   readTextFile: async () => '',
