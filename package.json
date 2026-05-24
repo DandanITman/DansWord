@@ -2,7 +2,7 @@
   "name": "dansword",
   "version": "0.1.0",
   "private": false,
-  "description": "DansWord — free open-source non-profit educational word processor, a Word alternative for everyone",
+  "description": "DansWord — non-profit educational project, free Word alternative for everyone, open source for anyone to edit",
   "workspaces": [
     "apps/desktop",
     "packages/core",

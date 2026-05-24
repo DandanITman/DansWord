@@ -178,7 +178,9 @@ export function HomeScreen({
         <header className="home-main-header">
           <div>
             <h1>Get Started</h1>
-            <p className="home-greeting">Create, open, and manage your documents locally.</p>
+            <p className="home-greeting">
+              Free Word alternative for everyone — a non-profit educational project, open source for anyone to edit.
+            </p>
           </div>
           <div className="home-header-actions">
             <button className="home-header-chip" onClick={onBrowseFolder}>

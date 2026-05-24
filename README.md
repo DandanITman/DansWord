@@ -1,8 +1,8 @@
 # DansWord
 
-**A free, open-source, non-profit educational word processor — a Word alternative for everyone.**
+**A non-profit educational project — a free Word alternative for everyone, open source for anyone to edit.**
 
-DansWord is built so students, teachers, families, and anyone who needs to write documents can do it **without paying for office software**. The source code is public: **anyone can read it, learn from it, and contribute improvements.**
+DansWord is built so students, teachers, families, and anyone who needs to write documents can do it **without paying for office software**. The full source code is on GitHub: **anyone can read it, fork it, learn from it, and contribute improvements.**
 
 🌐 **Project site:** [dansword.github.io](https://dandanitman.github.io/DansWord/) (GitHub Pages)  
 📥 **Downloads:** [Latest Windows release](https://github.com/DandanITman/DansWord/releases/latest)
