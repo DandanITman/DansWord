@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="DansWord — a free, open-source, non-profit educational word processor. A Word alternative for everyone."
+    />
+    <title>DansWord — Free Open-Source Word Processor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,800;1,9..40,400&family=IBM+Plex+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <div class="paper-bg" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#top">
+        <span class="brand-mark">DW</span>
+        <span>DansWord</span>
+      </a>
+      <nav class="topnav">
+        <a href="#about">About</a>
+        <a href="#features">Features</a>
+        <a href="#opensource">Open Source</a>
+        <a href="https://github.com/DandanITman/DansWord" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Non-profit · Educational · Free for everyone</p>
+          <h1>
+            Write freely.<br />
+            <span class="gradient-text">No subscription. No catch.</span>
+          </h1>
+          <p class="lede">
+            DansWord is a <strong>free alternative to Microsoft Word</strong> — built as an
+            <strong>open-source, non-profit educational project</strong> so students, teachers,
+            families, and anyone who needs a word processor can use it without paying for office
+            software.
+          </p>
+
+          <div class="cta-row">
+            <a id="download-btn" class="btn btn-primary" href="#download">
+              <span class="btn-icon">⬇</span>
+              Download for Windows
+            </a>
+            <a class="btn btn-secondary" href="https://github.com/DandanITman/DansWord" target="_blank" rel="noreferrer">
+              View source on GitHub
+            </a>
+          </div>
+
+          <p id="download-meta" class="download-meta">Fetching latest release…</p>
+
+          <ul class="hero-badges">
+            <li>🎓 Built for learning</li>
+            <li>🔓 Open source — edit the code yourself</li>
+            <li>💻 Offline-first Windows app</li>
+            <li>📄 DOCX + native .dansword format</li>
+          </ul>
+        </div>
+
+        <div class="hero-preview" aria-hidden="true">
+          <div class="app-window">
+            <div class="app-titlebar">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+              <span class="app-title">Essay Draft — DansWord</span>
+            </div>
+            <div class="app-ribbon">
+              <span class="active">Edit</span>
+              <span>Insert</span>
+              <span>Layout</span>
+              <span>Review</span>
+            </div>
+            <div class="app-doc">
+              <h2>My Science Report</h2>
+              <p>DansWord helps you focus on <em>ideas</em>, not licensing fees.</p>
+              <p class="muted">Free. Local. Yours to study and improve.</p>
+            </div>
+          </div>
+          <div class="floating-note note-1">100% free</div>
+          <div class="floating-note note-2">fork me on GitHub</div>
+        </div>
+      </section>
+
+      <section id="about" class="panel">
+        <h2>Why DansWord exists</h2>
+        <div class="cards three">
+          <article class="card">
+            <h3>🎓 Non-profit & educational</h3>
+            <p>
+              DansWord is a community education project — not a commercial product. The goal is to
+              help people learn writing, formatting, and software literacy without a paywall.
+            </p>
+          </article>
+          <article class="card">
+            <h3>🌍 Free Word alternative</h3>
+            <p>
+              Familiar ribbon-style editing, spell check, templates, and DOCX support — without
+              Microsoft 365 subscriptions or license keys.
+            </p>
+          </article>
+          <article class="card">
+            <h3>🔧 Open source for everyone</h3>
+            <p>
+              The full source code is public. Students, contributors, and curious developers can
+              read it, learn from it, fix bugs, and add features.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="features" class="panel alt">
+        <h2>What you get today</h2>
+        <ul class="feature-grid">
+          <li>Ribbon UI like Word — File, Edit, Insert, Design, Page Layout, Review, View</li>
+          <li>Rich text: bold, italic, lists, tables, images, links, styles</li>
+          <li>Open & save DOCX, RTF, HTML, TXT, and native .dansword files</li>
+          <li>Spell check, find & replace, word count, zoom, light/dark theme</li>
+          <li>Templates for letters, reports, and resumes</li>
+          <li>Runs locally on Windows — your documents stay on your machine</li>
+        </ul>
+      </section>
+
+      <section id="opensource" class="panel">
+        <h2>Open source — anyone can edit</h2>
+        <p class="section-lede">
+          DansWord is licensed for open collaboration. Clone the repo, run it locally, send pull
+          requests, or fork it for your own classroom or club project.
+        </p>
+        <div class="code-block">
+          <code>git clone https://github.com/DandanITman/DansWord.git</code>
+          <code>cd DansWord && npm install && npm run dev</code>
+        </div>
+        <p>
+          See <a href="https://github.com/DandanITman/DansWord/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>
+          for how to contribute. Tests run automatically on every pull request.
+        </p>
+      </section>
+
+      <section id="download" class="panel download-panel alt">
+        <h2>Get DansWord</h2>
+        <p>Windows 10/11 · Free download · No account required</p>
+        <a id="download-btn-bottom" class="btn btn-primary btn-lg" href="#">
+          Download latest Windows build
+        </a>
+        <p class="fine-print">
+          Prefer to build yourself? Run <code>npm run package</code> from the repository.
+          Older releases are on the
+          <a href="https://github.com/DandanITman/DansWord/releases" target="_blank" rel="noreferrer">Releases</a>
+          page.
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        <strong>DansWord</strong> — non-profit educational project · free & open source ·
+        <a href="https://github.com/DandanITman/DansWord">github.com/DandanITman/DansWord</a>
+      </p>
+      <p class="fine-print">Not affiliated with Microsoft or Microsoft Word. DOCX is an open file format.</p>
+    </footer>
+
+    <script src="site.js"></script>
+  </body>
+</html>

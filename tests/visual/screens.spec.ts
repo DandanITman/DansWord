@@ -1,0 +1,68 @@
+import { test, expect } from '@playwright/test';
+import {
+  resetTestState,
+  openBlankDocument,
+  loadRegressionFixture,
+  visualMaskLocators,
+} from '../helpers/playwright';
+
+test.describe('DansWord visual regression', () => {
+  test.beforeEach(async ({ page }) => {
+    await resetTestState(page);
+  });
+
+  test('home screen', async ({ page }) => {
+    await expect(page.getByTestId('home-screen')).toHaveScreenshot('home-screen.png', {
+      mask: visualMaskLocators(page),
+    });
+  });
+
+  test('empty editor screen', async ({ page }) => {
+    await openBlankDocument(page);
+    await expect(page.getByTestId('app-shell')).toHaveScreenshot('empty-editor.png', {
+      mask: visualMaskLocators(page),
+    });
+  });
+
+  test('editor with formatted regression content', async ({ page }) => {
+    await loadRegressionFixture(page);
+    await expect(page.getByTestId('document-canvas')).toHaveScreenshot(
+      'formatted-document.png',
+      {
+        mask: visualMaskLocators(page),
+      },
+    );
+  });
+
+  test('ribbon edit tab', async ({ page }) => {
+    await openBlankDocument(page);
+    await page.locator('.ribbon-tab[data-tab="edit"]').click();
+    await expect(page.getByTestId('ribbon')).toHaveScreenshot('ribbon-edit.png', {
+      mask: visualMaskLocators(page),
+    });
+  });
+
+  test('document page canvas', async ({ page }) => {
+    await loadRegressionFixture(page);
+    await expect(page.getByTestId('document-canvas')).toHaveScreenshot('document-canvas.png', {
+      mask: visualMaskLocators(page),
+    });
+  });
+
+  test('save backstage panel', async ({ page }) => {
+    await openBlankDocument(page);
+    await page.locator('.ribbon-tab[data-tab="file"]').click();
+    await page.getByRole('button', { name: /Save As \/ Export/i }).click();
+    await expect(page.getByTestId('backstage')).toHaveScreenshot('backstage-save.png', {
+      mask: visualMaskLocators(page),
+    });
+  });
+
+  test('home screen dark theme', async ({ page }) => {
+    await resetTestState(page);
+    await page.locator('.home-sidebar-nav.secondary button').filter({ hasText: 'Dark mode' }).click();
+    await expect(page.getByTestId('home-screen')).toHaveScreenshot('home-screen-dark.png', {
+      mask: visualMaskLocators(page),
+    });
+  });
+});
