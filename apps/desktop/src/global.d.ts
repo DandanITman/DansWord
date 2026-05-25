@@ -80,6 +80,7 @@ export interface DansWordTestHarness {
       | 'insertTable'
       | 'insertPageBreak'
       | 'selectAll'
+      | 'moveSelectionToEnd'
       | 'clearFormatting'
       | 'toggleHeading1',
     arg?: string,

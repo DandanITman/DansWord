@@ -47,6 +47,7 @@ export interface DansWordTestHarness {
       | 'insertTable'
       | 'insertPageBreak'
       | 'selectAll'
+      | 'moveSelectionToEnd'
       | 'clearFormatting'
       | 'toggleHeading1',
     arg?: string,
@@ -345,6 +346,9 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
           break;
         case 'selectAll':
           chain.selectAll().run();
+          break;
+        case 'moveSelectionToEnd':
+          chain.setTextSelection(editorRef.state.doc.content.size).run();
           break;
         case 'clearFormatting':
           chain.clearNodes().unsetAllMarks().clearParagraphFormatting().run();

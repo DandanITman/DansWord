@@ -30,8 +30,10 @@ test.describe('Clipboard and editing depth', () => {
     await typeInEditor(page, 'Clipboard sample');
     await selectAllInEditor(page);
     await page.keyboard.press('Control+C');
-    await focusEditor(page);
-    await page.keyboard.press('ArrowRight');
+    await expect
+      .poll(async () => page.evaluate(() => navigator.clipboard.readText()))
+      .toBe('Clipboard sample');
+    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('moveSelectionToEnd'));
     await page.keyboard.press('Control+V');
     await expect(page.getByTestId('word-editor')).toContainText('Clipboard sampleClipboard sample');
   });
