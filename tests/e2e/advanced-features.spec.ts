@@ -177,8 +177,8 @@ test.describe('Review and track changes depth', () => {
     });
     await typeInEditor(page, 'misspeled');
     await expect.poll(async () => page.locator('.spell-error').count()).toBeGreaterThan(0);
-    await stubPrompt(page, 'correctword');
     await page.locator('.spell-error').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'correctword' }).click();
     await expect(page.getByTestId('word-editor')).toContainText('correctword');
     await expect(page.getByTestId('word-editor')).not.toContainText('misspeled');
   });

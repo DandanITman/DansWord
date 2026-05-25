@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import { Search, Replace } from 'lucide-react';
 import { findInEditor, replaceInEditor } from '../utils/findInEditor';
+import { uiAlert } from '../utils/uiPrompt';
 
 interface FindReplaceBarProps {
   editor: Editor | null;
@@ -15,18 +16,18 @@ export function FindReplaceBar({ editor, open, onClose }: FindReplaceBarProps) {
 
   if (!open) return null;
 
-  const findNext = () => {
+  const findNext = async () => {
     if (!editor) return;
     const start = editor.state.selection.to;
     const match = findInEditor(editor, findQuery, start) ?? findInEditor(editor, findQuery, 0);
     if (!match) {
-      window.alert('No matches found.');
+      await uiAlert('No matches found.');
       return;
     }
     editor.chain().focus().setTextSelection(match).run();
   };
 
-  const findPrev = () => {
+  const findPrev = async () => {
     if (!editor) return;
     const { doc } = editor.state;
     const lowerQuery = findQuery.toLowerCase();
@@ -48,23 +49,23 @@ export function FindReplaceBar({ editor, open, onClose }: FindReplaceBarProps) {
     });
 
     if (!lastMatch) {
-      window.alert('No previous matches.');
+      await uiAlert('No previous matches.');
       return;
     }
     editor.chain().focus().setTextSelection(lastMatch).run();
   };
 
-  const replaceOne = () => {
+  const replaceOne = async () => {
     if (!editor) return;
     const count = replaceInEditor(editor, findQuery, replaceQuery, false);
-    if (!count) window.alert('No matches found.');
-    else findNext();
+    if (!count) await uiAlert('No matches found.');
+    else await findNext();
   };
 
-  const replaceAll = () => {
+  const replaceAll = async () => {
     if (!editor) return;
     const count = replaceInEditor(editor, findQuery, replaceQuery, true);
-    window.alert(count ? `Replaced ${count} occurrence(s).` : 'No matches found.');
+    await uiAlert(count ? `Replaced ${count} occurrence(s).` : 'No matches found.');
   };
 
   return (

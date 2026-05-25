@@ -11,8 +11,6 @@
     { "id": "TC-FILE-006", "title": "Open/save .rtf", "area": "file", "priority": "medium", "type": "e2e", "status": "automated" },
     { "id": "TC-FILE-007", "title": "Export HTML", "area": "file", "priority": "medium", "type": "e2e", "status": "automated" },
     { "id": "TC-FILE-008", "title": "Legacy .doc import", "area": "file", "priority": "low", "type": "e2e", "status": "automated" },
-    { "id": "TC-FILE-009", "title": "PDF export", "area": "file", "priority": "medium", "type": "electron-manual", "status": "electron-manual" },
-    { "id": "TC-FILE-010", "title": "Print document", "area": "file", "priority": "medium", "type": "electron-manual", "status": "electron-manual" },
     { "id": "TC-FILE-011", "title": "Auto-save after edit", "area": "file", "priority": "medium", "type": "e2e", "status": "automated" },
     { "id": "TC-FILE-012", "title": "Dirty asterisk in title bar", "area": "file", "priority": "medium", "type": "e2e", "status": "automated" },
     { "id": "TC-FILE-013", "title": "Recent files list after save", "area": "file", "priority": "medium", "type": "e2e", "status": "automated" },
@@ -92,7 +90,6 @@
     { "id": "TC-UNIT-002", "title": "DOCX export blob size", "area": "unit", "priority": "high", "type": "unit", "status": "automated" },
     { "id": "TC-UNIT-003", "title": "Editor undo/redo chain", "area": "unit", "priority": "high", "type": "unit", "status": "automated" },
 
-    { "id": "TC-ELEC-001", "title": "Native file open dialog", "area": "electron", "priority": "high", "type": "electron-manual", "status": "electron-manual" },
-    { "id": "TC-ELEC-002", "title": "Packaged installer smoke test", "area": "electron", "priority": "high", "type": "electron-manual", "status": "electron-manual" }
+    { "id": "TC-ELEC-001", "title": "Native file open dialog", "area": "electron", "priority": "high", "type": "electron-manual", "status": "electron-manual" }
   ]
 }

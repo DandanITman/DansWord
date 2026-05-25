@@ -29,6 +29,7 @@ import { MergeField } from '../extensions/MergeField';
 import { HunspellCheck } from '../extensions/HunspellCheck';
 import { SuperscriptMark, SubscriptMark } from '../extensions/TextMarks';
 import { ParagraphFormatting } from '../extensions/ParagraphFormatting';
+import { SpellSuggestionMenu, type SpellSuggestionState } from './SpellSuggestionMenu';
 
 const FontSize = Extension.create({
   name: 'fontSize',
@@ -110,6 +111,7 @@ export function WordEditor({
   const { margins } = pageSetup;
   const contentAreaHeight = pageHeight - margins.top - margins.bottom - 80;
   const [pageCount, setPageCount] = useState(1);
+  const [spellMenu, setSpellMenu] = useState<SpellSuggestionState | null>(null);
 
   const extensions = useMemo(
     () => [
@@ -196,7 +198,7 @@ export function WordEditor({
 
       e.preventDefault();
 
-      const word = spellError.textContent;
+      const word = spellError.textContent?.trim();
       if (!word) return;
 
       try {
@@ -205,16 +207,14 @@ export function WordEditor({
         const to = pos + word.length;
 
         void window.dansword.spellSuggest(word, language).then((suggestions) => {
-          if (!suggestions.length) {
-            window.alert(`No suggestions for "${word}".`);
-            return;
-          }
-          const replacement = window.prompt(
-            `Replace "${word}" with:`,
-            suggestions[0],
-          );
-          if (!replacement?.trim()) return;
-          editor.chain().focus().setTextSelection({ from, to }).insertContent(replacement.trim()).run();
+          setSpellMenu({
+            x: e.clientX,
+            y: e.clientY,
+            word,
+            from,
+            to,
+            suggestions,
+          });
         });
       } catch (err) {
         console.error('Failed to resolve spell error position:', err);
@@ -222,8 +222,16 @@ export function WordEditor({
     };
     dom.addEventListener('contextmenu', onSpellContextMenu);
 
-    const measure = () => {
+    const measureContentHeight = () => {
+      const savedMinHeight = dom.style.minHeight;
+      dom.style.minHeight = '0';
       const height = dom.scrollHeight;
+      dom.style.minHeight = savedMinHeight;
+      return height;
+    };
+
+    const measure = () => {
+      const height = measureContentHeight();
       const count = Math.max(1, Math.ceil(height / contentAreaHeight));
       setPageCount(count);
       onPageCountChange?.(count);
@@ -239,7 +247,18 @@ export function WordEditor({
       ro.disconnect();
       editor.off('update', measure);
     };
-  }, [editor, contentAreaHeight, onPageCountChange]);
+  }, [editor, contentAreaHeight, onPageCountChange, language]);
+
+  const applySpellReplacement = (replacement: string) => {
+    if (!editor || !spellMenu) return;
+    editor
+      .chain()
+      .focus()
+      .setTextSelection({ from: spellMenu.from, to: spellMenu.to })
+      .insertContent(replacement)
+      .run();
+    setSpellMenu(null);
+  };
 
   if (!editor) return null;
 
@@ -252,6 +271,7 @@ export function WordEditor({
       : undefined;
 
   return (
+    <>
     <div className="doc-pages-wrap print-area">
       <div className="doc-pages-stack" aria-hidden>
         {Array.from({ length: pageCount }, (_, i) => (
@@ -318,6 +338,12 @@ export function WordEditor({
         )}
       </div>
     </div>
+    <SpellSuggestionMenu
+      state={spellMenu}
+      onPick={applySpellReplacement}
+      onClose={() => setSpellMenu(null)}
+    />
+    </>
   );
 }
 

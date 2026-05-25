@@ -66,10 +66,22 @@ export const ParagraphFormatting = Extension.create({
           borderColor: {
             default: null,
             parseHTML: (element) => element.style.borderLeftColor || null,
+            renderHTML: (attributes) => {
+              if (!attributes.borderColor) return {};
+              return {
+                style: `border-left: 3px solid ${attributes.borderColor}; padding-left: 10px`,
+              };
+            },
           },
           shading: {
             default: null,
             parseHTML: (element) => element.style.backgroundColor || null,
+            renderHTML: (attributes) => {
+              if (!attributes.shading) return {};
+              return {
+                style: `background-color: ${attributes.shading}; padding-top: 2px; padding-bottom: 2px`,
+              };
+            },
           },
         },
       },

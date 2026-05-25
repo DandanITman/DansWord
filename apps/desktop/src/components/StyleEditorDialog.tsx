@@ -1,4 +1,5 @@
 import type { DocumentStyle } from '@dansword/core';
+import { uiConfirm, uiPrompt } from '../utils/uiPrompt';
 
 interface StyleEditorDialogProps {
   open: boolean;
@@ -12,8 +13,8 @@ export function StyleEditorDialog({ open, styles, onChange, onClose }: StyleEdit
 
   const customStyles = styles.filter((s) => !['normal', 'title', 'heading1', 'heading2', 'heading3'].includes(s.id));
 
-  const addStyle = () => {
-    const name = window.prompt('Style name');
+  const addStyle = async () => {
+    const name = await uiPrompt('Style name');
     if (!name?.trim()) return;
     onChange([
       ...styles,
@@ -26,14 +27,15 @@ export function StyleEditorDialog({ open, styles, onChange, onClose }: StyleEdit
     ]);
   };
 
-  const editStyle = (style: DocumentStyle) => {
-    const fontFamily = window.prompt('Font family', style.fontFamily ?? 'Calibri');
+  const editStyle = async (style: DocumentStyle) => {
+    const fontFamily = await uiPrompt('Font family', style.fontFamily ?? 'Calibri');
     if (fontFamily === null) return;
-    const fontSize = window.prompt('Font size (e.g. 11pt)', style.fontSize ?? '11pt');
+    const fontSize = await uiPrompt('Font size (e.g. 11pt)', style.fontSize ?? '11pt');
     if (fontSize === null) return;
+    const bold = await uiConfirm('Bold?');
     onChange(
       styles.map((s) =>
-        s.id === style.id ? { ...s, fontFamily, fontSize, bold: window.confirm('Bold?') } : s,
+        s.id === style.id ? { ...s, fontFamily, fontSize, bold } : s,
       ),
     );
   };
@@ -55,14 +57,14 @@ export function StyleEditorDialog({ open, styles, onChange, onClose }: StyleEdit
                 <span className="muted"> — {style.fontFamily} {style.fontSize}</span>
               </span>
               <div style={{ display: 'flex', gap: 4 }}>
-                <button className="icon-btn" onClick={() => editStyle(style)}>Edit</button>
+                <button className="icon-btn" onClick={() => void editStyle(style)}>Edit</button>
                 <button className="icon-btn" onClick={() => removeStyle(style.id)}>Delete</button>
               </div>
             </li>
           ))}
         </ul>
         <div className="dialog-actions">
-          <button className="icon-btn" onClick={addStyle}>Add Style</button>
+          <button className="icon-btn" onClick={() => void addStyle()}>Add Style</button>
           <button className="icon-btn primary" onClick={onClose}>Done</button>
         </div>
       </div>

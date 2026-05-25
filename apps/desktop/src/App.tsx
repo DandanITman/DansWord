@@ -40,7 +40,9 @@ import { PageSetupDialog, HeaderFooterDialog } from './components/PageSetupDialo
 import { CommentsPane } from './components/CommentsPane';
 import { MailMergeDialog } from './components/MailMergeDialog';
 import { CollaborationDialog, type CollabSession } from './components/CollaborationDialog';
+import { UiPromptHost } from './components/UiPromptHost';
 import { useFormatPainter } from './hooks/useFormatPainter';
+import { uiAlert, uiPrompt } from './utils/uiPrompt';
 import { useCollabSync } from './hooks/useCollabSync';
 import { bytesToDataUrl, mimeForImageExt } from './utils/imageInsert';
 
@@ -214,7 +216,7 @@ export default function App() {
         openDocumentEnvelope(createDocumentEnvelope(docNode), path, getFileName(path));
       } else {
         openDocumentEnvelope(createDocumentEnvelope(importFromDocText(res.data)), path, getFileName(path));
-        window.alert(res.warning);
+        await uiAlert(res.warning);
       }
     } else if (ext === 'rtf') {
       const raw = await window.dansword.readTextFile(path);
@@ -231,7 +233,7 @@ export default function App() {
         getFileName(path)
       );
     } else {
-      window.alert('Unsupported file type.');
+      await uiAlert('Unsupported file type.');
       return;
     }
     await updateRecentFile(path);
@@ -341,7 +343,7 @@ export default function App() {
     if (!path || !editor) return;
     const ext = extOf(path);
     if (!['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'].includes(ext)) {
-      window.alert('Please choose an image file.');
+      await uiAlert('Please choose an image file.');
       return;
     }
     const bytes = await window.dansword.readFile(path);
@@ -363,9 +365,9 @@ export default function App() {
     setZoom(originalZoom);
   };
 
-  const handleInsertFootnote = () => {
+  const handleInsertFootnote = async () => {
     if (!editor) return;
-    const text = window.prompt('Footnote text');
+    const text = await uiPrompt('Footnote text');
     if (!text?.trim()) return;
     const fn = insertFootnote(editor, envelope.footnotes, text.trim());
     updateEnvelope({ footnotes: [...envelope.footnotes, { id: fn.id, text: text.trim() }] });
@@ -460,10 +462,12 @@ export default function App() {
           onInsertShape={(type) => editor?.chain().focus().insertShape({ shapeType: type }).run()}
           onInsertFootnote={handleInsertFootnote}
           onInsertMergeField={() => {
-            const name = window.prompt('Merge field name', 'FirstName');
-            if (name?.trim()) {
-              editor?.chain().focus().insertMergeField(name.trim()).run();
-            }
+            void (async () => {
+              const name = await uiPrompt('Merge field name', 'FirstName');
+              if (name?.trim()) {
+                editor?.chain().focus().insertMergeField(name.trim()).run();
+              }
+            })();
           }}
           onOpenMailMerge={() => setMailMergeOpen(true)}
           onOpenCollaboration={() => setCollabOpen(true)}
@@ -486,7 +490,7 @@ export default function App() {
             if (!path) return;
             const docs = await window.dansword.listDocuments(path);
             if (!docs.length) {
-              window.alert('No documents found in that folder.');
+              await uiAlert('No documents found in that folder.');
               return;
             }
             await openDocumentAtPath(docs[0].path);
@@ -680,6 +684,7 @@ export default function App() {
         />
       )}
 
+      <UiPromptHost />
     </div>
   );
 }

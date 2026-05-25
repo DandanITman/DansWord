@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/react';
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
+import { uiAlert } from './uiPrompt';
 
 export interface HeadingItem {
   level: number;
@@ -25,10 +26,10 @@ export function extractHeadings(editor: Editor): HeadingItem[] {
   return extractHeadingsFromDoc(editor.state.doc);
 }
 
-export function insertTableOfContents(editor: Editor) {
+export async function insertTableOfContents(editor: Editor) {
   const headings = extractHeadings(editor);
   if (!headings.length) {
-    window.alert('Add headings to your document first.');
+    await uiAlert('Add headings to your document first.');
     return;
   }
 

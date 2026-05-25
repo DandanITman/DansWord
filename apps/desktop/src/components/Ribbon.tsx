@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/react';
 import type { DocumentStyle, RibbonTab } from '@dansword/core';
+import { uiPrompt } from '../utils/uiPrompt';
 import {
   Bold,
   Italic,
@@ -144,10 +145,10 @@ export function Ribbon({
     editor?.chain().focus().clearNodes().unsetAllMarks().clearParagraphFormatting().run();
   };
 
-  const setFontColor = () => {
+  const setFontColor = async () => {
     if (!editor) return;
     const previous = editor.getAttributes('textStyle').color as string | undefined;
-    const color = window.prompt('Font color hex value. Leave blank to clear.', previous ?? '#111827');
+    const color = await uiPrompt('Font color hex value. Leave blank to clear.', previous ?? '#111827');
     if (color === null) return;
     if (!color.trim()) {
       editor.chain().focus().unsetColor().run();
@@ -156,10 +157,10 @@ export function Ribbon({
     editor.chain().focus().setColor(color.trim()).run();
   };
 
-  const setHighlight = () => {
+  const setHighlight = async () => {
     if (!editor) return;
     const previous = editor.getAttributes('highlight').color as string | undefined;
-    const color = window.prompt('Highlight color hex value. Leave blank to clear.', previous ?? '#fef08a');
+    const color = await uiPrompt('Highlight color hex value. Leave blank to clear.', previous ?? '#fef08a');
     if (color === null) return;
     if (!color.trim()) {
       editor.chain().focus().unsetHighlight().run();
@@ -168,30 +169,30 @@ export function Ribbon({
     editor.chain().focus().setHighlight({ color: color.trim() }).run();
   };
 
-  const setParagraphSpacing = () => {
-    const before = window.prompt('Space before paragraph (px)', '0');
+  const setParagraphSpacing = async () => {
+    const before = await uiPrompt('Space before paragraph (px)', '0');
     if (before === null) return;
-    const after = window.prompt('Space after paragraph (px)', '12');
+    const after = await uiPrompt('Space after paragraph (px)', '12');
     if (after === null) return;
     editor?.chain().focus().setParagraphSpacing(Number(before) || 0, Number(after) || 0).run();
   };
 
-  const setParagraphBorder = () => {
-    const color = window.prompt('Paragraph border color. Leave blank to clear.', '#94a3b8');
+  const setParagraphBorder = async () => {
+    const color = await uiPrompt('Paragraph border color. Leave blank to clear.', '#94a3b8');
     if (color === null) return;
     editor?.chain().focus().setParagraphBorder(color.trim() || null).run();
   };
 
-  const setParagraphShading = () => {
-    const color = window.prompt('Paragraph shading color. Leave blank to clear.', '#f8fafc');
+  const setParagraphShading = async () => {
+    const color = await uiPrompt('Paragraph shading color. Leave blank to clear.', '#f8fafc');
     if (color === null) return;
     editor?.chain().focus().setParagraphShading(color.trim() || null).run();
   };
 
-  const setLink = () => {
+  const setLink = async () => {
     if (!editor) return;
     const previous = editor.getAttributes('link').href as string | undefined;
-    const url = window.prompt('Enter URL', previous ?? 'https://');
+    const url = await uiPrompt('Enter URL', previous ?? 'https://');
     if (url === null) return;
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();

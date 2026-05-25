@@ -13,18 +13,6 @@ test.describe('Electron manual checklist @electron-manual', () => {
     expect(true).toBe(true);
   });
 
-  test.skip('print preview and printer selection', async () => {
-    expect(true).toBe(true);
-  });
-
-  test.skip('PDF export quality matches print layout', async () => {
-    expect(true).toBe(true);
-  });
-
-  test.skip('Windows installer smoke test launches .exe', async () => {
-    expect(true).toBe(true);
-  });
-
   test.skip('file associations open .dansword and .docx', async () => {
     expect(true).toBe(true);
   });

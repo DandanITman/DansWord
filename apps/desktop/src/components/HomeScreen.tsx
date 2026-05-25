@@ -199,7 +199,8 @@ export function HomeScreen({
             <span>New</span>
           </button>
           {newExpanded && (
-            <div className="home-template-rail">
+            <div className="home-template-rail-scroll">
+              <div className="home-template-rail">
               <button className="home-tpl-card home-tpl-blank" onClick={() => onNewFromTemplate('blank')} data-testid="home-blank-template">
                 <div className="home-tpl-thumb blank">
                   <FilePlus size={32} strokeWidth={1.5} />
@@ -222,6 +223,7 @@ export function HomeScreen({
                   </button>
                 );
               })}
+              </div>
             </div>
           )}
         </section>

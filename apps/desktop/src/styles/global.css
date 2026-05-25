@@ -990,7 +990,8 @@ select:focus-visible {
 /* Backstage */
 .backstage {
   width: min(920px, 94vw);
-  max-height: 86vh;
+  max-height: min(86vh, calc(100vh - var(--title-bar-h) - 40px));
+  min-height: 0;
   overflow: hidden;
   background: var(--bg-panel);
   border-radius: var(--radius-lg);
@@ -1006,6 +1007,9 @@ select:focus-visible {
   background: var(--bg-subtle);
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .backstage-nav-header {
@@ -1049,8 +1053,10 @@ select:focus-visible {
 }
 
 .backstage-content {
-  padding: 28px 32px;
-  overflow: auto;
+  padding: 28px 32px 36px;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .meta-grid {
@@ -1231,7 +1237,7 @@ select:focus-visible {
 
 .ProseMirror {
   outline: none;
-  min-height: 800px;
+  min-height: var(--page-height, 784px);
 }
 
 .ProseMirror p {
@@ -1298,6 +1304,9 @@ select:focus-visible {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 45%, #2563eb 100%);
   color: #e2e8f0;
   padding: 12px 0;
@@ -1382,11 +1391,12 @@ select:focus-visible {
 
 .home-main {
   flex: 1;
+  min-height: 0;
   overflow: auto;
   background:
     radial-gradient(ellipse 90% 60% at 80% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent),
     linear-gradient(180deg, var(--bg-subtle) 0%, var(--bg-app) 100%);
-  padding: 28px 36px 40px;
+  padding: 28px 36px 48px;
 }
 
 .home-main-header {
@@ -1453,24 +1463,20 @@ select:focus-visible {
 
 .home-new-panel {
   margin-bottom: 28px;
+  overflow: visible;
 }
 
-.home-panel-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
-  background: transparent;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 0 0 14px;
+.home-template-rail-scroll {
+  overflow: visible;
+  padding: 10px 0 6px;
+  margin: -6px 0;
 }
 
 .home-template-rail {
   display: flex;
   gap: 16px;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding: 6px 4px 14px;
 }
 
 .home-tpl-card {
@@ -1483,11 +1489,23 @@ select:focus-visible {
   font-size: 12px;
   font-weight: 500;
   transition: transform var(--transition);
+  padding-bottom: 4px;
 }
 
 .home-tpl-card:hover {
   transform: translateY(-3px);
   color: var(--text);
+}
+
+.home-panel-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 0 14px;
 }
 
 .home-tpl-thumb {
@@ -1562,6 +1580,12 @@ select:focus-visible {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  min-height: 0;
+}
+
+.home-doc-table-wrap {
+  overflow: auto;
+  max-height: min(420px, calc(100vh - 420px));
 }
 
 .home-tabs {
@@ -3383,4 +3407,66 @@ select:focus-visible {
 
 [data-test-mode='true'] .ProseMirror-cursor {
   display: none !important;
+}
+
+.ui-prompt-backdrop {
+  z-index: 1200;
+}
+
+.ui-prompt-dialog {
+  width: min(420px, calc(100vw - 32px));
+}
+
+.ui-prompt-message {
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+}
+
+.spell-suggestion-menu {
+  position: fixed;
+  z-index: 1100;
+  min-width: 180px;
+  max-width: 280px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 6px 0;
+}
+
+.spell-suggestion-title {
+  padding: 6px 12px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.spell-suggestion-item,
+.spell-suggestion-dismiss,
+.spell-suggestion-empty {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.spell-suggestion-item:hover,
+.spell-suggestion-dismiss:hover {
+  background: var(--bg-hover);
+}
+
+.spell-suggestion-empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.spell-suggestion-dismiss {
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  color: var(--text-muted);
 }

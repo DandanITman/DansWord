@@ -1,6 +1,7 @@
 import type { Editor } from '@tiptap/react';
 import type { DocumentComment } from '@dansword/core';
 import { findCommentAnchorPos, getCommentAnchorText, removeCommentAnchor } from '../utils/headings';
+import { uiAlert, uiPrompt } from '../utils/uiPrompt';
 
 interface CommentsPaneProps {
   open: boolean;
@@ -23,14 +24,14 @@ export function CommentsPane({
 }: CommentsPaneProps) {
   if (!open) return null;
 
-  const handleAddFromSelection = () => {
+  const handleAddFromSelection = async () => {
     if (!editor) return;
     const { from, to, empty } = editor.state.selection;
     if (empty) {
-      window.alert('Select text to attach a comment.');
+      await uiAlert('Select text to attach a comment.');
       return;
     }
-    const text = window.prompt('Comment text');
+    const text = await uiPrompt('Comment text');
     if (!text?.trim()) return;
 
     const anchorText = editor.state.doc.textBetween(from, to, ' ');
@@ -40,16 +41,16 @@ export function CommentsPane({
     }
   };
 
-  const handleAddDocumentComment = () => {
-    const text = window.prompt('Comment text');
+  const handleAddDocumentComment = async () => {
+    const text = await uiPrompt('Comment text');
     if (text?.trim()) onAdd(text.trim());
   };
 
-  const goToComment = (id: string) => {
+  const goToComment = async (id: string) => {
     if (!editor) return;
     const pos = findCommentAnchorPos(editor, id);
     if (pos === null) {
-      window.alert('This comment is no longer anchored in the document.');
+      await uiAlert('This comment is no longer anchored in the document.');
       return;
     }
     editor.chain().focus().setTextSelection(pos + 1).run();

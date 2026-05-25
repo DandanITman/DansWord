@@ -46,6 +46,7 @@ Electron IPC is not available in CI, so Playwright tests load `apps/desktop/test
 - persists mock files in `localStorage` for save/reload scenarios
 - disables animations via `[data-test-mode]`
 - exposes `window.__DANSWORD_TEST__` helpers for deterministic file dialogs and editor content injection
+- stubs `window.prompt` / `window.alert` where tests need them (the packaged Electron app uses in-app dialogs instead — native browser prompts freeze in Electron)
 
 This keeps tests local, deterministic, and free of production services.
 
@@ -122,17 +123,23 @@ Desktop editor behavior tests live in `apps/desktop/src/editor/editorBehavior.te
 - Feature parity catalog thresholds (existing package tests)
 - Mail merge helpers (existing package tests)
 
-### Still needs coverage
+### Optional follow-up coverage (implemented features, not yet in catalog)
 
-- Real Electron main-process IPC (file dialogs, print, PDF export)
-- DOCX import/export through the UI
-- Find/replace bar interactions
-- Comments pane, navigation pane, track changes UI
-- Page setup / header-footer dialogs
-- Spell-check suggestion workflow
-- Collaboration and mail merge dialogs
-- Multi-window or true multi-document session management (not currently a product feature)
-- Packaged Windows installer smoke test
+- Text highlight color
+- Page margins and landscape orientation in page setup
+- Ribbon Cut/Copy/Paste buttons (keyboard clipboard is covered)
+- Decrease paragraph indent (increase is covered)
+- Accept/reject single track change (accept/reject all is covered)
+- LAN collaboration sync beyond opening the dialog
+- Multi-page print pagination layout
+
+### Out of scope (not built — no tests planned)
+
+- Password protection, equations, section breaks, document compare, thesaurus, macros, cloud sync, AI assistant
+
+### Electron-only (optional manual)
+
+- Native OS file open/save dialogs (`TC-ELEC-001` in catalog)
 
 ## CI layout
 

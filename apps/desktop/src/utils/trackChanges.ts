@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/react';
+import { uiAlert } from '../utils/uiPrompt';
 
 function trackInsertRangesInRange(editor: Editor, from: number, to: number) {
   const ranges: Array<{ from: number; to: number }> = [];
@@ -70,10 +71,10 @@ export function rejectAllTrackChanges(editor: Editor) {
   editor.view.dispatch(tr);
 }
 
-export function acceptTrackChangeInSelection(editor: Editor) {
+export async function acceptTrackChangeInSelection(editor: Editor) {
   const range = selectionTrackRange(editor);
   if (!range) {
-    window.alert('Place the cursor in a tracked change or select tracked text.');
+    await uiAlert('Place the cursor in a tracked change or select tracked text.');
     return;
   }
 
@@ -89,10 +90,10 @@ export function acceptTrackChangeInSelection(editor: Editor) {
   editor.view.dispatch(tr);
 }
 
-export function rejectTrackChangeInSelection(editor: Editor) {
+export async function rejectTrackChangeInSelection(editor: Editor) {
   const range = selectionTrackRange(editor);
   if (!range) {
-    window.alert('Place the cursor in a tracked change or select tracked text.');
+    await uiAlert('Place the cursor in a tracked change or select tracked text.');
     return;
   }
   editor.view.dispatch(editor.state.tr.delete(range.from, range.to));
