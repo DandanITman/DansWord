@@ -47,6 +47,22 @@ export async function typeInEditor(page: Page, text: string) {
   await editor.pressSequentially(text, { delay: 10 });
 }
 
+export async function grantClipboard(page: Page) {
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+}
+
+export async function insertMockImage(page: Page) {
+  await page.evaluate((b64) => {
+    window.__DANSWORD_TEST__?.seedBinaryFile('C:\\DansWordTest\\photo.png', b64);
+  }, TINY_PNG_BASE64);
+  await page.evaluate(() =>
+    window.__DANSWORD_TEST__?.setOpenFileResult('C:\\DansWordTest\\photo.png'),
+  );
+  await switchRibbonTab(page, 'insert');
+  await page.getByRole('button', { name: /^Picture$/ }).click();
+  await page.getByTestId('word-editor').locator('img').waitFor({ state: 'visible' });
+}
+
 export async function selectAllInEditor(page: Page) {
   await focusEditor(page);
   await page.keyboard.press('Control+A');

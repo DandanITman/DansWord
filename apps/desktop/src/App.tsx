@@ -190,7 +190,11 @@ export default function App() {
     setFilePath(path);
     setFileName(name);
     setBackstageOpen(false);
+    setCommentsOpen(false);
+    setNavOpen(false);
+    setFindOpen(false);
     setView('editor');
+    setEditorSyncKey((k) => k + 1);
   }, []);
 
   const openDocumentAtPath = useCallback(async (path: string) => {
