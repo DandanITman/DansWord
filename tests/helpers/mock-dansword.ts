@@ -15,6 +15,7 @@ export type ImportDocResult =
 export interface DansWordTestHarness {
   reset: () => void;
   setOpenFileResult: (path: string | null) => void;
+  setOpenImageFileResult: (path: string | null) => void;
   setSaveFileResult: (path: string | null) => void;
   setImportDocResult: (result: ImportDocResult) => void;
   setSpellCheckResults: (results: boolean[]) => void;
@@ -86,6 +87,7 @@ function bytesToBase64(bytes: Uint8Array) {
 
 export function installMockDansword(target: Window & typeof globalThis): DansWordTestHarness {
   let nextOpenFile: string | null = null;
+  let nextOpenImageFile: string | null = null;
   let nextSaveFile: string | null | undefined = undefined;
   let nextImportDoc: ImportDocResult | null = null;
   let spellResults: boolean[] | null = null;
@@ -110,6 +112,12 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
   const api = {
     openFile: async () => {
       const path = nextOpenFile;
+      nextOpenFile = null;
+      return path;
+    },
+    openImageFile: async () => {
+      const path = nextOpenImageFile ?? nextOpenFile;
+      nextOpenImageFile = null;
       nextOpenFile = null;
       return path;
     },
@@ -227,6 +235,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
   const harness: DansWordTestHarness = {
     reset: () => {
       nextOpenFile = null;
+      nextOpenImageFile = null;
       nextSaveFile = undefined;
       nextImportDoc = null;
       spellResults = null;
@@ -241,6 +250,9 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
     },
     setOpenFileResult: (path) => {
       nextOpenFile = path ? normalizePath(path) : null;
+    },
+    setOpenImageFileResult: (path) => {
+      nextOpenImageFile = path ? normalizePath(path) : null;
     },
     setSaveFileResult: (path) => {
       nextSaveFile = path ? normalizePath(path) : null;

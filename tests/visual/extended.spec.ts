@@ -15,7 +15,7 @@ test.describe('Extended visual regression', () => {
   });
 
   for (const tab of ['file', 'insert', 'design', 'pageLayout', 'review', 'view'] as const) {
-    test(`ribbon ${tab} tab`, async ({ page }) => {
+    test(`TC-VIS-004: ribbon ${tab} tab`, async ({ page }) => {
       await openBlankDocument(page);
       await page.getByTestId(`ribbon-tab-${tab}`).click();
       await expect(page.getByTestId('ribbon')).toHaveScreenshot(`ribbon-${tab}.png`, {
@@ -40,7 +40,7 @@ test.describe('Extended visual regression', () => {
     });
   });
 
-  test('focus mode layout', async ({ page }) => {
+  test('TC-VIEW-003: focus mode layout', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'view');
     await page.getByTestId('ribbon').getByRole('button', { name: /Focus Mode/i }).click();

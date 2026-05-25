@@ -1,6 +1,10 @@
 import type { Editor } from '@tiptap/react';
+import type { MouseEvent } from 'react';
 import type { DocumentStyle, RibbonTab } from '@dansword/core';
+import { BUILTIN_STYLES } from '@dansword/core';
 import { uiPrompt } from '../utils/uiPrompt';
+import { ColorPickerButton } from './ColorPickerButton';
+import { BORDER_COLORS, FONT_COLORS, HIGHLIGHT_COLORS, SHADING_COLORS } from '../constants/colorSwatches';
 import {
   Bold,
   Italic,
@@ -64,6 +68,7 @@ interface RibbonProps {
   onExportPdf: () => void;
   onInsertImage: () => void;
   onOpenPageSetup: () => void;
+  onApplyMarginPreset: (preset: 'Normal' | 'Narrow' | 'Wide') => void;
   onOpenHeaderFooter: () => void;
   onToggleNavigation: () => void;
   onToggleComments: () => void;
@@ -111,6 +116,7 @@ export function Ribbon({
   onExportPdf,
   onInsertImage,
   onOpenPageSetup,
+  onApplyMarginPreset,
   onOpenHeaderFooter,
   onToggleNavigation,
   onToggleComments,
@@ -136,6 +142,13 @@ export function Ribbon({
   onOpenCollaboration,
   collabActive,
 }: RibbonProps) {
+  const preserveEditorFocus = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (target.closest('button')) {
+      event.preventDefault();
+    }
+  };
+
   const runClipboard = (cmd: 'cut' | 'copy' | 'paste') => {
     editor?.view.dom.focus();
     document.execCommand(cmd);
@@ -145,29 +158,7 @@ export function Ribbon({
     editor?.chain().focus().clearNodes().unsetAllMarks().clearParagraphFormatting().run();
   };
 
-  const setFontColor = async () => {
-    if (!editor) return;
-    const previous = editor.getAttributes('textStyle').color as string | undefined;
-    const color = await uiPrompt('Font color hex value. Leave blank to clear.', previous ?? '#111827');
-    if (color === null) return;
-    if (!color.trim()) {
-      editor.chain().focus().unsetColor().run();
-      return;
-    }
-    editor.chain().focus().setColor(color.trim()).run();
-  };
-
-  const setHighlight = async () => {
-    if (!editor) return;
-    const previous = editor.getAttributes('highlight').color as string | undefined;
-    const color = await uiPrompt('Highlight color hex value. Leave blank to clear.', previous ?? '#fef08a');
-    if (color === null) return;
-    if (!color.trim()) {
-      editor.chain().focus().unsetHighlight().run();
-      return;
-    }
-    editor.chain().focus().setHighlight({ color: color.trim() }).run();
-  };
+  const styleGallery = customStyles.length ? customStyles : BUILTIN_STYLES;
 
   const setParagraphSpacing = async () => {
     const before = await uiPrompt('Space before paragraph (px)', '0');
@@ -175,18 +166,6 @@ export function Ribbon({
     const after = await uiPrompt('Space after paragraph (px)', '12');
     if (after === null) return;
     editor?.chain().focus().setParagraphSpacing(Number(before) || 0, Number(after) || 0).run();
-  };
-
-  const setParagraphBorder = async () => {
-    const color = await uiPrompt('Paragraph border color. Leave blank to clear.', '#94a3b8');
-    if (color === null) return;
-    editor?.chain().focus().setParagraphBorder(color.trim() || null).run();
-  };
-
-  const setParagraphShading = async () => {
-    const color = await uiPrompt('Paragraph shading color. Leave blank to clear.', '#f8fafc');
-    if (color === null) return;
-    editor?.chain().focus().setParagraphShading(color.trim() || null).run();
   };
 
   const setLink = async () => {
@@ -216,7 +195,7 @@ export function Ribbon({
           </button>
         ))}
       </div>
-      <div className="ribbon-panel office-ribbon-panel">
+      <div className="ribbon-panel office-ribbon-panel" onMouseDown={preserveEditorFocus}>
         {activeTab === 'file' && (
           <>
             <div className="ribbon-group">
@@ -311,16 +290,32 @@ export function Ribbon({
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
-                    <button className="ribbon-btn-icon" onClick={setFontColor} title="Font Color">
+                    <ColorPickerButton
+                      title="Font Color"
+                      colors={FONT_COLORS}
+                      value={(editor?.getAttributes('textStyle').color as string | undefined) ?? (editor?.getAttributes('color').color as string | undefined) ?? null}
+                      className="ribbon-btn-icon"
+                      onSelect={(color) => {
+                        if (!editor) return;
+                        if (!color) editor.chain().focus().unsetColor().run();
+                        else editor.chain().focus().setColor(color).run();
+                      }}
+                    >
                       <Type size={15} className="icon-color" />
-                    </button>
-                    <button
-                      className={`ribbon-btn-icon ${editor?.isActive('highlight') ? 'active' : ''}`}
-                      onClick={setHighlight}
+                    </ColorPickerButton>
+                    <ColorPickerButton
                       title="Highlight Text"
+                      colors={HIGHLIGHT_COLORS}
+                      value={(editor?.getAttributes('highlight').color as string | undefined) ?? null}
+                      className={`ribbon-btn-icon ${editor?.isActive('highlight') ? 'active' : ''}`}
+                      onSelect={(color) => {
+                        if (!editor) return;
+                        if (!color) editor.chain().focus().unsetHighlight().run();
+                        else editor.chain().focus().setHighlight({ color }).run();
+                      }}
                     >
                       <Highlighter size={15} className="icon-highlight" />
-                    </button>
+                    </ColorPickerButton>
                     <button className="ribbon-btn-icon" onClick={clearFormatting} title="Clear Formatting">
                       <Eraser size={15} />
                     </button>
@@ -404,12 +399,24 @@ export function Ribbon({
                     <button className="ribbon-btn-horizontal-compact" onClick={setParagraphSpacing} title="Spacing">
                       <span>Spacing</span>
                     </button>
-                    <button className="ribbon-btn-horizontal-compact" onClick={setParagraphBorder} title="Paragraph Border">
+                    <ColorPickerButton
+                      title="Paragraph Border"
+                      colors={BORDER_COLORS}
+                      value={(editor?.getAttributes('paragraph').borderColor as string | undefined) ?? null}
+                      className="ribbon-btn-horizontal-compact"
+                      onSelect={(color) => editor?.chain().focus().setParagraphBorder(color).run()}
+                    >
                       <span>Border</span>
-                    </button>
-                    <button className="ribbon-btn-horizontal-compact" onClick={setParagraphShading} title="Shading/Background">
+                    </ColorPickerButton>
+                    <ColorPickerButton
+                      title="Shading/Background"
+                      colors={SHADING_COLORS}
+                      value={(editor?.getAttributes('paragraph').shading as string | undefined) ?? null}
+                      className="ribbon-btn-horizontal-compact"
+                      onSelect={(color) => editor?.chain().focus().setParagraphShading(color).run()}
+                    >
                       <span>Shade</span>
-                    </button>
+                    </ColorPickerButton>
                   </div>
                 </div>
               </div>
@@ -459,14 +466,16 @@ export function Ribbon({
           <>
             <div className="ribbon-group">
               <div className="ribbon-group-content">
-                <div className="ribbon-row">
-                  {(customStyles.length ? customStyles : [
-                    { id: 'normal', name: 'Normal' },
-                    { id: 'heading1', name: 'Heading 1', headingLevel: 1 as const },
-                    { id: 'heading2', name: 'Heading 2', headingLevel: 2 as const },
-                  ]).slice(0, 4).map((s) => (
-                    <button key={s.id} className="ribbon-btn-style-compact" onClick={() => editor && applyDocumentStyle(editor, s)} title={`Apply ${s.name}`}>
-                      {s.name}
+                <div className="ribbon-row design-style-row">
+                  {styleGallery.map((style) => (
+                    <button
+                      key={style.id}
+                      className="ribbon-btn-style-compact"
+                      onClick={() => editor && applyDocumentStyle(editor, style)}
+                      title={`Apply ${style.name}`}
+                      data-testid={`design-style-${style.id}`}
+                    >
+                      {style.name}
                     </button>
                   ))}
                   <button className="ribbon-btn-horizontal-compact" onClick={onOpenStyleEditor}>
@@ -477,9 +486,26 @@ export function Ribbon({
             </div>
             <div className="ribbon-group">
               <div className="ribbon-group-content">
-                <button className="ribbon-btn-horizontal-compact" onClick={onOpenWatermark} title="Set Page Watermark">
-                  <Stamp size={15} /> <span>Watermark</span>
-                </button>
+                <div className="ribbon-row">
+                  <button className="ribbon-btn-horizontal-compact" onClick={onOpenWatermark} title="Set Page Watermark">
+                    <Stamp size={15} /> <span>Watermark</span>
+                  </button>
+                  <button className="ribbon-btn-horizontal-compact" onClick={onOpenPageSetup} title="Page Setup">
+                    <LayoutTemplate size={15} /> <span>Page Setup</span>
+                  </button>
+                </div>
+                <div className="ribbon-row" style={{ marginTop: '4px' }}>
+                  {(['Normal', 'Narrow', 'Wide'] as const).map((preset) => (
+                    <button
+                      key={preset}
+                      className="ribbon-btn-sm-compact"
+                      onClick={() => onApplyMarginPreset(preset)}
+                      title={`${preset} margins`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </>

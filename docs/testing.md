@@ -6,6 +6,7 @@ DansWord uses a layered regression suite:
 2. **Unit/component tests** — Vitest for document logic, OpenXML, and TipTap editor behavior
 3. **End-to-end tests** — Playwright click-through flows against a browser test harness
 4. **Visual regression** — Playwright screenshot baselines for key UI states
+5. **Catalog audit** — static check that automated `TC-*` catalog entries are referenced from real test source
 
 Run everything locally with one command:
 
@@ -18,6 +19,7 @@ npm run regression
 | Command | Purpose |
 |---------|---------|
 | `npm run regression` | Full suite (typecheck, build, unit, e2e, visual) |
+| `npm run test:catalog` | Verify automated catalog IDs are linked to test source |
 | `npm test` | Unit/component tests only |
 | `npm run test:unit` | Same as `npm test` |
 | `npm run test:e2e` | Playwright end-to-end tests |
@@ -83,6 +85,8 @@ In GitHub Actions, download the `visual-snapshot-diffs` artifact from a failed r
 
 ## Adding a new regression test
 
+Every automated entry in `tests/catalog/test-catalog.json` must include its `TC-*` ID in the matching spec or unit test source. `npm run test:catalog` fails when an automated catalog entry is not referenced by test source, or when a test references an unknown catalog ID.
+
 ### Unit/component
 
 1. Add a `*.test.ts` file next to the logic under test, or in `packages/core` / `packages/openxml`.
@@ -104,6 +108,8 @@ Desktop editor behavior tests live in `apps/desktop/src/editor/editorBehavior.te
 2. Mask dynamic regions (status bar counts, filename dirty marker, avatars) via `visualMaskLocators()`.
 3. Generate baselines with `npm run test:visual:update`.
 
+Visual snapshots catch differences from the committed baseline. If a bad layout is accepted into the baseline, snapshots will keep passing. Add e2e layout assertions for clipping, offscreen controls, broken picker/dropdown interaction, and other UI problems that need semantic detection.
+
 ## Current coverage
 
 ### Covered
@@ -118,6 +124,8 @@ Desktop editor behavior tests live in `apps/desktop/src/editor/editorBehavior.te
 - New document + return to home
 - Save backstage panel open
 - Visual baselines: home, empty editor, formatted document, ribbon, canvas, backstage, narrow viewport, dark theme home
+- Layout guard for primary app controls being visible and unclipped
+- Catalog audit linking automated `TC-*` entries to real test files
 - Document envelope create/serialize/parse
 - OpenXML export + `.dansword` round-trip (existing package tests)
 - Feature parity catalog thresholds (existing package tests)
@@ -146,6 +154,7 @@ Desktop editor behavior tests live in `apps/desktop/src/editor/editorBehavior.te
 GitHub Actions runs two jobs:
 
 - **regression** (Ubuntu): typecheck, build, unit tests, e2e tests
+- **catalog audit** (Ubuntu regression/release): validates `tests/catalog/test-catalog.json` against test source before expensive checks
 - **visual** (Windows): screenshot regression tests against committed baselines
 
 Visual snapshots are generated on Windows. Run `npm run test:visual:update` on Windows before committing baseline changes.

@@ -25,17 +25,17 @@ test.describe('File and document lifecycle', () => {
     await seedAllSampleFiles(page);
   });
 
-  test('opens .docx through Ctrl+O', async ({ page }) => {
+  test('TC-FILE-003: opens .docx through Ctrl+O', async ({ page }) => {
     await openSeededFile(page, PATHS.docx);
     await expect(page.getByTestId('word-editor')).toContainText('Imported sample paragraph');
   });
 
-  test('opens .txt file', async ({ page }) => {
+  test('TC-FILE-005: opens .txt file', async ({ page }) => {
     await openSeededFile(page, PATHS.txt);
     await expect(page.getByTestId('word-editor')).toContainText('Plain text line one');
   });
 
-  test('opens .rtf file', async ({ page }) => {
+  test('TC-FILE-006: opens .rtf file', async ({ page }) => {
     await openSeededFile(page, PATHS.rtf);
     await expect(page.getByTestId('word-editor')).toContainText('Imported sample paragraph');
   });
@@ -45,7 +45,7 @@ test.describe('File and document lifecycle', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Imported sample paragraph');
   });
 
-  test('opens legacy .doc with text fallback', async ({ page }) => {
+  test('TC-FILE-008: opens legacy .doc with text fallback', async ({ page }) => {
     await page.evaluate(() => {
       window.__DANSWORD_TEST__?.seedFile('C:\\DansWordTest\\legacy.doc', 'placeholder');
       window.__DANSWORD_TEST__?.setImportDocResult({
@@ -116,7 +116,7 @@ test.describe('File and document lifecycle', () => {
     expect(saved).toContain('\\rtf');
   });
 
-  test('saves as .html', async ({ page }) => {
+  test('TC-FILE-007: saves as .html', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'HTML export');
     await saveToPath(page, PATHS.savedHtml);
@@ -147,7 +147,7 @@ test.describe('File and document lifecycle', () => {
     expect(revisions.length).toBeGreaterThanOrEqual(1);
   });
 
-  test('exports DOCX from backstage', async ({ page }) => {
+  test('TC-FILE-004: exports DOCX from backstage', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Backstage export');
     await openBackstage(page, 'export');
@@ -163,7 +163,7 @@ test.describe('File and document lifecycle', () => {
       .not.toBeNull();
   });
 
-  test('shows dirty asterisk then clears after save', async ({ page }) => {
+  test('TC-FILE-012: shows dirty asterisk then clears after save', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Dirty doc');
     await expect(page.getByTestId('editor-filename')).toContainText('*');
@@ -171,7 +171,7 @@ test.describe('File and document lifecycle', () => {
     await expect(page.getByTestId('editor-filename')).not.toContainText('*');
   });
 
-  test('Ctrl+S saves document', async ({ page }) => {
+  test('TC-FILE-020: Ctrl+S saves document', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Keyboard save');
     await page.evaluate((p) => window.__DANSWORD_TEST__?.setSaveFileResult(p), PATHS.savedDocx);
@@ -197,7 +197,7 @@ test.describe('File and document lifecycle', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Plain text line one');
   });
 
-  test('auto-saves after interval when file has path', async ({ page }) => {
+  test('TC-FILE-011: auto-saves after interval when file has path', async ({ page }) => {
     await openBlankDocument(page);
     await saveToPath(page, PATHS.savedDocx);
     await setAutoSaveInterval(page, 400);
@@ -216,7 +216,7 @@ test.describe('File and document lifecycle', () => {
       .toBeGreaterThan(100);
   });
 
-  test('adds saved file to recent documents on home', async ({ page }) => {
+  test('TC-FILE-013: adds saved file to recent documents on home', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Recent me');
     await saveToPath(page, PATHS.recentDoc);
@@ -224,7 +224,7 @@ test.describe('File and document lifecycle', () => {
     await expect(page.getByTestId('home-recent-row')).toContainText('recent.docx');
   });
 
-  test('pins document to favorites tab', async ({ page }) => {
+  test('TC-FILE-014: pins document to favorites tab', async ({ page }) => {
     await openBlankDocument(page);
     await saveToPath(page, PATHS.pinnedDoc);
     await goHome(page);
@@ -238,7 +238,7 @@ test.describe('File and document lifecycle', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Folder doc one');
   });
 
-  test('restores version from backstage history', async ({ page }) => {
+  test('TC-FILE-015: restores version from backstage history', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Version one');
     await saveToPath(page, PATHS.savedDansword);
@@ -254,7 +254,7 @@ test.describe('File and document lifecycle', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Version one');
   });
 
-  test('edits metadata in backstage Info and persists in .dansword save', async ({ page }) => {
+  test('TC-FILE-019: edits metadata in backstage Info and persists in .dansword save', async ({ page }) => {
     await openBlankDocument(page);
     await openBackstage(page, 'info');
     await page.getByLabel('Title').fill('My Title');
@@ -306,18 +306,18 @@ test.describe('File and document lifecycle', () => {
     expect(files.filter((f) => f.includes('Cancel'))).toHaveLength(0);
   });
 
-  test('loads business letter template', async ({ page }) => {
+  test('TC-FILE-016: loads business letter template', async ({ page }) => {
     await page.getByTestId('home-template-letter').click();
     await expect(page.getByTestId('word-editor')).toContainText('Dear [Recipient]');
   });
 
-  test('loads report template with headings', async ({ page }) => {
+  test('TC-FILE-017: loads report template with headings', async ({ page }) => {
     await page.getByTestId('home-template-report').click();
     await expect(page.getByTestId('word-editor')).toContainText('Report Title');
     await expect(page.getByTestId('word-editor')).toContainText('Introduction');
   });
 
-  test('loads resume template', async ({ page }) => {
+  test('TC-FILE-018: loads resume template', async ({ page }) => {
     await page.getByTestId('home-template-resume').click();
     await expect(page.getByTestId('word-editor')).toContainText('Experience');
     await expect(page.getByTestId('word-editor')).toContainText('Education');

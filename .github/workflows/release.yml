@@ -39,6 +39,9 @@ jobs:
       - name: Verify Pages site files
         run: npm run verify:pages
 
+      - name: Test catalog audit
+        run: npm run test:catalog
+
       - name: Typecheck
         run: npm run typecheck
 

@@ -77,7 +77,7 @@ describe('editor formatting behavior', () => {
     expect(editor.isActive('orderedList')).toBe(true);
   });
 
-  it('supports undo and redo', () => {
+  it('TC-UNIT-003: supports undo and redo', () => {
     editor.commands.insertContent('Hello');
     expect(editor.getText()).toBe('Hello');
     expect(editor.can().undo()).toBe(true);

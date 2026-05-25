@@ -13,7 +13,7 @@ test.describe('DansWord editor e2e', () => {
     await resetTestState(page);
   });
 
-  test('opens home screen and creates a blank document', async ({ page }) => {
+  test('TC-FILE-001: opens home screen and creates a blank document', async ({ page }) => {
     await expect(page.getByTestId('home-screen')).toBeVisible();
     await openBlankDocument(page);
     await expect(page.getByTestId('word-editor')).toBeVisible();
@@ -21,7 +21,7 @@ test.describe('DansWord editor e2e', () => {
     await expect(page.getByTestId('editor-titlebar')).toBeVisible();
   });
 
-  test('types text and applies bold, italic, and underline formatting', async ({ page }) => {
+  test('TC-EDIT-001 TC-EDIT-002: types text and applies bold, italic, and underline formatting', async ({ page }) => {
     await openBlankDocument(page);
     await page.evaluate(() => {
       window.__DANSWORD_TEST__?.loadEditorContent({
@@ -48,7 +48,7 @@ test.describe('DansWord editor e2e', () => {
     await expect(page.getByTestId('word-editor').locator('u')).toContainText('Underlined text');
   });
 
-  test('changes font size and alignment using toolbar controls', async ({ page }) => {
+  test('TC-EDIT-003 TC-EDIT-004: changes font size and alignment using toolbar controls', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Sized and aligned text');
     await focusEditor(page);
@@ -62,7 +62,7 @@ test.describe('DansWord editor e2e', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Sized and aligned text');
   });
 
-  test('creates bullet and numbered lists', async ({ page }) => {
+  test('TC-EDIT-005: creates bullet and numbered lists', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Bullet one');
     await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('toggleBulletList'));
@@ -83,7 +83,7 @@ test.describe('DansWord editor e2e', () => {
     await expect(page.getByTestId('word-editor').locator('ol li')).toHaveCount(2);
   });
 
-  test('supports undo and redo keyboard shortcuts', async ({ page }) => {
+  test('TC-EDIT-006: supports undo and redo keyboard shortcuts', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Undo redo sample');
     await focusEditor(page);
@@ -93,7 +93,7 @@ test.describe('DansWord editor e2e', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Undo redo sample');
   });
 
-  test('saves, reloads, and restores document content and formatting', async ({ page }) => {
+  test('TC-FILE-002: saves, reloads, and restores document content and formatting', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Persist me');
     await focusEditor(page);

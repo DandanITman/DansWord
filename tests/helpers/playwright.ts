@@ -56,11 +56,15 @@ export async function insertMockImage(page: Page) {
     window.__DANSWORD_TEST__?.seedBinaryFile('C:\\DansWordTest\\photo.png', b64);
   }, TINY_PNG_BASE64);
   await page.evaluate(() =>
-    window.__DANSWORD_TEST__?.setOpenFileResult('C:\\DansWordTest\\photo.png'),
+    window.__DANSWORD_TEST__?.setOpenImageFileResult('C:\\DansWordTest\\photo.png'),
   );
   await switchRibbonTab(page, 'insert');
   await page.getByRole('button', { name: /^Picture$/ }).click();
   await page.getByTestId('word-editor').locator('img').waitFor({ state: 'visible' });
+}
+
+export async function pickColorSwatch(page: Page, hex: string) {
+  await page.getByTestId(`color-swatch-${hex}`).click();
 }
 
 export async function selectAllInEditor(page: Page) {

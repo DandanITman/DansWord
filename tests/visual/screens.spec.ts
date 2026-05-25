@@ -11,13 +11,13 @@ test.describe('DansWord visual regression', () => {
     await resetTestState(page);
   });
 
-  test('home screen', async ({ page }) => {
+  test('TC-VIS-001: home screen', async ({ page }) => {
     await expect(page.getByTestId('home-screen')).toHaveScreenshot('home-screen.png', {
       mask: visualMaskLocators(page),
     });
   });
 
-  test('empty editor screen', async ({ page }) => {
+  test('TC-VIS-003: empty editor screen', async ({ page }) => {
     await openBlankDocument(page);
     await expect(page.getByTestId('app-shell')).toHaveScreenshot('empty-editor.png', {
       mask: visualMaskLocators(page),
@@ -34,7 +34,7 @@ test.describe('DansWord visual regression', () => {
     );
   });
 
-  test('ribbon edit tab', async ({ page }) => {
+  test('TC-VIS-004: ribbon edit tab', async ({ page }) => {
     await openBlankDocument(page);
     await page.locator('.ribbon-tab[data-tab="edit"]').click();
     await expect(page.getByTestId('ribbon')).toHaveScreenshot('ribbon-edit.png', {
@@ -58,7 +58,7 @@ test.describe('DansWord visual regression', () => {
     });
   });
 
-  test('home screen dark theme', async ({ page }) => {
+  test('TC-VIS-002: home screen dark theme', async ({ page }) => {
     await resetTestState(page);
     await page.locator('.home-sidebar-nav.secondary button').filter({ hasText: 'Dark mode' }).click();
     await expect(page.getByTestId('home-screen')).toHaveScreenshot('home-screen-dark.png', {

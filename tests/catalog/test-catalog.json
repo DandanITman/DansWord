@@ -81,6 +81,8 @@
     { "id": "TC-ADV-001", "title": "Mail merge batch DOCX export", "area": "advanced", "priority": "medium", "type": "e2e", "status": "automated" },
     { "id": "TC-SET-001", "title": "Accent color and proofing language", "area": "settings", "priority": "low", "type": "e2e", "status": "automated" },
 
+    { "id": "TC-UI-001", "title": "Primary app controls are visible and unclipped", "area": "ui", "priority": "high", "type": "e2e", "status": "automated" },
+
     { "id": "TC-VIS-001", "title": "Home screen light", "area": "visual", "priority": "high", "type": "visual", "status": "automated" },
     { "id": "TC-VIS-002", "title": "Home screen dark theme", "area": "visual", "priority": "high", "type": "visual", "status": "automated" },
     { "id": "TC-VIS-003", "title": "Empty editor", "area": "visual", "priority": "high", "type": "visual", "status": "automated" },

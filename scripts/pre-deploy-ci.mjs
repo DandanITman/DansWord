@@ -14,6 +14,7 @@ function run(label, command, args) {
 }
 
 run('Pages site files', 'npm', ['run', 'verify:pages']);
+run('Test catalog audit', 'npm', ['run', 'test:catalog']);
 run('Typecheck', 'npm', ['run', 'typecheck']);
 run('Build', 'npm', ['run', 'build']);
 run('Unit tests', 'npm', ['run', 'test:unit']);

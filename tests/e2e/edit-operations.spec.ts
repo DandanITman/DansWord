@@ -10,6 +10,7 @@ import {
   acceptAppDialogs,
   stubPrompt,
   loadHeadingFixture,
+  pickColorSwatch,
 } from '../helpers/playwright';
 
 test.describe('Edit ribbon and text operations', () => {
@@ -18,7 +19,7 @@ test.describe('Edit ribbon and text operations', () => {
     await resetTestState(page);
   });
 
-  test('applies strikethrough formatting', async ({ page }) => {
+  test('TC-EDIT-007: applies strikethrough formatting', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Strike text');
     await selectAllInEditor(page);
@@ -26,7 +27,7 @@ test.describe('Edit ribbon and text operations', () => {
     await expect(page.getByTestId('word-editor').locator('s')).toContainText('Strike text');
   });
 
-  test('applies superscript and subscript', async ({ page }) => {
+  test('TC-EDIT-008: applies superscript and subscript', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'E=mc2');
     await focusEditor(page);
@@ -36,7 +37,7 @@ test.describe('Edit ribbon and text operations', () => {
     expect(json).toContain('superscript');
   });
 
-  test('changes font family', async ({ page }) => {
+  test('TC-EDIT-009: changes font family', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Georgia text');
     await selectAllInEditor(page);
@@ -46,7 +47,7 @@ test.describe('Edit ribbon and text operations', () => {
     expect(json).toContain('Georgia');
   });
 
-  test('applies justify alignment', async ({ page }) => {
+  test('TC-EDIT-010: applies justify alignment', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Justified paragraph');
     await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('setTextAlignJustify'));
@@ -54,7 +55,7 @@ test.describe('Edit ribbon and text operations', () => {
     expect(json).toContain('"textAlign":"justify"');
   });
 
-  test('clears formatting from selection', async ({ page }) => {
+  test('TC-EDIT-013: clears formatting from selection', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Bold text');
     await selectAllInEditor(page);
@@ -63,7 +64,7 @@ test.describe('Edit ribbon and text operations', () => {
     await expect(page.getByTestId('word-editor').locator('strong')).toHaveCount(0);
   });
 
-  test('applies heading style from ribbon', async ({ page }) => {
+  test('TC-EDIT-014: applies heading style from ribbon', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Heading text');
     await selectAllInEditor(page);
@@ -71,7 +72,7 @@ test.describe('Edit ribbon and text operations', () => {
     await expect(page.getByTestId('word-editor').locator('h1')).toContainText('Heading text');
   });
 
-  test('format painter copies and applies bold', async ({ page }) => {
+  test('TC-EDIT-015: format painter copies and applies bold', async ({ page }) => {
     await openBlankDocument(page);
     await page.evaluate(() =>
       window.__DANSWORD_TEST__?.loadEditorContent({
@@ -102,7 +103,7 @@ test.describe('Edit ribbon and text operations', () => {
     expect(text).toBe('Select all me');
   });
 
-  test('find next highlights matching text', async ({ page }) => {
+  test('TC-EDIT-011: find next highlights matching text', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Find needle in haystack');
     await openFindReplace(page);
@@ -115,7 +116,7 @@ test.describe('Edit ribbon and text operations', () => {
       .toMatch(/needle/i);
   });
 
-  test('replace all updates document text', async ({ page }) => {
+  test('TC-EDIT-012: replace all updates document text', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'tehsis tehsis word');
     await openFindReplace(page);
@@ -141,7 +142,7 @@ test.describe('Edit ribbon and text operations', () => {
     expect(json).toContain('lineHeight');
   });
 
-  test('increases paragraph indent', async ({ page }) => {
+  test('TC-EDIT-016: increases paragraph indent', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Indented');
     await selectAllInEditor(page);
@@ -151,18 +152,18 @@ test.describe('Edit ribbon and text operations', () => {
     expect(json).toMatch(/indent|margin/i);
   });
 
-  test('sets font color via prompt', async ({ page }) => {
+  test('sets font color via swatch picker', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Colored');
     await selectAllInEditor(page);
-    await stubPrompt(page, '#ff0000');
     await switchRibbonTab(page, 'edit');
     await page.getByTitle('Font Color').click();
+    await pickColorSwatch(page, '#ff0000');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('#ff0000');
   });
 
-  test('inserts hyperlink via prompt', async ({ page }) => {
+  test('TC-INS-002: inserts hyperlink via prompt', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Link text');
     await selectAllInEditor(page);
@@ -185,7 +186,7 @@ test.describe('Navigation and headings', () => {
     await resetTestState(page);
   });
 
-  test('navigation pane lists headings and jumps on click', async ({ page }) => {
+  test('TC-VIEW-002: navigation pane lists headings and jumps on click', async ({ page }) => {
     await loadHeadingFixture(page);
     await switchRibbonTab(page, 'view');
     await page.getByTestId('ribbon').getByRole('button', { name: /Navigation/i }).click();

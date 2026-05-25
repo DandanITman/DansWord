@@ -59,6 +59,7 @@ console.error('  3. Only deploy after all checks pass.\n');
 console.error('Agent rule: Do NOT push, tag, release, or publish until QA passes.');
 console.error('Exception: deploy only if the user explicitly says OVERRIDE (e.g. "deploy OVERRIDE").\n');
 console.error('Helpful commands:\n');
+console.error('  npm run test:catalog      # catalog-to-test source audit');
 console.error('  npm run regression          # full local suite');
 console.error('  npm run test:unit           # unit tests only');
 console.error('  npm run test:e2e            # Playwright e2e');

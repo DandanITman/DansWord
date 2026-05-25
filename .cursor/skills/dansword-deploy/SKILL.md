@@ -1,26 +1,31 @@
 ---
 name: dansword-deploy
 description: >-
-  Deploy DansWord to GitHub Pages or create a Windows release. ALWAYS run QA first.
-  Block deploy on test failures unless the user explicitly says OVERRIDE. Generate
-  detailed GitHub release notes for accountability.
+  Deploy DansWord to GitHub Pages or create a Windows release. Respect Daniel's
+  current-turn testing preference. Generate detailed GitHub release notes for
+  accountability.
 ---
 
-# Deploy DansWord (QA-gated)
+# Deploy DansWord
 
 Use when the user asks to **deploy**, **release**, **publish**, **push to GitHub Pages**, or **ship a build**.
 
 ## Non-negotiable rule
 
-**Never deploy without passing QA**, unless the user's message **explicitly** contains **`OVERRIDE`** (e.g. "deploy OVERRIDE", "release with OVERRIDE").
+Never deploy a Windows release without passing QA unless the user's message explicitly contains `OVERRIDE` (for example, "release with OVERRIDE"). For GitHub Pages docs deploys, verify Pages site files and rely on the separate Regression workflow for app QA.
+
+Do not run local tests, browser QA, visual checks, screenshots, builds, or other automated verification unless Daniel explicitly asks for it in the current turn.
 
 | User says | Agent must |
 |-----------|------------|
-| "deploy", "release", "publish site" | Run pre-deploy QA → deploy only if green |
-| "deploy OVERRIDE" / "release OVERRIDE" | Warn about skipped QA → run with override → deploy |
-| QA fails | **Stop.** List failures and fixes. **Do not deploy.** |
+| "publish site" / "deploy Pages" | Verify Pages files if Daniel asked for verification; otherwise explain the GitHub workflow check |
+| "release" | Ask Daniel to run or explicitly authorize QA before release |
+| "release OVERRIDE" | Warn about skipped QA and release only if Daniel insists |
+| QA fails | Stop. List failures and fixes. Do not release. |
 
-## Step 1 — Pre-deploy QA (required)
+## QA expectations
+
+Local QA commands are Daniel-run unless he explicitly asks the agent to run them:
 
 ```bash
 cd c:\src\DansWord
@@ -29,19 +34,16 @@ npx playwright install chromium
 npm run pre-deploy
 ```
 
-This runs:
+`npm run pre-deploy` runs:
 
-1. `npm run verify:pages` — site files exist
-2. `npm run regression` — typecheck, build, unit, e2e, visual
+1. `npm run verify:pages` - site files exist
+2. `npm run regression` - catalog audit, typecheck, build, unit, e2e, visual
 
 ### If QA fails
 
-1. **Do not** `git push`, tag, create a release, or trigger deploy workflows.
-2. Report to the user:
-   - Which step failed (typecheck / build / unit / e2e / visual / pages)
-   - The error summary from the terminal
-   - Concrete fix suggestions (e.g. failing spec file, missing snapshot, TypeScript error)
-3. Offer to fix the failures, then re-run `npm run pre-deploy`.
+1. Do not `git push`, tag, create a release, or trigger release workflows.
+2. Report which step failed and the concrete fix target.
+3. Offer to fix the failures, then tell Daniel which focused command to run.
 
 ### If user explicitly said OVERRIDE
 
@@ -52,45 +54,28 @@ $env:DEPLOY_OVERRIDE="true"; npm run pre-deploy
 
 Warn the user that tests were skipped and list what was not verified.
 
-## Step 2 — Choose deploy target
+## GitHub Pages
 
-### A. GitHub Pages (docs site)
+URL: https://dandanitman.github.io/DansWord/
 
-**URL:** https://dandanitman.github.io/DansWord/
+One-time setup: Repo -> Settings -> Pages -> Source -> GitHub Actions.
 
-**One-time setup:** Repo → Settings → Pages → Source → **GitHub Actions**
+Workflow: `.github/workflows/pages.yml`.
 
-After QA passes:
+The Pages workflow checks docs-site files and deploys `docs/`. App QA is handled by `.github/workflows/regression.yml`.
 
-```bash
-git push origin main
-```
-
-Or trigger manually: Actions → **Deploy GitHub Pages** → Run workflow.
-
-Workflow: `.github/workflows/pages.yml` (includes QA gate on manual dispatch).
-
-Verify after deploy:
-
-```bash
-npm run verify:pages
-# Live: https://dandanitman.github.io/DansWord/
-```
-
-### B. Windows release (GitHub Releases)
+## Windows release
 
 After QA passes:
 
-1. **Bump version** in root `package.json` and `apps/desktop/package.json` if needed.
-2. **Generate release notes** (required for accountability):
+1. Bump version in root `package.json` and `apps/desktop/package.json` if needed.
+2. Generate release notes:
 
 ```bash
 node scripts/generate-release-notes.mjs v0.2.0 --output release-notes.md
 ```
 
-Review `release-notes.md` — it lists every commit since the previous tag with hash, date, and author, grouped by category.
-
-3. **Commit, tag, push:**
+3. Commit, tag, and push:
 
 ```bash
 git add -A
@@ -100,43 +85,22 @@ git push origin main
 git push origin v0.2.0
 ```
 
-4. Workflow `.github/workflows/release.yml` runs:
-   - **QA gate** (regression on Ubuntu + visual on Windows) — must pass
-   - **Build** Windows `.exe`
-   - **Publish** release with detailed notes from git history
-
-Or manual dispatch: Actions → **Release Windows build** → Run workflow (QA still required).
-
-## Step 3 — Post-deploy verification
-
-| Target | Check |
-|--------|--------|
-| Pages | https://dandanitman.github.io/DansWord/ loads, Actions job green |
-| Release | https://github.com/DandanITman/DansWord/releases shows new tag, `.exe` attached, release body has commit log |
-
-## Release notes & accountability
-
-Every release must have **detailed GitHub release notes** so changes are traceable:
-
-- Generated by `scripts/generate-release-notes.mjs`
-- Includes: version, compare link, commits grouped (Features / Fixes / Tests / Docs / Infra / Other)
-- Each line: subject, short hash, date, author
-- CI attaches the same body via `.github/workflows/release.yml`
-
-Do not create empty or one-line release bodies unless OVERRIDE and user insists.
+4. Workflow `.github/workflows/release.yml` runs QA gates, builds the Windows installer, and publishes the release.
 
 ## Commands reference
 
+Suggest these for Daniel as needed:
+
 | Command | Purpose |
 |---------|---------|
-| `npm run pre-deploy` | **Required** before any deploy |
-| `npm run regression` | Full QA suite |
+| `npm run pre-deploy` | Full release gate |
+| `npm run regression` | Full local suite |
 | `npm run verify:pages` | Pages file check only |
 | `node scripts/generate-release-notes.mjs vX.Y.Z --output release-notes.md` | Release changelog |
 
 ## Do not
 
-- Deploy on failing tests without explicit user **OVERRIDE**
+- Deploy a Windows release on failing tests without explicit user `OVERRIDE`
 - Skip release notes on version tags
 - Commit PATs or secrets
 - Force-push to `main`

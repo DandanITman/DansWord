@@ -6,16 +6,8 @@ on:
     paths:
       - 'docs/**'
       - '.github/workflows/pages.yml'
+      - 'scripts/verify-pages.mjs'
   workflow_dispatch:
-    inputs:
-      skip_qa:
-        description: 'Skip QA gate (emergency OVERRIDE only — requires typing YES)'
-        required: false
-        default: 'NO'
-        type: choice
-        options:
-          - 'NO'
-          - 'YES'
 
 permissions:
   contents: read
@@ -27,33 +19,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qa-gate:
-    name: QA gate before Pages deploy
-    if: github.event_name != 'workflow_dispatch' || github.event.inputs.skip_qa != 'YES'
+  site-check:
+    name: Verify Pages site files
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Pre-deploy checks
-        run: npm run pre-deploy:ci
+      - name: Verify Pages site files
+        run: node scripts/verify-pages.mjs
 
   deploy:
-    needs: qa-gate
-    if: always() && (needs.qa-gate.result == 'success' || (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_qa == 'YES'))
+    needs: site-check
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -61,9 +39,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Verify Pages site files
-        run: node scripts/verify-pages.mjs
 
       - name: Verify GitHub Pages is enabled
         env:

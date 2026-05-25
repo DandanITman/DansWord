@@ -11,6 +11,7 @@ export interface ListedDocument {
 
 export interface DansWordAPI {
   openFile: () => Promise<string | null>;
+  openImageFile: () => Promise<string | null>;
   saveFile: (defaultPath?: string) => Promise<string | null>;
   openFolder: () => Promise<string | null>;
   readFile: (filePath: string) => Promise<Uint8Array>;
@@ -43,14 +44,48 @@ export interface DansWordAPI {
 export interface DansWordTestHarness {
   reset: () => void;
   setOpenFileResult: (path: string | null) => void;
+  setOpenImageFileResult: (path: string | null) => void;
   setSaveFileResult: (path: string | null) => void;
+  setImportDocResult: (
+    result:
+      | { format: 'docx'; data: ArrayBuffer; source: 'libreoffice' }
+      | { format: 'text'; data: string; source: 'extractor'; warning: string },
+  ) => void;
+  setSpellCheckResults: (results: boolean[]) => void;
+  setSpellSuggestions: (words: string[]) => void;
   readStoredFile: (path: string) => string | null;
+  readStoredBinaryBase64: (path: string) => string | null;
   listStoredFiles: () => string[];
   seedFile: (path: string, content: string) => void;
+  seedBinaryFile: (path: string, base64: string) => void;
+  setSettings: (settings: Partial<AppSettings>) => void;
+  setRecents: (recents: RecentFile[]) => void;
+  getRecents: () => RecentFile[];
   setEditor: (editor: import('@tiptap/react').Editor | null) => void;
   loadEditorContent: (content: unknown) => void;
   getEditorJson: () => unknown;
-  runEditorCommand: (command: 'toggleBulletList' | 'toggleOrderedList' | 'setTextAlignCenter') => void;
+  getEditorText: () => string;
+  getEditorSelectionText: () => string;
+  runEditorCommand: (
+    command:
+      | 'toggleBulletList'
+      | 'toggleOrderedList'
+      | 'setTextAlignCenter'
+      | 'setTextAlignJustify'
+      | 'toggleStrike'
+      | 'toggleSuperscript'
+      | 'toggleSubscript'
+      | 'toggleBold'
+      | 'setFontFamily'
+      | 'insertTable'
+      | 'insertPageBreak'
+      | 'selectAll'
+      | 'clearFormatting'
+      | 'toggleHeading1',
+    arg?: string,
+  ) => void;
+  getExportPdfCallCount: () => number;
+  getPrintCallCount: () => number;
 }
 
 declare global {

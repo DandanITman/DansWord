@@ -27,6 +27,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Test catalog audit
+        run: npm run test:catalog
+
       - name: Typecheck
         run: npm run typecheck
 

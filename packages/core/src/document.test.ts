@@ -22,7 +22,7 @@ describe('document envelope', () => {
     expect(envelope.trackChangesEnabled).toBe(false);
   });
 
-  it('serializes and parses a dansword file with formatting content', () => {
+  it('TC-UNIT-001: serializes and parses a dansword file with formatting content', () => {
     const content = buildRegressionDocumentContent();
     const envelope = createDocumentEnvelope(content, {
       metadata: {

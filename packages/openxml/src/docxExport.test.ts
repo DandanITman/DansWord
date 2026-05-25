@@ -29,7 +29,7 @@ const sampleWithRichContent = {
 };
 
 describe('docxExport', () => {
-  it('exports rich document with footnotes, images, shapes, and page breaks', async () => {
+  it('TC-UNIT-002: exports rich document with footnotes, images, shapes, and page breaks', async () => {
     const blob = await exportToDocx(sampleWithRichContent, {
       title: 'Rich',
       pageSetup: { ...DEFAULT_PAGE_SETUP, columns: { count: 2, gap: 48 } },

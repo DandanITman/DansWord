@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -78,6 +78,41 @@ function trackChangesPlugin(enabled: boolean) {
 }
 
 
+function FootnoteTextField({
+  id,
+  text,
+  index,
+  onChange,
+}: {
+  id: string;
+  text: string;
+  index: number;
+  onChange?: (id: string, text: string) => void;
+}) {
+  const fieldRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const field = fieldRef.current;
+    if (!field || document.activeElement === field) return;
+    if (field.textContent !== text) {
+      field.textContent = text;
+    }
+  }, [text]);
+
+  return (
+    <span
+      ref={fieldRef}
+      className="doc-footnote-text"
+      contentEditable
+      suppressContentEditableWarning
+      role="textbox"
+      aria-label={`Footnote ${index + 1}`}
+      data-placeholder="Type footnote text"
+      onInput={(event) => onChange?.(id, event.currentTarget.textContent ?? '')}
+    />
+  );
+}
+
 export interface WordEditorProps {
   content: unknown;
   pageSetup: PageSetup;
@@ -90,6 +125,7 @@ export interface WordEditorProps {
   onUpdate?: (json: unknown) => void;
   onReady?: (editor: Editor) => void;
   onPageCountChange?: (count: number) => void;
+  onFootnoteChange?: (id: string, text: string) => void;
 }
 
 export function WordEditor({
@@ -104,6 +140,7 @@ export function WordEditor({
   onUpdate,
   onReady,
   onPageCountChange,
+  onFootnoteChange,
 }: WordEditorProps) {
   const dims = PAGE_DIMENSIONS[pageSetup.size];
   const pageWidth = pageSetup.orientation === 'portrait' ? dims.width : dims.height;
@@ -323,11 +360,17 @@ export function WordEditor({
           </div>
         </div>
         {footnotes.length > 0 && (
-          <div className="doc-footnotes">
+          <div className="doc-footnotes" data-testid="doc-footnotes">
             <hr />
             {footnotes.map((fn, i) => (
-              <p key={fn.id} id={fn.id}>
-                <sup>{i + 1}</sup> {fn.text}
+              <p key={fn.id} id={fn.id} className="doc-footnote-item">
+                <sup>{i + 1}</sup>{' '}
+                <FootnoteTextField
+                  id={fn.id}
+                  text={fn.text}
+                  index={i}
+                  onChange={onFootnoteChange}
+                />
               </p>
             ))}
           </div>

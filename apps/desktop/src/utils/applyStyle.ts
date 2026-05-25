@@ -5,18 +5,17 @@ export function applyDocumentStyle(editor: Editor, style: DocumentStyle) {
   let chain = editor.chain().focus();
 
   if (style.headingLevel) {
-    chain = chain.setParagraph().toggleHeading({ level: style.headingLevel });
+    chain = chain.setHeading({ level: style.headingLevel });
   } else {
-    chain = chain.setParagraph();
+    chain = chain.setParagraph().unsetAllMarks();
   }
 
-  const textStyleAttrs = {
-    ...editor.getAttributes('textStyle'),
-    ...(style.fontFamily ? { fontFamily: style.fontFamily } : {}),
-    ...(style.fontSize ? { fontSize: style.fontSize } : {}),
-    ...(style.color ? { color: style.color } : {}),
-  };
-  if (Object.keys(textStyleAttrs).length) chain = chain.setMark('textStyle', textStyleAttrs);
+  const textStyleAttrs: Record<string, string> = {};
+  if (style.fontFamily) textStyleAttrs.fontFamily = style.fontFamily;
+  if (style.fontSize) textStyleAttrs.fontSize = style.fontSize;
+  if (style.color) textStyleAttrs.color = style.color;
+
+  chain = chain.setMark('textStyle', textStyleAttrs);
   if (style.bold) chain = chain.setMark('bold');
   else chain = chain.unsetMark('bold');
   if (style.italic) chain = chain.setMark('italic');

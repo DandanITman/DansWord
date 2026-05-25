@@ -98,6 +98,18 @@ ipcMain.handle('dialog:openFile', async () => {
   return result.filePaths[0];
 });
 
+ipcMain.handle('dialog:openImageFile', async () => {
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'] },
+      { name: 'All Files', extensions: ['*'] },
+    ],
+  });
+  if (result.canceled || !result.filePaths[0]) return null;
+  return result.filePaths[0];
+});
+
 ipcMain.handle('dialog:saveFile', async (_e, defaultPath?: string) => {
   const result = await dialog.showSaveDialog(mainWindow!, {
     defaultPath: defaultPath ?? 'Untitled.docx',

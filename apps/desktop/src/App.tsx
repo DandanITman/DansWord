@@ -3,6 +3,7 @@ import type { Editor } from '@tiptap/react';
 import {
   DEFAULT_SETTINGS,
   TEMPLATES,
+  MARGIN_PRESETS,
   createDocumentEnvelope,
   type AppSettings,
   type AppView,
@@ -339,10 +340,10 @@ export default function App() {
   }, [openDocumentEnvelope]);
 
   const handleInsertImage = async () => {
-    const path = await window.dansword.openFile();
+    const path = await window.dansword.openImageFile();
     if (!path || !editor) return;
     const ext = extOf(path);
-    if (!['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'].includes(ext)) {
+    if (!['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) {
       await uiAlert('Please choose an image file.');
       return;
     }
@@ -350,6 +351,35 @@ export default function App() {
     const dataUrl = bytesToDataUrl(bytes, mimeForImageExt(ext));
     const altText = getFileName(path);
     editor.chain().focus().setImage({ src: dataUrl, alt: altText }).run();
+  };
+
+  const handleInsertShape = (type: import('./extensions/DocShape').ShapeType) => {
+    if (!editor) return;
+    editor.chain().focus().insertShape({ shapeType: type }).run();
+  };
+
+  const handleInsertFootnote = () => {
+    if (!editor) return;
+    setEnvelope((prev) => {
+      const fn = insertFootnote(editor, prev.footnotes, ' ');
+      return {
+        ...prev,
+        footnotes: [...prev.footnotes, { id: fn.id, text: '' }],
+      };
+    });
+    setIsDirty(true);
+    window.setTimeout(() => {
+      const note = document.querySelector<HTMLElement>('.doc-footnote-text:last-of-type');
+      note?.focus();
+    }, 0);
+  };
+
+  const handleFootnoteChange = (id: string, text: string) => {
+    setEnvelope((prev) => ({
+      ...prev,
+      footnotes: prev.footnotes.map((note) => (note.id === id ? { ...note, text } : note)),
+    }));
+    setIsDirty(true);
   };
 
   const exportPdf = async () => {
@@ -363,14 +393,6 @@ export default function App() {
     await new Promise((resolve) => setTimeout(resolve, 200));
     await window.dansword.exportPdf(targetPath, pdfPageSize(envelope.pageSetup));
     setZoom(originalZoom);
-  };
-
-  const handleInsertFootnote = async () => {
-    if (!editor) return;
-    const text = await uiPrompt('Footnote text');
-    if (!text?.trim()) return;
-    const fn = insertFootnote(editor, envelope.footnotes, text.trim());
-    updateEnvelope({ footnotes: [...envelope.footnotes, { id: fn.id, text: text.trim() }] });
   };
 
   const startCollabHost = async (roomId: string) => {
@@ -433,6 +455,12 @@ export default function App() {
           onExportPdf={exportPdf}
           onInsertImage={handleInsertImage}
           onOpenPageSetup={() => setPageSetupOpen(true)}
+          onApplyMarginPreset={(preset) => {
+            const margins = MARGIN_PRESETS[preset];
+            if (margins) {
+              updateEnvelope({ pageSetup: { ...envelope.pageSetup, margins: { ...margins } } });
+            }
+          }}
           onOpenHeaderFooter={() => setHeaderFooterOpen(true)}
           onToggleNavigation={() => setNavOpen((v) => !v)}
           onToggleComments={() => setCommentsOpen((v) => !v)}
@@ -459,7 +487,7 @@ export default function App() {
             setBackstageOpen(true);
             setBackstageSection('save');
           }}
-          onInsertShape={(type) => editor?.chain().focus().insertShape({ shapeType: type }).run()}
+          onInsertShape={handleInsertShape}
           onInsertFootnote={handleInsertFootnote}
           onInsertMergeField={() => {
             void (async () => {
@@ -529,6 +557,7 @@ export default function App() {
                     onUpdate={(json) => updateEnvelope({ content: json })}
                     onReady={setEditor}
                     onPageCountChange={setPageCount}
+                    onFootnoteChange={handleFootnoteChange}
                   />
                 </DocumentRulers>
               </div>

@@ -15,6 +15,7 @@ import {
   grantClipboard,
   insertMockImage,
   PATHS,
+  pickColorSwatch,
 } from '../helpers/playwright';
 
 test.describe('Clipboard and editing depth', () => {
@@ -25,7 +26,7 @@ test.describe('Clipboard and editing depth', () => {
     await openBlankDocument(page);
   });
 
-  test('copies and pastes text with keyboard clipboard shortcuts', async ({ page }) => {
+  test('TC-EDIT-017: copies and pastes text with keyboard clipboard shortcuts', async ({ page }) => {
     await typeInEditor(page, 'Clipboard sample');
     await selectAllInEditor(page);
     await page.keyboard.press('Control+C');
@@ -35,7 +36,7 @@ test.describe('Clipboard and editing depth', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Clipboard sampleClipboard sample');
   });
 
-  test('cuts and pastes text with keyboard clipboard shortcuts', async ({ page }) => {
+  test('TC-EDIT-018: cuts and pastes text with keyboard clipboard shortcuts', async ({ page }) => {
     await typeInEditor(page, 'Cut target');
     await selectAllInEditor(page);
     await page.keyboard.press('Control+X');
@@ -44,27 +45,27 @@ test.describe('Clipboard and editing depth', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Cut target');
   });
 
-  test('applies paragraph border color via prompt', async ({ page }) => {
+  test('TC-EDIT-019: applies paragraph border color via swatch picker', async ({ page }) => {
     await typeInEditor(page, 'Bordered paragraph');
     await selectAllInEditor(page);
-    await stubPrompt(page, '#334155');
     await switchRibbonTab(page, 'edit');
     await page.getByRole('button', { name: 'Border', exact: true }).click();
+    await pickColorSwatch(page, '#334155');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('borderColor');
   });
 
-  test('applies paragraph shading via prompt', async ({ page }) => {
+  test('TC-EDIT-020: applies paragraph shading via swatch picker', async ({ page }) => {
     await typeInEditor(page, 'Shaded paragraph');
     await selectAllInEditor(page);
-    await stubPrompt(page, '#fef08a');
     await switchRibbonTab(page, 'edit');
     await page.getByRole('button', { name: 'Shade', exact: true }).click();
+    await pickColorSwatch(page, '#fef08a');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('shading');
   });
 
-  test('adds a custom style from the style editor dialog', async ({ page }) => {
+  test('TC-EDIT-021: adds a custom style from the style editor dialog', async ({ page }) => {
     await stubPrompt(page, 'Report Body');
     await switchRibbonTab(page, 'edit');
     await page.getByRole('button', { name: /More Styles/i }).click();
@@ -73,7 +74,7 @@ test.describe('Clipboard and editing depth', () => {
     await expect(page.getByText('Report Body')).toBeVisible();
   });
 
-  test('find previous moves to earlier match', async ({ page }) => {
+  test('TC-EDIT-022: find previous moves to earlier match', async ({ page }) => {
     await typeInEditor(page, 'alpha beta alpha');
     await page.keyboard.press('Control+f');
     await page.getByTestId('find-input').fill('alpha');
@@ -95,7 +96,7 @@ test.describe('Insert depth', () => {
     await openBlankDocument(page);
   });
 
-  test('edits text inside a table cell', async ({ page }) => {
+  test('TC-INS-008: edits text inside a table cell', async ({ page }) => {
     await switchRibbonTab(page, 'insert');
     await page.getByRole('button', { name: /^Table$/ }).click();
     await page.getByTestId('word-editor').locator('td').first().click();
@@ -103,7 +104,7 @@ test.describe('Insert depth', () => {
     await expect(page.getByTestId('word-editor').locator('td').first()).toContainText('Cell A1');
   });
 
-  test('aligns and wraps an inserted image from the ribbon', async ({ page }) => {
+  test('TC-INS-009: aligns and wraps an inserted image from the ribbon', async ({ page }) => {
     await insertMockImage(page);
     await page.locator('.image-block').click({ force: true });
     await page.getByTitle('Align Picture Center').click();
@@ -116,7 +117,7 @@ test.describe('Insert depth', () => {
     expect(json).toContain('"align":"center"');
   });
 
-  test('inserts oval, line, and arrow shapes', async ({ page }) => {
+  test('TC-INS-010: inserts oval, line, and arrow shapes', async ({ page }) => {
     await switchRibbonTab(page, 'insert');
     for (const shape of ['Oval', 'Line', 'Arrow'] as const) {
       await page.getByRole('button', { name: shape, exact: true }).click();
@@ -131,7 +132,7 @@ test.describe('Insert depth', () => {
     expect(json).toContain('"shapeType":"arrow"');
   });
 
-  test('inserts a merge field marker', async ({ page }) => {
+  test('TC-INS-011: inserts a merge field marker', async ({ page }) => {
     await stubPrompt(page, 'FirstName');
     await switchRibbonTab(page, 'insert');
     await page.getByRole('button', { name: /Merge Field/i }).click();
@@ -148,7 +149,7 @@ test.describe('Review and track changes depth', () => {
     await openBlankDocument(page);
   });
 
-  test('accepts all tracked changes', async ({ page }) => {
+  test('TC-REV-004: accepts all tracked changes', async ({ page }) => {
     await switchRibbonTab(page, 'review');
     await page.getByRole('button', { name: /Track Changes/i }).click();
     await typeInEditor(page, 'Accepted change');
@@ -161,7 +162,7 @@ test.describe('Review and track changes depth', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Accepted change');
   });
 
-  test('rejects all tracked changes', async ({ page }) => {
+  test('TC-REV-005: rejects all tracked changes', async ({ page }) => {
     await switchRibbonTab(page, 'review');
     await page.getByRole('button', { name: /Track Changes/i }).click();
     await typeInEditor(page, 'Rejected change');
@@ -170,7 +171,7 @@ test.describe('Review and track changes depth', () => {
     await expect(page.getByTestId('word-editor')).not.toContainText('Rejected change');
   });
 
-  test('applies spell suggestion from context menu', async ({ page }) => {
+  test('TC-REV-006: applies spell suggestion from context menu', async ({ page }) => {
     await page.evaluate(() => {
       window.__DANSWORD_TEST__?.setSpellCheckResults([false]);
       window.__DANSWORD_TEST__?.setSpellSuggestions(['correctword']);
@@ -183,7 +184,7 @@ test.describe('Review and track changes depth', () => {
     await expect(page.getByTestId('word-editor')).not.toContainText('misspeled');
   });
 
-  test('persists comments after save and reopen', async ({ page }) => {
+  test('TC-REV-007: persists comments after save and reopen', async ({ page }) => {
     await typeInEditor(page, 'Comment persistence target');
     await selectAllInEditor(page);
     await switchRibbonTab(page, 'review');
@@ -218,7 +219,7 @@ test.describe('Layout, settings, and workflows', () => {
     await resetTestState(page);
   });
 
-  test('shows page numbers when enabled in header and footer dialog', async ({ page }) => {
+  test('TC-LAY-005: shows page numbers when enabled in header and footer dialog', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'pageLayout');
     await page.getByRole('button', { name: /Header\/Footer/i }).click();
@@ -229,7 +230,7 @@ test.describe('Layout, settings, and workflows', () => {
     await expect(page.getByText('Footer note')).toBeVisible();
   });
 
-  test('stores accent color and proofing language in settings', async ({ page }) => {
+  test('TC-SET-001: stores accent color and proofing language in settings', async ({ page }) => {
     await openBlankDocument(page);
     await openBackstage(page, 'options');
     await page.getByLabel('Accent color').fill('#ff5500');
@@ -240,7 +241,7 @@ test.describe('Layout, settings, and workflows', () => {
     expect(settings.language).toBe('de-DE');
   });
 
-  test('generates merged DOCX files from mail merge wizard', async ({ page }) => {
+  test('TC-ADV-001: generates merged DOCX files from mail merge wizard', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'file');
     await page.getByRole('button', { name: /Mail Merge/i }).click();
@@ -252,7 +253,7 @@ test.describe('Layout, settings, and workflows', () => {
     expect(files.some((file) => file.includes('Merge_John.docx'))).toBe(true);
   });
 
-  test('writes letter template edits to DOCX and reopens through UI', async ({ page }) => {
+  test('TC-FILE-022: writes letter template edits to DOCX and reopens through UI', async ({ page }) => {
     await openTemplate(page, 'letter');
     await typeInEditor(page, ' Client addition.');
     await saveToPath(page, PATHS.savedDocx);
@@ -273,7 +274,7 @@ test.describe('Layout, settings, and workflows', () => {
     await expect(page.getByTestId('word-editor')).toContainText('Client addition');
   });
 
-  test('keeps recent documents after a full page reload', async ({ page }) => {
+  test('TC-FILE-021: keeps recent documents after a full page reload', async ({ page }) => {
     await openBlankDocument(page);
     await saveToPath(page, PATHS.recentDoc);
     await goHome(page);
