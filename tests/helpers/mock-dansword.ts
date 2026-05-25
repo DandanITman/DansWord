@@ -31,6 +31,7 @@ export interface DansWordTestHarness {
   loadEditorContent: (content: unknown) => void;
   getEditorJson: () => unknown;
   getEditorText: () => string;
+  getEditorSelectionText: () => string;
   runEditorCommand: (
     command:
       | 'toggleBulletList'
@@ -288,6 +289,11 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
     },
     getEditorJson: () => editorRef?.getJSON() ?? null,
     getEditorText: () => editorRef?.getText() ?? '',
+    getEditorSelectionText: () => {
+      if (!editorRef) return '';
+      const { from, to } = editorRef.state.selection;
+      return editorRef.state.doc.textBetween(from, to, ' ');
+    },
     runEditorCommand: (command, arg) => {
       if (!editorRef) return;
       const chain = editorRef.chain().focus();

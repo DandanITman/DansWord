@@ -10,6 +10,7 @@ import {
   acceptAppDialogs,
   stubPrompt,
   loadHeadingFixture,
+  saveToPath,
   PATHS,
 } from '../helpers/playwright';
 import { TINY_PNG_BASE64 } from '../fixtures/fileFixtures';
@@ -95,11 +96,51 @@ test.describe('Layout, review, and view', () => {
     await expect(page.getByRole('heading', { name: /Page Setup/i })).toBeVisible();
   });
 
+  test('changes page size from letter to A4', async ({ page }) => {
+    await openBlankDocument(page);
+    await switchRibbonTab(page, 'pageLayout');
+    await page.getByRole('button', { name: /Page Setup/i }).click();
+    await page.getByLabel('Page size').selectOption('a4');
+    await page.getByRole('button', { name: 'Done' }).click();
+    await expect(page.locator('.doc-page-shell').first()).toHaveCSS('width', '794px');
+  });
+
+  test('applies multi-column layout from page setup', async ({ page }) => {
+    await openBlankDocument(page);
+    await switchRibbonTab(page, 'pageLayout');
+    await page.getByRole('button', { name: /Page Setup/i }).click();
+    await page.getByLabel('Columns').selectOption('2');
+    await page.getByRole('button', { name: 'Done' }).click();
+    await expect(page.locator('.doc-body-columns')).toBeVisible();
+    await expect(page.locator('.doc-body')).toHaveCSS('column-count', '2');
+  });
+
+  test('sets header and footer text', async ({ page }) => {
+    await openBlankDocument(page);
+    await switchRibbonTab(page, 'pageLayout');
+    await page.getByRole('button', { name: /Header\/Footer/i }).click();
+    await page.getByPlaceholder('Header appears at top of each page').fill('Confidential');
+    await page.getByPlaceholder('Footer appears at bottom of each page').fill('Draft copy');
+    await page.getByRole('button', { name: 'Done' }).click();
+    await expect(page.locator('.doc-header')).toContainText('Confidential');
+    await expect(page.locator('.doc-footer')).toContainText('Draft copy');
+  });
+
   test('opens header and footer dialog', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'pageLayout');
     await page.getByRole('button', { name: /Header\/Footer/i }).click();
     await expect(page.getByText(/Header text/i)).toBeVisible();
+  });
+
+  test('enables watermark text on document', async ({ page }) => {
+    await openBlankDocument(page);
+    await switchRibbonTab(page, 'design');
+    await page.getByRole('button', { name: /Watermark/i }).click();
+    await page.getByLabel('Show watermark').check();
+    await page.getByLabel('Watermark text').fill('DRAFT');
+    await page.getByRole('button', { name: 'Done' }).click();
+    await expect(page.locator('.doc-watermark')).toContainText('DRAFT');
   });
 
   test('opens watermark dialog', async ({ page }) => {
@@ -188,6 +229,15 @@ test.describe('Settings and options', () => {
     await openBlankDocument(page);
   });
 
+  test('underlines misspelled words when spell check is enabled', async ({ page }) => {
+    await page.evaluate(() => {
+      window.__DANSWORD_TEST__?.setSpellCheckResults([false]);
+    });
+    await typeInEditor(page, 'asdfgh');
+    await expect.poll(async () => page.locator('.spell-error').count()).toBeGreaterThan(0);
+    await expect(page.locator('.spell-error')).toContainText('asdfgh');
+  });
+
   test('disabling spell check stores setting', async ({ page }) => {
     await switchRibbonTab(page, 'file');
     await page.getByRole('button', { name: /Save As \/ Export/i }).click();
@@ -201,19 +251,22 @@ test.describe('Settings and options', () => {
     await page.evaluate(() =>
       window.__DANSWORD_TEST__?.setSettings({ autoSaveIntervalMs: 0 }),
     );
-    await page.evaluate((p) => window.__DANSWORD_TEST__?.setSaveFileResult(p), PATHS.savedDocx);
-    await page.keyboard.press('Control+s');
+    await saveToPath(page, PATHS.savedDocx);
+    const baseline = await page.evaluate(
+      (path) => window.__DANSWORD_TEST__?.readStoredBinaryBase64(path),
+      PATHS.savedDocx,
+    );
+    expect(baseline).not.toBeNull();
     await typeInEditor(page, ' no autosave');
-    await page.waitForTimeout(800);
-    const before = await page.evaluate(
-      (path) => window.__DANSWORD_TEST__?.readStoredBinaryBase64(path),
-      PATHS.savedDocx,
-    );
-    await page.waitForTimeout(800);
-    const after = await page.evaluate(
-      (path) => window.__DANSWORD_TEST__?.readStoredBinaryBase64(path),
-      PATHS.savedDocx,
-    );
-    expect(after).toBe(before);
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(
+            (path) => window.__DANSWORD_TEST__?.readStoredBinaryBase64(path),
+            PATHS.savedDocx,
+          ),
+        { timeout: 3000 },
+      )
+      .toBe(baseline);
   });
 });

@@ -108,11 +108,11 @@ test.describe('Edit ribbon and text operations', () => {
     await openFindReplace(page);
     await page.getByTestId('find-input').fill('needle');
     await page.getByTestId('find-next').click();
-    const selected = await page.evaluate(() => {
-      const sel = window.getSelection()?.toString() ?? '';
-      return sel;
-    });
-    expect(selected.toLowerCase()).toContain('needle');
+    await expect
+      .poll(async () =>
+        page.evaluate(() => window.__DANSWORD_TEST__?.getEditorSelectionText() ?? ''),
+      )
+      .toMatch(/needle/i);
   });
 
   test('replace all updates document text', async ({ page }) => {
