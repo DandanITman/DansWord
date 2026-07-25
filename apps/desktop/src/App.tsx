@@ -16,10 +16,11 @@ import {
 } from '@dansword/core';
 import {
   exportToDocx,
-  importFromDocx,
+  importDocxEnvelope,
   exportToRtf,
   importFromRtf,
   exportToHtml,
+  importFromHtml,
   importFromDocText,
   wrapDansWordFile,
   unwrapDansWordFile,
@@ -67,6 +68,8 @@ function docxExportOpts(envelope: DocumentEnvelope, title: string): DocxExportOp
     pageSetup: envelope.pageSetup,
     headerFooter: envelope.headerFooter,
     footnotes: envelope.footnotes,
+    watermark: envelope.watermark,
+    customStyles: envelope.customStyles,
   };
 }
 
@@ -183,13 +186,11 @@ export default function App() {
     } else if (ext === 'docx') {
       const buffer = await getPlatform().readFile(path);
       const arrayBuffer = (buffer.buffer as ArrayBuffer).slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-      const docNode = await importFromDocx(arrayBuffer);
-      openDocumentEnvelope(createDocumentEnvelope(docNode), path, getFileName(path));
+      openDocumentEnvelope(await importDocxEnvelope(arrayBuffer), path, getFileName(path));
     } else if (ext === 'doc') {
       const res = await getPlatform().importDoc(path);
       if (res.format === 'docx') {
-        const docNode = await importFromDocx(res.data);
-        openDocumentEnvelope(createDocumentEnvelope(docNode), path, getFileName(path));
+        openDocumentEnvelope(await importDocxEnvelope(res.data), path, getFileName(path));
       } else {
         openDocumentEnvelope(createDocumentEnvelope(importFromDocText(res.data)), path, getFileName(path));
         await uiAlert(res.warning);
@@ -197,6 +198,9 @@ export default function App() {
     } else if (ext === 'rtf') {
       const raw = await getPlatform().readTextFile(path);
       openDocumentEnvelope(createDocumentEnvelope(importFromRtf(raw)), path, getFileName(path));
+    } else if (ext === 'html' || ext === 'htm') {
+      const raw = await getPlatform().readTextFile(path);
+      openDocumentEnvelope(createDocumentEnvelope(importFromHtml(raw)), path, getFileName(path));
     } else if (ext === 'txt') {
       const raw = await getPlatform().readTextFile(path);
       const lines = raw.split(/\r?\n/).map((line) => ({

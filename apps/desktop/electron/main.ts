@@ -89,7 +89,7 @@ ipcMain.handle('dialog:openFile', async () => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openFile'],
     filters: [
-      { name: 'Documents', extensions: ['docx', 'dansword', 'doc', 'txt', 'rtf'] },
+      { name: 'Documents', extensions: ['docx', 'dansword', 'doc', 'txt', 'rtf', 'html', 'htm'] },
       { name: 'All Files', extensions: ['*'] },
     ],
   });
@@ -156,7 +156,7 @@ ipcMain.handle('fs:listDocuments', async (_e, folderPath: string) => {
     for (const entry of entries) {
       if (!entry.isFile()) continue;
       const ext = path.extname(entry.name).toLowerCase();
-      if (!['.dansword', '.docx', '.doc', '.txt', '.rtf'].includes(ext)) continue;
+      if (!['.dansword', '.docx', '.doc', '.txt', '.rtf', '.html', '.htm'].includes(ext)) continue;
       const fullPath = path.join(folderPath, entry.name);
       const stat = await fs.stat(fullPath);
       docs.push({

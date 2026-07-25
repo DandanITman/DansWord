@@ -90,34 +90,4 @@ export function exportToRtf(content: unknown, title = 'Document'): string {
   return `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Calibri;}}\\f0\\fs22{\\info{\\title ${escapeRtf(title)}}}${body}}`;
 }
 
-function stripRtfToText(rtf: string): string {
-  let text = rtf;
-  text = text.replace(/\\par[d]?/gi, '\n');
-  text = text.replace(/\\page/gi, '\n\n---PAGE BREAK---\n\n');
-  text = text.replace(/\\'[0-9a-f]{2}/gi, (m) => String.fromCharCode(parseInt(m.slice(2), 16)));
-  text = text.replace(/\\[a-z]+\d* ?/gi, '');
-  text = text.replace(/[{}]/g, '');
-  return text.replace(/\r/g, '');
-}
-
-export function importFromRtf(rtf: string): TipTapNode {
-  const text = stripRtfToText(rtf);
-  const parts = text.split(/\n\n---PAGE BREAK---\n\n/);
-  const content: TipTapNode[] = [];
-
-  for (const part of parts) {
-    const lines = part.split('\n');
-    for (const line of lines) {
-      content.push({
-        type: 'paragraph',
-        content: line ? [{ type: 'text', text: line }] : [],
-      });
-    }
-    if (parts.length > 1 && part !== parts[parts.length - 1]) {
-      content.push({ type: 'pageBreak' });
-    }
-  }
-
-  if (!content.length) content.push({ type: 'paragraph' });
-  return { type: 'doc', content };
-}
+export { importFromRtf } from "./rtfImport";

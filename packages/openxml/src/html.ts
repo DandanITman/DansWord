@@ -201,3 +201,5 @@ ${body}
 </body>
 </html>`;
 }
+
+export { importFromHtml } from "./htmlImport";

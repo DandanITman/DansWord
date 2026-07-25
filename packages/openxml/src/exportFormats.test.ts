@@ -16,7 +16,7 @@ const sampleDoc = {
   ],
 };
 
-describe('openxml export parity', () => {
+describe('openxml export formats', () => {
   it('exports DOCX blob', async () => {
     const blob = await exportToDocx(sampleDoc, 'Test');
     expect(blob.size).toBeGreaterThan(100);
