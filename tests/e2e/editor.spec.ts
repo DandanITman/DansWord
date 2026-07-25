@@ -6,6 +6,8 @@ import {
   typeInEditor,
   focusEditor,
   switchRibbonTab,
+  clickRibbon,
+  selectAllInEditor,
 } from '../helpers/playwright';
 
 test.describe('DansWord editor e2e', () => {
@@ -21,30 +23,30 @@ test.describe('DansWord editor e2e', () => {
     await expect(page.getByTestId('editor-titlebar')).toBeVisible();
   });
 
-  test('TC-EDIT-001 TC-EDIT-002: types text and applies bold, italic, and underline formatting', async ({ page }) => {
+  test('TC-EDIT-001 TC-EDIT-002: types text and applies bold, italic and underline from the ribbon', async ({ page }) => {
     await openBlankDocument(page);
-    await page.evaluate(() => {
-      window.__DANSWORD_TEST__?.loadEditorContent({
-        type: 'doc',
-        content: [
-          {
-            type: 'paragraph',
-            content: [{ type: 'text', text: 'Bold text', marks: [{ type: 'bold' }] }],
-          },
-          {
-            type: 'paragraph',
-            content: [{ type: 'text', text: 'Italic text', marks: [{ type: 'italic' }] }],
-          },
-          {
-            type: 'paragraph',
-            content: [{ type: 'text', text: 'Underlined text', marks: [{ type: 'underline' }] }],
-          },
-        ],
-      });
-    });
 
+    // Actually type, actually click the buttons. This test previously injected
+    // pre-marked JSON and asserted it rendered, proving only that TipTap works.
+    await typeInEditor(page, 'Bold text');
+    await selectAllInEditor(page);
+    await clickRibbon(page, 'edit', 'ribbon-bold');
     await expect(page.getByTestId('word-editor').locator('strong')).toContainText('Bold text');
+
+    await focusEditor(page);
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('Enter');
+    await typeInEditor(page, 'Italic text');
+    await page.keyboard.press('Shift+Home');
+    await clickRibbon(page, 'edit', 'ribbon-italic');
     await expect(page.getByTestId('word-editor').locator('em')).toContainText('Italic text');
+
+    await focusEditor(page);
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('Enter');
+    await typeInEditor(page, 'Underlined text');
+    await page.keyboard.press('Shift+Home');
+    await clickRibbon(page, 'edit', 'ribbon-underline');
     await expect(page.getByTestId('word-editor').locator('u')).toContainText('Underlined text');
   });
 
@@ -55,7 +57,7 @@ test.describe('DansWord editor e2e', () => {
     await page.keyboard.press('Control+A');
     await switchRibbonTab(page, 'edit');
     await page.getByTestId('ribbon-font-size').selectOption('18');
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('setTextAlignCenter'));
+    await clickRibbon(page, 'edit', 'ribbon-align-center');
 
     const editorJson = await page.evaluate(() => window.__DANSWORD_TEST__?.getEditorJson());
     expect(JSON.stringify(editorJson)).toContain('"textAlign":"center"');
@@ -65,7 +67,7 @@ test.describe('DansWord editor e2e', () => {
   test('TC-EDIT-005: creates bullet and numbered lists', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Bullet one');
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('toggleBulletList'));
+    await clickRibbon(page, 'edit', 'ribbon-bullet-list');
     await focusEditor(page);
     await page.keyboard.press('Enter');
     await typeInEditor(page, 'Bullet two');
@@ -74,7 +76,7 @@ test.describe('DansWord editor e2e', () => {
     await page.keyboard.press('Enter');
     await page.keyboard.press('Enter');
     await typeInEditor(page, 'Number one');
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('toggleOrderedList'));
+    await clickRibbon(page, 'edit', 'ribbon-ordered-list');
     await focusEditor(page);
     await page.keyboard.press('Enter');
     await typeInEditor(page, 'Number two');

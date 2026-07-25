@@ -3,6 +3,13 @@ import { defineConfig, devices } from '@playwright/test';
 const PORT = 5173;
 const BASE_URL = `http://localhost:${PORT}/test.html`;
 
+/**
+ * Some CI images pre-provision a browser whose revision does not match the
+ * pinned Playwright version. Point at it explicitly rather than downloading a
+ * second copy. Unset by default, so normal runs are unaffected.
+ */
+const executablePath = process.env.DANSWORD_CHROMIUM_PATH || undefined;
+
 export default defineConfig({
   testIgnore: ['**/electron/**'],
   fullyParallel: true,
@@ -22,6 +29,7 @@ export default defineConfig({
     timezoneId: 'UTC',
     colorScheme: 'light',
     contextOptions: { reducedMotion: 'reduce' },
+    ...(executablePath ? { launchOptions: { executablePath } } : {}),
   },
   expect: {
     toHaveScreenshot: {

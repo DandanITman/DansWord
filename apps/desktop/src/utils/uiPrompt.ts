@@ -26,17 +26,14 @@ export function registerUiPromptHost(next: PromptHost | null) {
   host = next;
 }
 
-function useNativeDialogs() {
-  return (
-    typeof document !== 'undefined' &&
-    document.documentElement.getAttribute('data-test-mode') === 'true'
-  );
-}
+/*
+ * Note: there is deliberately no test-mode branch here. This used to fall back
+ * to window.prompt/alert/confirm whenever `data-test-mode` was set, so the e2e
+ * suite drove native dialogs while users only ever saw UiPromptHost — the two
+ * were never exercised together.
+ */
 
 export function uiPrompt(message: string, defaultValue = ''): Promise<string | null> {
-  if (useNativeDialogs()) {
-    return Promise.resolve(window.prompt(message, defaultValue));
-  }
   if (!host) {
     return Promise.resolve(window.prompt(message, defaultValue));
   }
@@ -46,10 +43,6 @@ export function uiPrompt(message: string, defaultValue = ''): Promise<string | n
 }
 
 export function uiAlert(message: string): Promise<void> {
-  if (useNativeDialogs()) {
-    window.alert(message);
-    return Promise.resolve();
-  }
   if (!host) {
     window.alert(message);
     return Promise.resolve();
@@ -60,9 +53,6 @@ export function uiAlert(message: string): Promise<void> {
 }
 
 export function uiConfirm(message: string): Promise<boolean> {
-  if (useNativeDialogs()) {
-    return Promise.resolve(window.confirm(message));
-  }
   if (!host) {
     return Promise.resolve(window.confirm(message));
   }

@@ -10,9 +10,9 @@ import {
   saveToPath,
   goHome,
   openBackstage,
-  dismissDialogs,
   acceptAppDialogs,
-  stubPrompt,
+  dismissAlert,
+  answerPrompt,
   setAutoSaveInterval,
   PATHS,
 } from '../helpers/playwright';
@@ -330,26 +330,27 @@ test.describe('File dialog alerts', () => {
   });
 
   test('alerts on unsupported file type', async ({ page }) => {
-    let alertText = '';
-    page.once('dialog', async (dialog) => {
-      alertText = dialog.message();
-      await dialog.accept();
-    });
     await openBlankDocument(page);
     await page.evaluate(() => {
       window.__DANSWORD_TEST__?.seedFile('C:/DansWordTest/bad.xyz', 'data');
       window.__DANSWORD_TEST__?.setOpenFileResult('C:/DansWordTest/bad.xyz');
     });
     await page.keyboard.press('Control+o');
-    expect(alertText).toContain('Unsupported');
+    // The in-app dialog, not window.alert: uiPrompt no longer has a test-mode
+    // branch, so tests and users now travel the same path.
+    await dismissAlert(page, /Unsupported file type/i);
   });
 
-  test('handles corrupted .dansword JSON gracefully', async ({ page }) => {
+  test('TC-FILE-023: reports a corrupted .dansword file instead of failing silently', async ({ page }) => {
     await page.evaluate(() => {
       window.__DANSWORD_TEST__?.seedFile('C:/DansWordTest/bad.dansword', '{not json');
       window.__DANSWORD_TEST__?.setOpenFileResult('C:/DansWordTest/bad.dansword');
     });
     await page.locator('.home-sidebar-nav').getByRole('button', { name: 'Open' }).click();
+    // Previously this asserted only that the home screen was still visible --
+    // which it was because JSON.parse threw an unhandled rejection. The app now
+    // reports the problem.
+    await dismissAlert(page, /corrupted/i);
     await expect(page.getByTestId('home-screen')).toBeVisible();
   });
 });

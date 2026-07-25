@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
@@ -13,15 +17,22 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@dansword/core": ["packages/core/src/index.ts"],
-      "@dansword/openxml": ["packages/openxml/src/index.ts"],
-      "@tests/*": ["tests/*"]
+      "@dansword/core": [
+        "packages/core/src/index.ts"
+      ],
+      "@dansword/openxml": [
+        "packages/openxml/src/index.ts"
+      ],
+      "@tests/*": [
+        "tests/*"
+      ]
     }
   },
   "include": [
     "tests",
     "apps/desktop/test",
     "playwright.config.ts",
-    "apps/desktop/src/global.d.ts"
+    "apps/desktop/src/global.d.ts",
+    "playwright.electron.config.ts"
   ]
 }

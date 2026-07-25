@@ -10,7 +10,13 @@ import { registerRevisionIpc } from './ipc/revisions';
 import { registerOutputIpc } from './ipc/output';
 import { attachCloseGuard, registerWindowIpc } from './ipc/window';
 
-const isDev = !app.isPackaged;
+/**
+ * The dev server URL, injected by vite-plugin-electron when running `npm run
+ * dev`. Keying off `!app.isPackaged` instead meant *any* unpackaged launch --
+ * including running the built dist-electron/main.js directly, and every
+ * automated test -- tried to load http://localhost:5173 and rendered nothing.
+ */
+const devServerUrl = process.env.VITE_DEV_SERVER_URL;
 let mainWindow: BrowserWindow | null = null;
 
 const getWindow = () => mainWindow;
@@ -55,8 +61,8 @@ async function createWindow() {
 
   mainWindow.once('ready-to-show', () => mainWindow?.show());
 
-  if (isDev) {
-    await mainWindow.loadURL('http://localhost:5173');
+  if (devServerUrl) {
+    await mainWindow.loadURL(devServerUrl);
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     await mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));

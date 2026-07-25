@@ -50,17 +50,6 @@ export function EditTab({ editor, state, actions, flags }: RibbonTabProps) {
     editor?.chain().focus().setParagraphSpacing(Number(before) || 0, Number(after) || 0).run();
   };
 
-  const setLink = async () => {
-    if (!editor) return;
-    const url = await uiPrompt('Enter URL', state.linkHref || 'https://');
-    if (url === null) return;
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  };
-
   const changeCase = () => {
     if (!editor) return;
     const { from, to } = editor.state.selection;
@@ -428,13 +417,6 @@ export function EditTab({ editor, state, actions, flags }: RibbonTabProps) {
               data-testid="ribbon-select-all"
             >
               <span>Select All</span>
-            </button>
-            <button
-              className={`ribbon-btn-horizontal-compact ${state.link ? 'active' : ''}`}
-              onClick={setLink}
-              title="Insert Hyperlink"
-            >
-              <span>Link</span>
             </button>
           </div>
         </div>

@@ -17,7 +17,7 @@
     "test:unit": "npm run test -w @dansword/core && npm run test -w @dansword/openxml && npm run test -w @dansword/desktop",
     "test:e2e": "playwright test tests/e2e",
     "test:e2e:headed": "playwright test tests/e2e --headed",
-    "test:electron": "playwright test tests/electron",
+    "test:electron": "npm run build -w @dansword/desktop && playwright test -c playwright.electron.config.ts",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
     "regression": "node scripts/regression.mjs",

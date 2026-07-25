@@ -16,6 +16,7 @@ run('Typecheck', 'npm', ['run', 'typecheck']);
 run('Build', 'npm', ['run', 'build']);
 run('Unit tests', 'npm', ['run', 'test:unit']);
 run('End-to-end tests', 'npm', ['run', 'test:e2e']);
+run('Electron tests', 'npm', ['run', 'test:electron']);
 run('Visual regression tests', 'npm', ['run', 'test:visual']);
 
 console.log('\nRegression suite completed successfully.\n');

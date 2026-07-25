@@ -64,12 +64,14 @@ export function UiPromptHost() {
           className="dialog panel-card ui-prompt-dialog"
           role="dialog"
           aria-modal="true"
+          data-testid="ui-prompt"
           aria-label={promptRequest.message}
           onClick={(e) => e.stopPropagation()}
         >
           <p className="ui-prompt-message">{promptRequest.message}</p>
           <input
             ref={inputRef}
+            data-testid="ui-prompt-input"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
@@ -81,7 +83,12 @@ export function UiPromptHost() {
             <button type="button" className="icon-btn" onClick={() => closePrompt(null)}>
               Cancel
             </button>
-            <button type="button" className="icon-btn primary" onClick={() => closePrompt(value)}>
+            <button
+              type="button"
+              className="icon-btn primary"
+              data-testid="ui-prompt-ok"
+              onClick={() => closePrompt(value)}
+            >
               OK
             </button>
           </div>
@@ -96,13 +103,19 @@ export function UiPromptHost() {
         <div
           className="dialog panel-card ui-prompt-dialog"
           role="alertdialog"
+          data-testid="ui-alert"
           aria-modal="true"
           aria-label={alertRequest.message}
           onClick={(e) => e.stopPropagation()}
         >
           <p className="ui-prompt-message">{alertRequest.message}</p>
           <div className="dialog-actions">
-            <button type="button" className="icon-btn primary" onClick={closeAlert}>
+            <button
+              type="button"
+              className="icon-btn primary"
+              data-testid="ui-alert-ok"
+              onClick={closeAlert}
+            >
               OK
             </button>
           </div>

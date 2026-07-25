@@ -33,25 +33,6 @@ export interface DansWordTestHarness {
   getEditorJson: () => unknown;
   getEditorText: () => string;
   getEditorSelectionText: () => string;
-  runEditorCommand: (
-    command:
-      | 'toggleBulletList'
-      | 'toggleOrderedList'
-      | 'setTextAlignCenter'
-      | 'setTextAlignJustify'
-      | 'toggleStrike'
-      | 'toggleSuperscript'
-      | 'toggleSubscript'
-      | 'toggleBold'
-      | 'setFontFamily'
-      | 'insertTable'
-      | 'insertPageBreak'
-      | 'selectAll'
-      | 'moveSelectionToEnd'
-      | 'clearFormatting'
-      | 'toggleHeading1',
-    arg?: string,
-  ) => void;
   isDirty: () => boolean;
   setPendingFile: (path: string | null) => void;
   emitOpenFile: (path: string) => void;
@@ -338,59 +319,6 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       if (!editorRef) return '';
       const { from, to } = editorRef.state.selection;
       return editorRef.state.doc.textBetween(from, to, ' ');
-    },
-    runEditorCommand: (command, arg) => {
-      if (!editorRef) return;
-      const chain = editorRef.chain().focus();
-      switch (command) {
-        case 'toggleBulletList':
-          chain.toggleBulletList().run();
-          break;
-        case 'toggleOrderedList':
-          chain.toggleOrderedList().run();
-          break;
-        case 'setTextAlignCenter':
-          chain.setTextAlign('center').run();
-          break;
-        case 'setTextAlignJustify':
-          chain.setTextAlign('justify').run();
-          break;
-        case 'toggleStrike':
-          chain.toggleStrike().run();
-          break;
-        case 'toggleSuperscript':
-          chain.toggleSuperscript().run();
-          break;
-        case 'toggleSubscript':
-          chain.toggleSubscript().run();
-          break;
-        case 'toggleBold':
-          chain.toggleBold().run();
-          break;
-        case 'setFontFamily':
-          chain.setFontFamily(arg ?? 'Georgia').run();
-          break;
-        case 'insertTable':
-          chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
-          break;
-        case 'insertPageBreak':
-          chain.insertPageBreak().run();
-          break;
-        case 'selectAll':
-          chain.selectAll().run();
-          break;
-        case 'moveSelectionToEnd':
-          chain.setTextSelection(editorRef.state.doc.content.size).run();
-          break;
-        case 'clearFormatting':
-          chain.clearNodes().unsetAllMarks().clearParagraphFormatting().run();
-          break;
-        case 'toggleHeading1':
-          chain.toggleHeading({ level: 1 }).run();
-          break;
-        default:
-          break;
-      }
     },
     isDirty: () => dirty,
     setPendingFile: (path: string | null) => {

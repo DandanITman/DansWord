@@ -76,6 +76,26 @@ export async function switchRibbonTab(page: Page, tab: string) {
   await page.locator(`.ribbon-tab[data-tab="${tab}"]`).click();
 }
 
+/**
+ * Click a ribbon control by its test id, switching to the owning tab first.
+ *
+ * Tests must reach the editor through the controls a user actually clicks.
+ * The harness used to expose `runEditorCommand`, which called TipTap chains
+ * directly — so tests named "applies heading style from ribbon" never touched
+ * the ribbon, and the wiring between the two shipped almost entirely untested.
+ */
+export async function clickRibbon(page: Page, tab: string, testId: string) {
+  await switchRibbonTab(page, tab);
+  await page.getByTestId(testId).click();
+}
+
+/** Assert a ribbon toggle's active state, which tracks the caret. */
+export async function expectRibbonActive(page: Page, testId: string, active: boolean) {
+  const button = page.getByTestId(testId);
+  if (active) await expect(button).toHaveClass(/active/);
+  else await expect(button).not.toHaveClass(/active/);
+}
+
 export async function openBackstage(page: Page, section?: string) {
   await switchRibbonTab(page, 'file');
   await page.getByRole('button', { name: /Save As \/ Export/i }).click();
@@ -90,18 +110,31 @@ export async function openFindReplace(page: Page) {
   await page.getByTestId('find-replace-bar').waitFor({ state: 'visible' });
 }
 
+/**
+ * Native dialogs should never appear now that uiPrompt has no test-mode
+ * branch. Accept any that do, so a stray one fails the assertion rather than
+ * hanging the run.
+ */
 export function acceptAppDialogs(page: Page) {
   page.on('dialog', (dialog) => dialog.accept());
 }
 
-export async function dismissDialogs(page: Page) {
-  page.on('dialog', (dialog) => dialog.accept());
+/** Answer the in-app prompt (UiPromptHost) that a command opened. */
+export async function answerPrompt(page: Page, value: string) {
+  const dialog = page.getByTestId('ui-prompt');
+  await dialog.waitFor({ state: 'visible' });
+  await page.getByTestId('ui-prompt-input').fill(value);
+  await page.getByTestId('ui-prompt-ok').click();
+  await dialog.waitFor({ state: 'hidden' });
 }
 
-export async function stubPrompt(page: Page, value: string) {
-  await page.evaluate((v) => {
-    window.prompt = () => v;
-  }, value);
+/** Dismiss the in-app alert, asserting its message when given. */
+export async function dismissAlert(page: Page, expectedText?: string | RegExp) {
+  const dialog = page.getByTestId('ui-alert');
+  await dialog.waitFor({ state: 'visible' });
+  if (expectedText) await expect(dialog).toContainText(expectedText);
+  await page.getByTestId('ui-alert-ok').click();
+  await dialog.waitFor({ state: 'hidden' });
 }
 
 export async function seedAllSampleFiles(page: Page) {

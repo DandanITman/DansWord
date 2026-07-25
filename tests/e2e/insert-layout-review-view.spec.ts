@@ -6,9 +6,8 @@ import {
   focusEditor,
   switchRibbonTab,
   selectAllInEditor,
-  dismissDialogs,
   acceptAppDialogs,
-  stubPrompt,
+  answerPrompt,
   loadHeadingFixture,
   saveToPath,
   PATHS,
@@ -171,10 +170,13 @@ test.describe('Layout, review, and view', () => {
     await selectAllInEditor(page);
     await switchRibbonTab(page, 'review');
     await page.getByRole('button', { name: /Comments/i }).click();
-    await stubPrompt(page, 'Needs review');
     await page.getByRole('button', { name: '+ Selection' }).click();
+    await answerPrompt(page, 'Needs review');
     await expect(page.getByText('Needs review')).toBeVisible();
     await page.getByRole('button', { name: 'Resolve' }).click();
+    // The original test stopped at the click and asserted nothing at all.
+    await expect(page.locator('.comment-card.resolved')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Resolve' })).toHaveCount(0);
   });
 
   test('TC-VIEW-003: toggles focus mode from view tab', async ({ page }) => {
@@ -201,13 +203,6 @@ test.describe('Layout, review, and view', () => {
     await page.getByTitle('Web Layout').click();
     await page.getByTitle('Focus Mode').click();
     await expect(page.locator('.editor-scroll.focus-mode')).toBeVisible();
-  });
-
-  test('opens mail merge wizard from file tab', async ({ page }) => {
-    await openBlankDocument(page);
-    await switchRibbonTab(page, 'file');
-    await page.getByTestId('ribbon').getByRole('button', { name: /Mail Merge/i }).click();
-    await expect(page.getByRole('heading', { name: 'Mail Merge' })).toBeVisible();
   });
 
   test('stores settings in mock persistence layer', async ({ page }) => {

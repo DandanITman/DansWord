@@ -21,7 +21,6 @@ const mockHarness = {
   getEditorJson: () => null,
   getEditorText: () => '',
   getEditorSelectionText: () => '',
-  runEditorCommand: () => {},
   isDirty: () => false,
   setPendingFile: () => {},
   emitOpenFile: () => {},

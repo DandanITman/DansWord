@@ -5,10 +5,11 @@ import {
   typeInEditor,
   focusEditor,
   switchRibbonTab,
+  clickRibbon,
   selectAllInEditor,
   openFindReplace,
   acceptAppDialogs,
-  stubPrompt,
+  answerPrompt,
   loadHeadingFixture,
   pickColorSwatch,
 } from '../helpers/playwright';
@@ -23,7 +24,7 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Strike text');
     await selectAllInEditor(page);
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('toggleStrike'));
+    await clickRibbon(page, 'edit', 'ribbon-strike');
     await expect(page.getByTestId('word-editor').locator('s')).toContainText('Strike text');
   });
 
@@ -32,7 +33,7 @@ test.describe('Edit ribbon and text operations', () => {
     await typeInEditor(page, 'E=mc2');
     await focusEditor(page);
     await page.keyboard.press('Control+A');
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('toggleSuperscript'));
+    await clickRibbon(page, 'edit', 'ribbon-superscript');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('superscript');
   });
@@ -50,7 +51,7 @@ test.describe('Edit ribbon and text operations', () => {
   test('TC-EDIT-010: applies justify alignment', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Justified paragraph');
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('setTextAlignJustify'));
+    await clickRibbon(page, 'edit', 'ribbon-align-justify');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('"textAlign":"justify"');
   });
@@ -59,8 +60,8 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Bold text');
     await selectAllInEditor(page);
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('toggleBold'));
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('clearFormatting'));
+    await clickRibbon(page, 'edit', 'ribbon-bold');
+    await clickRibbon(page, 'edit', 'ribbon-clear-formatting');
     await expect(page.getByTestId('word-editor').locator('strong')).toHaveCount(0);
   });
 
@@ -68,7 +69,7 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Heading text');
     await selectAllInEditor(page);
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('toggleHeading1'));
+    await clickRibbon(page, 'edit', 'edit-style-heading1');
     await expect(page.getByTestId('word-editor').locator('h1')).toContainText('Heading text');
   });
 
@@ -167,9 +168,9 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Link text');
     await selectAllInEditor(page);
-    await stubPrompt(page, 'https://example.com');
     await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /^Link$/ }).click();
+    await page.getByTestId('ribbon-link').click();
+    await answerPrompt(page, 'https://example.com');
     await expect(page.getByTestId('word-editor').locator('a')).toHaveAttribute('href', 'https://example.com');
   });
 

@@ -30,25 +30,6 @@ export interface DansWordTestHarness {
    */
   loadEditorContent: (content: unknown) => void;
   /** @deprecated See `loadEditorContent`. */
-  runEditorCommand: (
-    command:
-      | 'toggleBulletList'
-      | 'toggleOrderedList'
-      | 'setTextAlignCenter'
-      | 'setTextAlignJustify'
-      | 'toggleStrike'
-      | 'toggleSuperscript'
-      | 'toggleSubscript'
-      | 'toggleBold'
-      | 'setFontFamily'
-      | 'insertTable'
-      | 'insertPageBreak'
-      | 'selectAll'
-      | 'moveSelectionToEnd'
-      | 'clearFormatting'
-      | 'toggleHeading1',
-    arg?: string,
-  ) => void;
   getEditorJson: () => unknown;
   getEditorText: () => string;
   getEditorSelectionText: () => string;

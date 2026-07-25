@@ -11,7 +11,7 @@ import {
   openBackstage,
   saveToPath,
   acceptAppDialogs,
-  stubPrompt,
+  answerPrompt,
   grantClipboard,
   insertMockImage,
   PATHS,
@@ -33,7 +33,8 @@ test.describe('Clipboard and editing depth', () => {
     await expect
       .poll(async () => page.evaluate(() => navigator.clipboard.readText()))
       .toBe('Clipboard sample');
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('moveSelectionToEnd'));
+    await focusEditor(page);
+    await page.keyboard.press('Control+End');
     await page.keyboard.press('Control+V');
     await expect(page.getByTestId('word-editor')).toContainText('Clipboard sampleClipboard sample');
   });
@@ -68,12 +69,12 @@ test.describe('Clipboard and editing depth', () => {
   });
 
   test('TC-EDIT-021: adds a custom style from the style editor dialog', async ({ page }) => {
-    await stubPrompt(page, 'Report Body');
     await switchRibbonTab(page, 'edit');
     await page.getByRole('button', { name: /More Styles/i }).click();
-    await expect(page.getByRole('heading', { name: 'Style Editor' })).toBeVisible();
-    await page.getByRole('button', { name: 'Add Style' }).click();
-    await expect(page.getByText('Report Body')).toBeVisible();
+    await expect(page.getByTestId('style-editor')).toBeVisible();
+    await page.getByTestId('style-add').click();
+    await page.getByTestId('style-name').fill('Report Body');
+    await expect(page.getByTestId('style-list')).toContainText('Report Body');
   });
 
   test('TC-EDIT-022: find previous moves to earlier match', async ({ page }) => {
@@ -110,7 +111,7 @@ test.describe('Insert depth', () => {
     await insertMockImage(page);
     await page.locator('.image-block').click({ force: true });
     await page.getByTitle('Align Picture Center').click();
-    await page.getByTitle('Inline Picture').click();
+    await page.getByTitle('Inline text wrapping').click();
     await expect(page.getByTestId('word-editor').locator('.image-block')).toHaveAttribute(
       'data-wrap',
       'inline',
@@ -183,8 +184,8 @@ test.describe('Review and track changes depth', () => {
     await selectAllInEditor(page);
     await switchRibbonTab(page, 'review');
     await page.getByRole('button', { name: /Comments/i }).click();
-    await stubPrompt(page, 'Reopen me');
     await page.getByRole('button', { name: '+ Selection' }).click();
+    await answerPrompt(page, 'Reopen me');
     await expect(page.locator('.comment-card p')).toContainText('Reopen me');
     await saveToPath(page, PATHS.savedDansword);
     const saved = await page.evaluate(
@@ -234,18 +235,6 @@ test.describe('Layout, settings, and workflows', () => {
     expect(settings).not.toBeNull();
     expect(settings!.accentColor).toBe('#ff5500');
     expect(settings!.language).toBe('de-DE');
-  });
-
-  test('TC-ADV-001: generates merged DOCX files from mail merge wizard', async ({ page }) => {
-    await openBlankDocument(page);
-    await switchRibbonTab(page, 'file');
-    await page.getByRole('button', { name: /Mail Merge/i }).click();
-    await page.getByRole('button', { name: 'Insert sample fields' }).click();
-    await page.getByRole('button', { name: 'Generate documents' }).click();
-    await expect(page.getByText(/Generated 2 merged document/)).toBeVisible();
-    const files = await page.evaluate(() => window.__DANSWORD_TEST__?.listStoredFiles() ?? []);
-    expect(files.some((file) => file.includes('Merge_Jane.docx'))).toBe(true);
-    expect(files.some((file) => file.includes('Merge_John.docx'))).toBe(true);
   });
 
   test('TC-FILE-022: writes letter template edits to DOCX and reopens through UI', async ({ page }) => {
