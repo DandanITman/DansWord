@@ -101,6 +101,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
   let printCalls = 0;
   let editorRef: Editor | null = null;
   let dirty = false;
+  const userDictionary = new Set<string>();
   let pendingFile: string | null = null;
   const saveAndCloseListeners = new Set<() => void>();
   const openFileListeners = new Set<(filePath: string) => void>();
@@ -234,6 +235,11 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       return words.map((w) => w.toLowerCase() !== 'teh');
     },
     spellSuggest: async () => spellSuggestions,
+    getUserDictionary: async () => [...userDictionary],
+    addWordToDictionary: async (word: string) => {
+      userDictionary.add(word.toLowerCase());
+      return [...userDictionary];
+    },
     setDirty: async (value: boolean) => {
       dirty = value;
       return true;
@@ -266,6 +272,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       printCalls = 0;
       editorRef = null;
       dirty = false;
+      userDictionary.clear();
       pendingFile = null;
       saveAndCloseListeners.clear();
       openFileListeners.clear();

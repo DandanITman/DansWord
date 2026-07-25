@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   autoSaveIntervalMs: 30000,
   spellCheckEnabled: true,
   language: 'en-US',
+  authorName: 'You',
 };
 
 export const TEMPLATES = [

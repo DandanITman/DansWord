@@ -54,6 +54,9 @@ contextBridge.exposeInMainWorld('dansword', {
     ipcRenderer.invoke('spell:checkWords', words, language) as Promise<boolean[]>,
   spellSuggest: (word: string, language?: string) =>
     ipcRenderer.invoke('spell:suggest', word, language) as Promise<string[]>,
+  getUserDictionary: () => ipcRenderer.invoke('spell:getUserDictionary') as Promise<string[]>,
+  addWordToDictionary: (word: string) =>
+    ipcRenderer.invoke('spell:addWord', word) as Promise<string[]>,
 
   // Unsaved-changes guard: the renderer mirrors its dirty flag to the main
   // process, which prompts on close and asks the renderer to save.

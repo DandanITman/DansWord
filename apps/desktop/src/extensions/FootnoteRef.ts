@@ -11,15 +11,31 @@ export const FootnoteRef = Mark.create({
   },
 
   parseHTML() {
-    return [{ tag: 'sup.footnote-ref', getAttrs: (el) => ({ id: (el as HTMLElement).dataset.footnoteId, number: (el as HTMLElement).textContent }) }];
+    return [
+      {
+        tag: 'sup.footnote-ref',
+        getAttrs: (el) => {
+          const element = el as HTMLElement;
+          const parsed = Number(element.textContent);
+          return {
+            id: element.dataset.footnoteId,
+            number: Number.isFinite(parsed) && parsed > 0 ? parsed : 1,
+          };
+        },
+      },
+    ];
   },
 
   renderHTML({ HTMLAttributes }) {
-    const { number, id, ...rest } = HTMLAttributes;
+    const { number: _number, id, ...rest } = HTMLAttributes;
+    // The third element must be ProseMirror's content hole (0), not the number.
+    // A mark spec without a hole has its marked text appended to the rendered
+    // element instead — and since the marked text *is* the number, footnote
+    // markers rendered as "11", "22", "33".
     return [
       'sup',
       mergeAttributes(rest, { class: 'footnote-ref', 'data-footnote-id': id }),
-      String(number ?? ''),
+      0,
     ];
   },
 

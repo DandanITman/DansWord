@@ -1,82 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
-import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
-import FontFamily from '@tiptap/extension-font-family';
-import Highlight from '@tiptap/extension-highlight';
-import Link from '@tiptap/extension-link';
-import { ResizableImage } from '../extensions/ResizableImage';
-import Placeholder from '@tiptap/extension-placeholder';
-import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
-import TableCell from '@tiptap/extension-table-cell';
-import TableHeader from '@tiptap/extension-table-header';
-import { Extension } from '@tiptap/core';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
 import type { DocumentFootnote, HeaderFooter, PageSetup, Watermark } from '@dansword/core';
 import { PAGE_DIMENSIONS } from '@dansword/core';
-import { TrackInsert } from '../extensions/TrackInsert';
-import { PageBreak } from '../extensions/PageBreak';
-import { TableOfContents } from '../extensions/TableOfContents';
-import { CommentAnchor } from '../extensions/CommentAnchor';
-import { DocShape } from '../extensions/DocShape';
-import { FootnoteRef } from '../extensions/FootnoteRef';
-import { HunspellCheck } from '../extensions/HunspellCheck';
-import { SuperscriptMark, SubscriptMark } from '../extensions/TextMarks';
-import { ParagraphFormatting } from '../extensions/ParagraphFormatting';
+import { createExtensions } from '../editor/extensions';
+import { trackChangesPlugin, trackChangesKey } from '../editor/trackChangesPlugin';
+import { spellErrorAt } from '../extensions/HunspellCheck';
 import { SpellSuggestionMenu, type SpellSuggestionState } from './SpellSuggestionMenu';
 import { getPlatform } from '../platform';
 
-const FontSize = Extension.create({
-  name: 'fontSize',
-  addGlobalAttributes() {
-    return [
-      {
-        types: ['textStyle'],
-        attributes: {
-          fontSize: {
-            default: null,
-            parseHTML: (element) => element.style.fontSize?.replace(/['"]+/g, ''),
-            renderHTML: (attributes) => {
-              if (!attributes.fontSize) return {};
-              return { style: `font-size: ${attributes.fontSize}` };
-            },
-          },
-        },
-      },
-    ];
-  },
-});
-
-const trackChangesKey = new PluginKey('trackChanges');
-
-function trackChangesPlugin(enabled: boolean) {
-  return new Plugin({
-    key: trackChangesKey,
-    appendTransaction(transactions, _oldState, newState) {
-      if (!enabled) return null;
-      const tr = newState.tr;
-      let modified = false;
-      for (const transaction of transactions) {
-        if (!transaction.docChanged) continue;
-        transaction.steps.forEach((step) => {
-          step.getMap().forEach((_oldStart, _oldEnd, newStart, newEnd) => {
-            if (newEnd > newStart && newState.schema.marks.trackInsert) {
-              tr.addMark(newStart, newEnd, newState.schema.marks.trackInsert.create());
-              modified = true;
-            }
-          });
-        });
-      }
-      return modified ? tr : null;
-    },
-  });
-}
-
+const EMPTY_WORDS: string[] = [];
 
 function FootnoteTextField({
   id,
@@ -121,11 +54,16 @@ export interface WordEditorProps {
   footnotes: DocumentFootnote[];
   spellCheckEnabled?: boolean;
   language?: string;
+  /** Words the user added to their dictionary; never flagged. */
+  ignoredWords?: string[];
   trackChangesEnabled?: boolean;
+  /** Attributed to tracked changes and comments. */
+  author?: string;
   onUpdate?: (json: unknown) => void;
   onReady?: (editor: Editor) => void;
   onPageCountChange?: (count: number) => void;
   onFootnoteChange?: (id: string, text: string) => void;
+  onAddToDictionary?: (word: string) => void;
 }
 
 export function WordEditor({
@@ -136,11 +74,14 @@ export function WordEditor({
   footnotes,
   spellCheckEnabled = true,
   language = 'en-US',
+  ignoredWords = EMPTY_WORDS,
   trackChangesEnabled = false,
+  author = 'You',
   onUpdate,
   onReady,
   onPageCountChange,
   onFootnoteChange,
+  onAddToDictionary,
 }: WordEditorProps) {
   const dims = PAGE_DIMENSIONS[pageSetup.size];
   const pageWidth = pageSetup.orientation === 'portrait' ? dims.width : dims.height;
@@ -150,39 +91,20 @@ export function WordEditor({
   const [pageCount, setPageCount] = useState(1);
   const [spellMenu, setSpellMenu] = useState<SpellSuggestionState | null>(null);
 
+  // Built once. Settings changes are applied by reconfiguring the live
+  // extension below rather than by rebuilding the editor: useEditor was called
+  // with no deps argument, so a changed extensions array was simply ignored and
+  // toggling spell check or switching language did nothing until a remount.
   const extensions = useMemo(
-    () => [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
-      Underline,
-      TextStyle,
-      FontSize,
-      Color,
-      FontFamily,
-      Highlight.configure({ multicolor: true }),
-      SuperscriptMark,
-      SubscriptMark,
-      ParagraphFormatting,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Link.configure({ openOnClick: false }),
-      ResizableImage,
-      Placeholder.configure({ placeholder: 'Start typing your document…' }),
-      Table.configure({ resizable: true }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      TrackInsert,
-      PageBreak,
-      TableOfContents,
-      CommentAnchor,
-      DocShape,
-      FootnoteRef,
-      HunspellCheck.configure({
-        enabled: spellCheckEnabled,
+    () =>
+      createExtensions({
+        spellCheckEnabled,
         language,
+        ignoredWords,
         checkWords: (words, lang) => getPlatform().spellCheckWords(words, lang),
       }),
-    ],
-    [spellCheckEnabled, language],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   const editor = useEditor({
@@ -204,14 +126,36 @@ export function WordEditor({
     },
   });
 
+  // Apply spell-check settings to the running editor.
   useEffect(() => {
     if (!editor) return;
-    const plugin = trackChangesPlugin(trackChangesEnabled);
+    const spell = editor.extensionManager.extensions.find((e) => e.name === 'hunspellCheck');
+    if (!spell) return;
+    spell.options.enabled = spellCheckEnabled;
+    spell.options.language = language;
+    spell.options.ignoredWords = ignoredWords;
+    // Nudge the plugin's view so it notices the new options.
+    editor.view.dispatch(editor.state.tr.setMeta('hunspellSettings', Date.now()));
+  }, [editor, spellCheckEnabled, language, ignoredWords]);
+
+  // Track changes reads its flags through refs so toggling does not tear the
+  // plugin down and lose in-flight state.
+  const trackEnabledRef = useRef(trackChangesEnabled);
+  trackEnabledRef.current = trackChangesEnabled;
+  const authorRef = useRef(author);
+  authorRef.current = author;
+
+  useEffect(() => {
+    if (!editor) return;
+    const plugin = trackChangesPlugin(
+      () => trackEnabledRef.current,
+      () => authorRef.current,
+    );
     editor.registerPlugin(plugin);
     return () => {
       editor.unregisterPlugin(trackChangesKey);
     };
-  }, [editor, trackChangesEnabled]);
+  }, [editor]);
 
   useEffect(() => {
     if (!editor) return;
@@ -227,34 +171,26 @@ export function WordEditor({
     dom.addEventListener('click', onFootnoteClick);
 
     const onSpellContextMenu = (e: MouseEvent) => {
-      const target = e.target as Node | null;
-      const element = target?.nodeType === Node.ELEMENT_NODE ? (target as HTMLElement) : target?.parentElement;
-      const spellError = element?.closest('.spell-error') as HTMLElement | null;
-      if (!spellError) return;
+      // Resolve the click to a document position, then read the flagged range
+      // straight off the decoration set. Deriving it from posAtDOM plus the
+      // word's string length mis-targeted the replacement whenever the word sat
+      // inside nested inline marks.
+      const coords = editor.view.posAtCoords({ left: e.clientX, top: e.clientY });
+      if (!coords) return;
+
+      const range = spellErrorAt(editor.state, coords.pos);
+      if (!range) return;
 
       e.preventDefault();
 
-      const word = spellError.textContent?.trim();
+      const word = editor.state.doc.textBetween(range.from, range.to, '');
       if (!word) return;
 
-      try {
-        const pos = editor.view.posAtDOM(spellError.firstChild || spellError, 0);
-        const from = pos;
-        const to = pos + word.length;
-
-        void getPlatform().spellSuggest(word, language).then((suggestions) => {
-          setSpellMenu({
-            x: e.clientX,
-            y: e.clientY,
-            word,
-            from,
-            to,
-            suggestions,
-          });
+      void getPlatform()
+        .spellSuggest(word, language)
+        .then((suggestions) => {
+          setSpellMenu({ x: e.clientX, y: e.clientY, word, from: range.from, to: range.to, suggestions });
         });
-      } catch (err) {
-        console.error('Failed to resolve spell error position:', err);
-      }
     };
     dom.addEventListener('contextmenu', onSpellContextMenu);
 
@@ -383,6 +319,10 @@ export function WordEditor({
     <SpellSuggestionMenu
       state={spellMenu}
       onPick={applySpellReplacement}
+      onAddToDictionary={(word) => {
+        setSpellMenu(null);
+        onAddToDictionary?.(word);
+      }}
       onClose={() => setSpellMenu(null)}
     />
     </>
@@ -397,7 +337,8 @@ export function getWordCount(editor: Editor | null, pageCount = 1) {
 }
 
 export function insertFootnote(editor: Editor, footnotes: DocumentFootnote[], text: string) {
-  const id = `fn-${Date.now()}`;
+  // Date.now() collides when two footnotes are inserted in the same millisecond.
+  const id = `fn-${crypto.randomUUID()}`;
   const number = footnotes.length + 1;
   editor
     .chain()

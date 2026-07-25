@@ -62,6 +62,8 @@ window.dansword = {
   }),
   spellCheckWords: async (words: string[]) => words.map(() => true),
   spellSuggest: async () => ['suggestion'],
+  getUserDictionary: async () => [],
+  addWordToDictionary: async () => [],
   setDirty: async () => true,
   closeNow: async () => true,
   onSaveAndClose: () => () => {},

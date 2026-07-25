@@ -3630,3 +3630,21 @@ select:focus-visible {
   background: var(--surface-alt, #f3f4f6);
   font-family: ui-monospace, monospace;
 }
+
+/* Text deleted while track changes is on. Kept in the document so the change
+   can be rejected and the text restored (see extensions/TrackDelete.ts). */
+.track-delete {
+  text-decoration: line-through;
+  color: #b91c1c;
+  background: rgba(185, 28, 28, 0.08);
+}
+
+:root[data-theme='dark'] .track-delete {
+  color: #fca5a5;
+  background: rgba(252, 165, 165, 0.12);
+}
+
+.spell-suggestion-add {
+  border-top: 1px solid var(--border, #e5e7eb);
+  font-style: italic;
+}

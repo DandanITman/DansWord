@@ -1,42 +1,21 @@
 import { Editor } from '@tiptap/core';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
-import TextStyle from '@tiptap/extension-text-style';
-import { Extension } from '@tiptap/core';
-import { ParagraphFormatting } from '../extensions/ParagraphFormatting';
+import { createExtensions } from './extensions';
 
-const FontSize = Extension.create({
-  name: 'fontSize',
-  addGlobalAttributes() {
-    return [
-      {
-        types: ['textStyle'],
-        attributes: {
-          fontSize: {
-            default: null,
-            parseHTML: (element) => element.style.fontSize?.replace(/['"]+/g, ''),
-            renderHTML: (attributes) => {
-              if (!attributes.fontSize) return {};
-              return { style: `font-size: ${attributes.fontSize}` };
-            },
-          },
-        },
-      },
-    ];
-  },
-});
-
+/**
+ * An editor for unit tests, built from the *production* extension list.
+ *
+ * This previously registered only six extensions, so nothing under test could
+ * exercise Highlight, Color, Link, Image, Table, PageBreak, DocShape,
+ * FootnoteRef, TableOfContents, CommentAnchor, TrackInsert or Hunspell. That
+ * gap is what let the FootnoteRef content-hole bug ship: footnote markers
+ * rendered as "11" in the app while the tests used a schema without the mark.
+ */
 export function createTestEditor(content?: object) {
   return new Editor({
-    extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
-      Underline,
-      TextStyle,
-      FontSize,
-      ParagraphFormatting,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-    ],
+    extensions: createExtensions({
+      // Spell check is asynchronous and host-backed; keep it out of unit tests.
+      spellCheckEnabled: false,
+    }),
     content,
   });
 }

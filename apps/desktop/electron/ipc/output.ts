@@ -4,6 +4,7 @@ import path from 'node:path';
 import { ensureDir } from '../store';
 import { importDocFile } from '../docImport';
 import { checkWords, suggestWord } from '../spell';
+import { addToUserDictionary, getUserDictionary, isKnownWord } from '../userDictionary';
 
 /** Printing, PDF export, legacy .doc conversion and spell check. */
 export function registerOutputIpc(getWindow: () => BrowserWindow | null) {
@@ -36,9 +37,17 @@ export function registerOutputIpc(getWindow: () => BrowserWindow | null) {
 
   ipcMain.handle('import:doc', async (_e, filePath: string) => importDocFile(filePath));
 
-  ipcMain.handle('spell:checkWords', async (_e, words: string[], language?: string) =>
-    checkWords(words, language ?? 'en-US'),
-  );
+  ipcMain.handle('spell:checkWords', async (_e, words: string[], language?: string) => {
+    const results = await checkWords(words, language ?? 'en-US');
+    // Words the user added are correct regardless of what the dictionary says.
+    return Promise.all(
+      results.map(async (correct, i) => correct || isKnownWord(words[i] ?? '')),
+    );
+  });
+
+  ipcMain.handle('spell:getUserDictionary', async () => getUserDictionary());
+
+  ipcMain.handle('spell:addWord', async (_e, word: string) => addToUserDictionary(word));
 
   ipcMain.handle('spell:suggest', async (_e, word: string, language?: string) =>
     suggestWord(word, language ?? 'en-US'),

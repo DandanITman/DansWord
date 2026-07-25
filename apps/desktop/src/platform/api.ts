@@ -41,6 +41,10 @@ export interface DansWordAPI {
   importDoc: (filePath: string) => Promise<ImportDocResult>;
   spellCheckWords: (words: string[], language?: string) => Promise<boolean[]>;
   spellSuggest: (word: string, language?: string) => Promise<string[]>;
+  /** Words the user added via "Add to dictionary". */
+  getUserDictionary: () => Promise<string[]>;
+  /** Teach the checker a word; resolves with the updated dictionary. */
+  addWordToDictionary: (word: string) => Promise<string[]>;
 
   /** Mirror the unsaved-changes flag so the host can prompt before closing. */
   setDirty: (dirty: boolean) => Promise<boolean>;

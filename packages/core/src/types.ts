@@ -9,6 +9,8 @@ export interface AppSettings {
   autoSaveIntervalMs: number;
   spellCheckEnabled: boolean;
   language: string;
+  /** Attributed to comments and tracked changes. */
+  authorName: string;
 }
 
 export interface RecentFile {

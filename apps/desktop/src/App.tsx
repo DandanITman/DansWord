@@ -51,11 +51,11 @@ function suggestedSavePath(defaultDir: string, name: string, ext = 'docx') {
   return joinPath(defaultDir, `${base}.${ext}`);
 }
 
-function newComment(text: string, anchorText?: string): DocumentComment {
+function newComment(text: string, author: string, anchorText?: string): DocumentComment {
   return {
     id: crypto.randomUUID(),
     text,
-    author: 'You',
+    author,
     created: new Date().toISOString(),
     resolved: false,
     anchorText,
@@ -105,6 +105,7 @@ export default function App() {
   const [editorSyncKey, setEditorSyncKey] = useState(0);
   const [pageCount, setPageCount] = useState(1);
   const [revisions, setRevisions] = useState<DocumentRevision[]>([]);
+  const [userDictionary, setUserDictionary] = useState<string[]>([]);
   const autoSaveTimer = useRef<number | null>(null);
   const { active: formatPainterActive, copyFormat, applyFormat } = useFormatPainter(editor);
 
@@ -146,6 +147,7 @@ export default function App() {
       if (savedRecents && savedRecents.length) {
         setRecents(savedRecents);
       }
+      setUserDictionary(await getPlatform().getUserDictionary());
     };
     initApp();
   }, []);
@@ -538,11 +540,18 @@ export default function App() {
                     footnotes={envelope.footnotes}
                     spellCheckEnabled={settings.spellCheckEnabled}
                     language={settings.language}
+                    ignoredWords={userDictionary}
                     trackChangesEnabled={envelope.trackChangesEnabled}
+                    author={settings.authorName || 'You'}
                     onUpdate={(json) => updateEnvelope({ content: json })}
                     onReady={setEditor}
                     onPageCountChange={setPageCount}
                     onFootnoteChange={handleFootnoteChange}
+                    onAddToDictionary={(word) => {
+                      void getPlatform()
+                        .addWordToDictionary(word)
+                        .then(setUserDictionary);
+                    }}
                   />
                 </DocumentRulers>
               </div>
@@ -552,7 +561,7 @@ export default function App() {
               editor={editor}
               comments={envelope.comments}
               onAdd={(text, anchorText) => {
-                const comment = newComment(text, anchorText);
+                const comment = newComment(text, settings.authorName || 'You', anchorText);
                 updateEnvelope({ comments: [...envelope.comments, comment] });
                 return comment.id;
               }}
