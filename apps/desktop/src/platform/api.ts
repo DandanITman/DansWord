@@ -41,4 +41,16 @@ export interface DansWordAPI {
   importDoc: (filePath: string) => Promise<ImportDocResult>;
   spellCheckWords: (words: string[], language?: string) => Promise<boolean[]>;
   spellSuggest: (word: string, language?: string) => Promise<string[]>;
+
+  /** Mirror the unsaved-changes flag so the host can prompt before closing. */
+  setDirty: (dirty: boolean) => Promise<boolean>;
+  /** Resume (or abandon) a close the host paused to let the renderer save. */
+  closeNow: (proceed: boolean) => Promise<boolean>;
+  /** Called when the host wants the document saved before the window closes. */
+  onSaveAndClose: (callback: () => void) => () => void;
+
+  /** A document path captured at launch from a file association; consumed once. */
+  takePendingFile: () => Promise<string | null>;
+  /** A document opened while the app was already running. */
+  onOpenFile: (callback: (filePath: string) => void) => () => void;
 }

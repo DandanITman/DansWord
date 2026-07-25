@@ -267,6 +267,39 @@ export default function App() {
     return true;
   }, [editor, envelope, fileName, filePath, loadRevisions, updateRecentFile]);
 
+  // Mirror the unsaved-changes flag to the host so it can prompt on close.
+  useEffect(() => {
+    void getPlatform().setDirty(isDirty);
+  }, [isDirty]);
+
+  // Electron adopts the page title for the native window frame, so the OS
+  // title bar names the open document instead of just repeating the app name.
+  useEffect(() => {
+    document.title =
+      view === 'editor' ? `${fileName}${isDirty ? ' *' : ''} — DansWord` : 'DansWord';
+  }, [view, fileName, isDirty]);
+
+  // The host paused a close so we could save; finish, then let it proceed.
+  useEffect(() => {
+    return getPlatform().onSaveAndClose(() => {
+      void (async () => {
+        const saved = await saveDocument().catch(() => false);
+        await getPlatform().closeNow(!!saved);
+      })();
+    });
+  }, [saveDocument]);
+
+  // A document opened from Explorer, either at launch or while running.
+  useEffect(() => {
+    void (async () => {
+      const pending = await getPlatform().takePendingFile();
+      if (pending) await openDocumentAtPath(pending);
+    })();
+    return getPlatform().onOpenFile((incoming) => {
+      void openDocumentAtPath(incoming);
+    });
+  }, [openDocumentAtPath]);
+
   useEffect(() => {
     if (!filePath || settings.autoSaveIntervalMs <= 0) return;
     autoSaveTimer.current && window.clearTimeout(autoSaveTimer.current);

@@ -52,6 +52,10 @@ export interface DansWordTestHarness {
       | 'toggleHeading1',
     arg?: string,
   ) => void;
+  isDirty: () => boolean;
+  setPendingFile: (path: string | null) => void;
+  emitOpenFile: (path: string) => void;
+  emitSaveAndClose: () => void;
   getExportPdfCallCount: () => number;
   getPrintCallCount: () => number;
 }
@@ -96,6 +100,10 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
   let exportPdfCalls = 0;
   let printCalls = 0;
   let editorRef: Editor | null = null;
+  let dirty = false;
+  let pendingFile: string | null = null;
+  const saveAndCloseListeners = new Set<() => void>();
+  const openFileListeners = new Set<(filePath: string) => void>();
 
   const getFs = (): Record<string, string> => readJson(FS_KEY, {});
   const setFs = (fs: Record<string, string>) => writeJson(FS_KEY, fs);
@@ -226,6 +234,24 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       return words.map((w) => w.toLowerCase() !== 'teh');
     },
     spellSuggest: async () => spellSuggestions,
+    setDirty: async (value: boolean) => {
+      dirty = value;
+      return true;
+    },
+    closeNow: async () => true,
+    onSaveAndClose: (callback: () => void) => {
+      saveAndCloseListeners.add(callback);
+      return () => saveAndCloseListeners.delete(callback);
+    },
+    takePendingFile: async () => {
+      const value = pendingFile;
+      pendingFile = null;
+      return value;
+    },
+    onOpenFile: (callback: (filePath: string) => void) => {
+      openFileListeners.add(callback);
+      return () => openFileListeners.delete(callback);
+    },
   };
 
   const harness: DansWordTestHarness = {
@@ -239,6 +265,10 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       exportPdfCalls = 0;
       printCalls = 0;
       editorRef = null;
+      dirty = false;
+      pendingFile = null;
+      saveAndCloseListeners.clear();
+      openFileListeners.clear();
       localStorage.removeItem(FS_KEY);
       localStorage.removeItem(SETTINGS_KEY);
       localStorage.removeItem(RECENTS_KEY);
@@ -354,6 +384,16 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
         default:
           break;
       }
+    },
+    isDirty: () => dirty,
+    setPendingFile: (path: string | null) => {
+      pendingFile = path ? normalizePath(path) : null;
+    },
+    emitOpenFile: (path: string) => {
+      openFileListeners.forEach((cb) => cb(normalizePath(path)));
+    },
+    emitSaveAndClose: () => {
+      saveAndCloseListeners.forEach((cb) => cb());
     },
     getExportPdfCallCount: () => exportPdfCalls,
     getPrintCallCount: () => printCalls,

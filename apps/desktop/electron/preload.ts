@@ -1,6 +1,21 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { DocumentRevision } from '@dansword/core';
 
+const OPEN_FILE_CHANNEL = 'dansword:open-file';
+const SAVE_AND_CLOSE_CHANNEL = 'dansword:save-and-close';
+
+/**
+ * Subscribe to a main-process push, returning an unsubscribe function.
+ * The listener is wrapped so the renderer never receives the IpcRendererEvent.
+ */
+function subscribe<T extends unknown[]>(channel: string, callback: (...args: T) => void) {
+  const handler = (_event: unknown, ...args: unknown[]) => callback(...(args as T));
+  ipcRenderer.on(channel, handler);
+  return () => {
+    ipcRenderer.removeListener(channel, handler);
+  };
+}
+
 contextBridge.exposeInMainWorld('dansword', {
   openFile: () => ipcRenderer.invoke('dialog:openFile') as Promise<string | null>,
   openImageFile: () => ipcRenderer.invoke('dialog:openImageFile') as Promise<string | null>,
@@ -39,4 +54,15 @@ contextBridge.exposeInMainWorld('dansword', {
     ipcRenderer.invoke('spell:checkWords', words, language) as Promise<boolean[]>,
   spellSuggest: (word: string, language?: string) =>
     ipcRenderer.invoke('spell:suggest', word, language) as Promise<string[]>,
+
+  // Unsaved-changes guard: the renderer mirrors its dirty flag to the main
+  // process, which prompts on close and asks the renderer to save.
+  setDirty: (dirty: boolean) => ipcRenderer.invoke('window:setDirty', dirty) as Promise<boolean>,
+  closeNow: (proceed: boolean) => ipcRenderer.invoke('window:closeNow', proceed) as Promise<boolean>,
+  onSaveAndClose: (callback: () => void) => subscribe(SAVE_AND_CLOSE_CHANNEL, callback),
+
+  // File associations: a path captured at launch, plus pushes while running.
+  takePendingFile: () => ipcRenderer.invoke('app:takePendingFile') as Promise<string | null>,
+  onOpenFile: (callback: (filePath: string) => void) =>
+    subscribe<[string]>(OPEN_FILE_CHANNEL, callback),
 });

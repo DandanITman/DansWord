@@ -22,6 +22,10 @@ const mockHarness = {
   getEditorText: () => '',
   getEditorSelectionText: () => '',
   runEditorCommand: () => {},
+  isDirty: () => false,
+  setPendingFile: () => {},
+  emitOpenFile: () => {},
+  emitSaveAndClose: () => {},
   getExportPdfCallCount: () => 0,
   getPrintCallCount: () => 0,
 };
@@ -58,6 +62,11 @@ window.dansword = {
   }),
   spellCheckWords: async (words: string[]) => words.map(() => true),
   spellSuggest: async () => ['suggestion'],
+  setDirty: async () => true,
+  closeNow: async () => true,
+  onSaveAndClose: () => () => {},
+  takePendingFile: async () => null,
+  onOpenFile: () => () => {},
 };
 
 window.__DANSWORD_TEST__ = mockHarness;

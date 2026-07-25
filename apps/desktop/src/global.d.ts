@@ -52,6 +52,10 @@ export interface DansWordTestHarness {
   getEditorJson: () => unknown;
   getEditorText: () => string;
   getEditorSelectionText: () => string;
+  isDirty: () => boolean;
+  setPendingFile: (path: string | null) => void;
+  emitOpenFile: (path: string) => void;
+  emitSaveAndClose: () => void;
   getExportPdfCallCount: () => number;
   getPrintCallCount: () => number;
 }
