@@ -29,8 +29,10 @@ import {
 import { applyPrintPageSetup } from './utils/printStyles';
 import { StyleEditorDialog } from './components/StyleEditorDialog';
 import { WatermarkDialog } from './components/WatermarkDialog';
+import { WordCountDialog } from './components/WordCountDialog';
 import { HomeScreen } from './components/HomeScreen';
-import { Ribbon } from './components/Ribbon';
+import { Ribbon } from './ribbon/Ribbon';
+import type { RibbonActions } from './ribbon/types';
 import { StatusBar } from './components/StatusBar';
 import { Backstage, type BackstageSection } from './components/Backstage';
 import { WordEditor, getWordCount, insertFootnote } from './components/WordEditor';
@@ -97,13 +99,20 @@ export default function App() {
   const [findOpen, setFindOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
+  const [viewMode, setViewMode] = useState<'print' | 'web' | 'focus'>('print');
+  const focusMode = viewMode === 'focus';
+  const setFocusMode = (next: boolean | ((prev: boolean) => boolean)) => {
+    const value = typeof next === 'function' ? next(focusMode) : next;
+    setViewMode(value ? 'focus' : 'print');
+  };
   const [pageSetupOpen, setPageSetupOpen] = useState(false);
   const [headerFooterOpen, setHeaderFooterOpen] = useState(false);
   const [styleEditorOpen, setStyleEditorOpen] = useState(false);
   const [watermarkOpen, setWatermarkOpen] = useState(false);
+  const [wordCountOpen, setWordCountOpen] = useState(false);
   const [editorSyncKey, setEditorSyncKey] = useState(0);
   const [pageCount, setPageCount] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [revisions, setRevisions] = useState<DocumentRevision[]>([]);
   const [userDictionary, setUserDictionary] = useState<string[]>([]);
   const autoSaveTimer = useRef<number | null>(null);
@@ -423,6 +432,43 @@ export default function App() {
     setBackstageOpen(false);
   };
 
+  const ribbonActions: RibbonActions = {
+    onPrint: () => void getPlatform().printDocument(),
+    onExportPdf: exportPdf,
+    onInsertImage: handleInsertImage,
+    onOpenPageSetup: () => setPageSetupOpen(true),
+    onApplyMarginPreset: (preset) => {
+      const margins = MARGIN_PRESETS[preset];
+      if (margins) {
+        updateEnvelope({ pageSetup: { ...envelope.pageSetup, margins: { ...margins } } });
+      }
+    },
+    onOpenHeaderFooter: () => setHeaderFooterOpen(true),
+    onToggleNavigation: () => setNavOpen((v) => !v),
+    onToggleComments: () => setCommentsOpen((v) => !v),
+    onToggleFindReplace: () => setFindOpen((v) => !v),
+    onToggleFocusMode: () => setFocusMode((v) => !v),
+    onToggleTrackChanges: () =>
+      updateEnvelope({ trackChangesEnabled: !envelope.trackChangesEnabled }),
+    onFormatPainterCopy: copyFormat,
+    onFormatPainterApply: applyFormat,
+    onOpenStyleEditor: () => setStyleEditorOpen(true),
+    onOpenWatermark: () => setWatermarkOpen(true),
+    onOpenWordCount: () => setWordCountOpen(true),
+    onNew: () => newFromTemplate('blank'),
+    onOpenFile: async () => {
+      const path = await getPlatform().openFile();
+      if (path) await openDocumentAtPath(path);
+    },
+    onSave: () => void saveDocument(),
+    onOpenBackstage: () => {
+      setBackstageOpen(true);
+      setBackstageSection('save');
+    },
+    onInsertShape: handleInsertShape,
+    onInsertFootnote: handleInsertFootnote,
+  };
+
   return (
     <div className="app-shell" data-testid="app-shell">
       {view === 'editor' && !focusMode && (
@@ -449,44 +495,11 @@ export default function App() {
           activeTab={ribbonTab}
           onTabChange={setRibbonTab}
           editor={editor}
-          onPrint={() => void getPlatform().printDocument()}
-          onExportPdf={exportPdf}
-          onInsertImage={handleInsertImage}
-          onOpenPageSetup={() => setPageSetupOpen(true)}
-          onApplyMarginPreset={(preset) => {
-            const margins = MARGIN_PRESETS[preset];
-            if (margins) {
-              updateEnvelope({ pageSetup: { ...envelope.pageSetup, margins: { ...margins } } });
-            }
-          }}
-          onOpenHeaderFooter={() => setHeaderFooterOpen(true)}
-          onToggleNavigation={() => setNavOpen((v) => !v)}
-          onToggleComments={() => setCommentsOpen((v) => !v)}
-          onToggleFindReplace={() => setFindOpen((v) => !v)}
-          onToggleFocusMode={() => setFocusMode((v) => !v)}
           trackChangesEnabled={envelope.trackChangesEnabled}
-          onToggleTrackChanges={() =>
-            updateEnvelope({ trackChangesEnabled: !envelope.trackChangesEnabled })
-          }
           formatPainterActive={formatPainterActive}
-          onFormatPainterCopy={copyFormat}
-          onFormatPainterApply={applyFormat}
           focusMode={focusMode}
           customStyles={envelope.customStyles}
-          onOpenStyleEditor={() => setStyleEditorOpen(true)}
-          onOpenWatermark={() => setWatermarkOpen(true)}
-          onNew={() => newFromTemplate('blank')}
-          onOpenFile={async () => {
-            const path = await getPlatform().openFile();
-            if (path) await openDocumentAtPath(path);
-          }}
-          onSave={() => void saveDocument()}
-          onOpenBackstage={() => {
-            setBackstageOpen(true);
-            setBackstageSection('save');
-          }}
-          onInsertShape={handleInsertShape}
-          onInsertFootnote={handleInsertFootnote}
+          actions={ribbonActions}
         />
       )}
 
@@ -511,6 +524,7 @@ export default function App() {
             await openDocumentAtPath(docs[0].path);
           }}
           onTogglePin={togglePin}
+          onRemoveRecent={(path) => void persistRecents(recents.filter((r) => r.path !== path))}
           onOpenSettings={() => {
             setBackstageOpen(true);
             setBackstageSection('options');
@@ -527,7 +541,9 @@ export default function App() {
             <NavigationPane editor={editor} open={navOpen} onClose={() => setNavOpen(false)} />
             <div className="editor-main">
               <div
-                className={`editor-scroll${focusMode ? ' focus-mode' : ''}`}
+                className={`editor-scroll${focusMode ? ' focus-mode' : ''}${
+                  viewMode === 'web' ? ' web-layout' : ''
+                }`}
                 style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
               >
                 <DocumentRulers pageSetup={envelope.pageSetup}>
@@ -546,6 +562,7 @@ export default function App() {
                     onUpdate={(json) => updateEnvelope({ content: json })}
                     onReady={setEditor}
                     onPageCountChange={setPageCount}
+                    onCurrentPageChange={setCurrentPage}
                     onFootnoteChange={handleFootnoteChange}
                     onAddToDictionary={(word) => {
                       void getPlatform()
@@ -585,11 +602,9 @@ export default function App() {
             onZoomChange={setZoom}
             language={settings.language}
             trackChangesEnabled={envelope.trackChangesEnabled}
-            viewMode={focusMode ? 'focus' : 'print'}
-            onViewModeChange={(mode) => {
-              if (mode === 'focus') setFocusMode(true);
-              else setFocusMode(false);
-            }}
+            currentPage={currentPage}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
         </>
       )}
@@ -616,6 +631,12 @@ export default function App() {
         watermark={envelope.watermark}
         onChange={(watermark) => updateEnvelope({ watermark })}
         onClose={() => setWatermarkOpen(false)}
+      />
+      <WordCountDialog
+        open={wordCountOpen}
+        editor={editor}
+        pages={wordStats.pages}
+        onClose={() => setWordCountOpen(false)}
       />
       <StyleEditorDialog
         open={styleEditorOpen}

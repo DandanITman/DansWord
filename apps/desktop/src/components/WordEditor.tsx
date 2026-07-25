@@ -62,6 +62,8 @@ export interface WordEditorProps {
   onUpdate?: (json: unknown) => void;
   onReady?: (editor: Editor) => void;
   onPageCountChange?: (count: number) => void;
+  /** Which page the caret is currently on, 1-based. */
+  onCurrentPageChange?: (page: number) => void;
   onFootnoteChange?: (id: string, text: string) => void;
   onAddToDictionary?: (word: string) => void;
 }
@@ -80,6 +82,7 @@ export function WordEditor({
   onUpdate,
   onReady,
   onPageCountChange,
+  onCurrentPageChange,
   onFootnoteChange,
   onAddToDictionary,
 }: WordEditorProps) {
@@ -209,17 +212,35 @@ export function WordEditor({
       onPageCountChange?.(count);
     };
 
+    // The status bar showed "1/N" permanently because nothing ever computed
+    // the caret's page.
+    const reportCurrentPage = () => {
+      try {
+        const coords = editor.view.coordsAtPos(editor.state.selection.from);
+        const top = coords.top - dom.getBoundingClientRect().top;
+        const page = Math.max(1, Math.floor(top / contentAreaHeight) + 1);
+        onCurrentPageChange?.(page);
+      } catch {
+        // coordsAtPos throws while the view is detached; the next update retries.
+      }
+    };
+
     measure();
+    reportCurrentPage();
     const ro = new ResizeObserver(measure);
     ro.observe(dom);
     editor.on('update', measure);
+    editor.on('selectionUpdate', reportCurrentPage);
+    editor.on('update', reportCurrentPage);
     return () => {
       dom.removeEventListener('click', onFootnoteClick);
       dom.removeEventListener('contextmenu', onSpellContextMenu);
       ro.disconnect();
       editor.off('update', measure);
+      editor.off('selectionUpdate', reportCurrentPage);
+      editor.off('update', reportCurrentPage);
     };
-  }, [editor, contentAreaHeight, onPageCountChange, language]);
+  }, [editor, contentAreaHeight, onPageCountChange, onCurrentPageChange, language]);
 
   const applySpellReplacement = (replacement: string) => {
     if (!editor || !spellMenu) return;

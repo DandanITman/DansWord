@@ -3648,3 +3648,17 @@ select:focus-visible {
   border-top: 1px solid var(--border, #e5e7eb);
   font-style: italic;
 }
+
+/* Web layout: a continuous column rather than fixed-width pages. The status
+   bar button for this mode previously did nothing at all. */
+.editor-scroll.web-layout .doc-page {
+  width: 100% !important;
+  max-width: 100%;
+  min-height: 0 !important;
+  box-shadow: none;
+}
+
+.editor-scroll.web-layout .doc-pages-stack,
+.editor-scroll.web-layout .page-guides {
+  display: none;
+}

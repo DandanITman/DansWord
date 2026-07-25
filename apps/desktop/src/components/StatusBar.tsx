@@ -39,7 +39,7 @@ export function StatusBar({
         )}
       </div>
       <div className="status-bar-center">
-        <span className="status-page-indicator">
+        <span className="status-page-indicator" data-testid="status-page-indicator">
           {currentPage}/{pages}
         </span>
       </div>
