@@ -97,6 +97,7 @@ export default function App() {
   const [backstageOpen, setBackstageOpen] = useState(false);
   const [backstageSection, setBackstageSection] = useState<BackstageSection>('info');
   const [findOpen, setFindOpen] = useState(false);
+  const [findFocus, setFindFocus] = useState<'find' | 'replace'>('find');
   const [navOpen, setNavOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'print' | 'web' | 'focus'>('print');
@@ -131,8 +132,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    applyPrintPageSetup(envelope.pageSetup);
-  }, [envelope.pageSetup]);
+    applyPrintPageSetup(envelope.pageSetup, envelope.headerFooter);
+  }, [envelope.pageSetup, envelope.headerFooter]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', settings.theme);
@@ -193,7 +194,14 @@ export default function App() {
     const ext = extOf(path);
     if (ext === 'dansword') {
       const raw = await getPlatform().readTextFile(path);
-      openDocumentEnvelope(unwrapDansWordFile(JSON.parse(raw)), path, getFileName(path));
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        await uiAlert('That .dansword file is corrupted and could not be opened.');
+        return;
+      }
+      openDocumentEnvelope(unwrapDansWordFile(parsed), path, getFileName(path));
     } else if (ext === 'docx') {
       const buffer = await getPlatform().readFile(path);
       const arrayBuffer = (buffer.buffer as ArrayBuffer).slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
@@ -231,52 +239,96 @@ export default function App() {
     await loadRevisions(path);
   }, [openDocumentEnvelope, loadRevisions, updateRecentFile]);
 
-  const saveDocument = useCallback(async (pathOverride?: string | null, forceDialog = false) => {
-    let targetPath = pathOverride ?? filePath;
-    if (!targetPath || forceDialog) {
+  /**
+   * Write the document to a path in the format its extension names.
+   *
+   * `adopt` controls whether this becomes the open document. Exports pass
+   * false: every Backstage export used to call saveDocument(path), which
+   * reassigned filePath and cleared the dirty flag, so after "Export as HTML"
+   * the open document *was* the .html file and the next Ctrl+S overwrote it.
+   */
+  const writeDocumentTo = useCallback(
+    async (targetPath: string, adopt: boolean) => {
+      const ext = extOf(targetPath);
+
+      if (ext === 'docx') {
+        const docxBlob = await exportToDocx(envelope.content, docxExportOpts(envelope, fileName));
+        const arrayBuffer = await docxBlob.arrayBuffer();
+        await getPlatform().writeFile(targetPath, new Uint8Array(arrayBuffer));
+      } else if (ext === 'txt') {
+        await getPlatform().writeFile(targetPath, editor?.getText() ?? '');
+      } else if (ext === 'rtf') {
+        await getPlatform().writeFile(targetPath, exportToRtf(envelope.content, fileName));
+      } else if (ext === 'html' || ext === 'htm') {
+        await getPlatform().writeFile(
+          targetPath,
+          exportToHtml(envelope.content, envelope.metadata.title || fileName, {
+            author: envelope.metadata.author,
+            subject: envelope.metadata.subject,
+          }),
+        );
+      } else if (ext === 'dansword') {
+        const wrapped = wrapDansWordFile(envelope.content, envelope.metadata, {
+          pageSetup: envelope.pageSetup,
+          headerFooter: envelope.headerFooter,
+          comments: envelope.comments,
+          trackChangesEnabled: envelope.trackChangesEnabled,
+          watermark: envelope.watermark,
+          customStyles: envelope.customStyles,
+          footnotes: envelope.footnotes,
+        });
+        await getPlatform().writeFile(targetPath, JSON.stringify(wrapped, null, 2));
+      } else {
+        // Previously the fallback branch: typing "Report.pdf" in the save
+        // dialog silently wrote a .dansword JSON blob under that name.
+        await uiAlert(
+          `Cannot save as ".${ext || 'unknown'}". Choose .docx, .dansword, .rtf, .html or .txt.`,
+        );
+        return false;
+      }
+
+      // A version snapshot for every format, not just .dansword. Since .docx is
+      // the default save format, Version History was empty for normal users.
+      await getPlatform()
+        .saveRevision(targetPath, envelope, `Saved ${new Date().toLocaleString()}`)
+        .catch(() => undefined);
+
+      if (adopt) {
+        setFilePath(targetPath);
+        setFileName(getFileName(targetPath));
+        setIsDirty(false);
+        await loadRevisions(targetPath);
+        await updateRecentFile(targetPath);
+      }
+      return true;
+    },
+    [editor, envelope, fileName, loadRevisions, updateRecentFile],
+  );
+
+  const saveDocument = useCallback(
+    async (pathOverride?: string | null, forceDialog = false) => {
+      let targetPath = pathOverride ?? filePath;
+      if (!targetPath || forceDialog) {
+        const defaultDir = await getPlatform().getDefaultSaveDir();
+        const suggested = targetPath ?? suggestedSavePath(defaultDir, fileName, 'docx');
+        targetPath = await getPlatform().saveFile(suggested);
+        if (!targetPath) return false;
+      }
+      return writeDocumentTo(targetPath, true);
+    },
+    [fileName, filePath, writeDocumentTo],
+  );
+
+  /** Write a copy in another format without adopting it as the open document. */
+  const exportDocumentAs = useCallback(
+    async (ext: string) => {
       const defaultDir = await getPlatform().getDefaultSaveDir();
-      const suggested = targetPath ?? suggestedSavePath(defaultDir, fileName, 'docx');
-      targetPath = await getPlatform().saveFile(suggested);
-      if (!targetPath) return false;
-    }
-    const ext = extOf(targetPath);
-    if (ext === 'docx') {
-      const docxBlob = await exportToDocx(envelope.content, docxExportOpts(envelope, fileName));
-      const arrayBuffer = await docxBlob.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      await getPlatform().writeFile(targetPath, uint8Array);
-    } else if (ext === 'txt') {
-      const textContent = editor?.getText() ?? '';
-      await getPlatform().writeFile(targetPath, textContent);
-    } else if (ext === 'rtf') {
-      const rtfContent = exportToRtf(envelope.content, fileName);
-      await getPlatform().writeFile(targetPath, rtfContent);
-    } else if (ext === 'html' || ext === 'htm') {
-      const htmlContent = exportToHtml(envelope.content, envelope.metadata.title || fileName, {
-        author: envelope.metadata.author,
-        subject: envelope.metadata.subject,
-      });
-      await getPlatform().writeFile(targetPath, htmlContent);
-    } else {
-      const wrapped = wrapDansWordFile(envelope.content, envelope.metadata, {
-        pageSetup: envelope.pageSetup,
-        headerFooter: envelope.headerFooter,
-        comments: envelope.comments,
-        trackChangesEnabled: envelope.trackChangesEnabled,
-        watermark: envelope.watermark,
-        customStyles: envelope.customStyles,
-        footnotes: envelope.footnotes,
-      });
-      await getPlatform().writeFile(targetPath, JSON.stringify(wrapped, null, 2));
-      await getPlatform().saveRevision(targetPath, envelope, `Saved ${new Date().toLocaleString()}`);
-      await loadRevisions(targetPath);
-    }
-    setFilePath(targetPath);
-    setFileName(getFileName(targetPath));
-    setIsDirty(false);
-    await updateRecentFile(targetPath);
-    return true;
-  }, [editor, envelope, fileName, filePath, loadRevisions, updateRecentFile]);
+      const path = await getPlatform().saveFile(suggestedSavePath(defaultDir, fileName, ext));
+      if (!path) return false;
+      return writeDocumentTo(path, false);
+    },
+    [fileName, writeDocumentTo],
+  );
 
   // Mirror the unsaved-changes flag to the host so it can prompt on close.
   useEffect(() => {
@@ -322,9 +374,19 @@ export default function App() {
     };
   }, [envelope, filePath, saveDocument, settings.autoSaveIntervalMs]);
 
+  const newFromTemplate = useCallback((templateId: string) => {
+    const tpl = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
+    openDocumentEnvelope(createDocumentEnvelope(tpl.content), null, 'Untitled');
+    setEditorSyncKey((k) => k + 1);
+    setIsDirty(false);
+    setBackstageOpen(false);
+  }, [openDocumentEnvelope]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key.toLowerCase() === 's') {
+      // Ctrl+O and Ctrl+N make sense anywhere; the rest act on an open document.
+      const editorOnly = view === 'editor';
+      if (editorOnly && e.ctrlKey && e.key.toLowerCase() === 's') {
         e.preventDefault();
         saveDocument();
       }
@@ -339,28 +401,24 @@ export default function App() {
         e.preventDefault();
         newFromTemplate('blank');
       }
-      if (e.ctrlKey && e.key.toLowerCase() === 'f') {
+      if (editorOnly && e.ctrlKey && e.key.toLowerCase() === 'f') {
         e.preventDefault();
         setFindOpen(true);
+        setFindFocus('find');
       }
-      if (e.ctrlKey && e.key.toLowerCase() === 'h') {
+      // Ctrl+H is Replace: it must land in the replace field, not repeat Ctrl+F.
+      if (editorOnly && e.ctrlKey && e.key.toLowerCase() === 'h') {
         e.preventDefault();
         setFindOpen(true);
+        setFindFocus('replace');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [openDocumentAtPath, saveDocument]);
+  }, [openDocumentAtPath, saveDocument, view, newFromTemplate]);
 
-  const newFromTemplate = useCallback((templateId: string) => {
-    const tpl = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
-    openDocumentEnvelope(createDocumentEnvelope(tpl.content), null, 'Untitled');
-    setEditorSyncKey((k) => k + 1);
-    setIsDirty(false);
-    setBackstageOpen(false);
-  }, [openDocumentEnvelope]);
 
   const handleInsertImage = async () => {
     const path = await getPlatform().openImageFile();
@@ -383,13 +441,14 @@ export default function App() {
 
   const handleInsertFootnote = () => {
     if (!editor) return;
-    setEnvelope((prev) => {
-      const fn = insertFootnote(editor, prev.footnotes, ' ');
-      return {
-        ...prev,
-        footnotes: [...prev.footnotes, { id: fn.id, text: '' }],
-      };
-    });
+    // The editor mutation happens here, not inside the state updater: React
+    // StrictMode double-invokes updaters, which inserted two references per
+    // click in development.
+    const fn = insertFootnote(editor, envelope.footnotes, '');
+    setEnvelope((prev) => ({
+      ...prev,
+      footnotes: [...prev.footnotes, { id: fn.id, text: '' }],
+    }));
     setIsDirty(true);
     window.setTimeout(() => {
       const note = document.querySelector<HTMLElement>('.doc-footnote-text:last-of-type');
@@ -410,12 +469,23 @@ export default function App() {
     const suggested = fileName.replace(/\.[^.]+$/, '') || 'Document';
     const targetPath = await getPlatform().saveFile(joinPath(defaultDir, `${suggested}.pdf`));
     if (!targetPath) return;
-    applyPrintPageSetup(envelope.pageSetup);
+
+    applyPrintPageSetup(envelope.pageSetup, envelope.headerFooter);
+
+    // Reset zoom before rendering: the CSS transform would otherwise scale the
+    // exported page. Waiting on two animation frames is tied to the browser
+    // actually having painted, rather than the previous bare 200ms timeout.
     const originalZoom = zoom;
     setZoom(100);
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    await getPlatform().exportPdf(targetPath, pdfPageSize(envelope.pageSetup));
-    setZoom(originalZoom);
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+
+    try {
+      await getPlatform().exportPdf(targetPath, pdfPageSize(envelope.pageSetup));
+    } finally {
+      setZoom(originalZoom);
+    }
   };
 
   const togglePin = async (path: string) => {
@@ -536,7 +606,12 @@ export default function App() {
         />
       ) : (
         <>
-          <FindReplaceBar editor={editor} open={findOpen} onClose={() => setFindOpen(false)} />
+          <FindReplaceBar
+            editor={editor}
+            open={findOpen}
+            focusField={findFocus}
+            onClose={() => setFindOpen(false)}
+          />
           <div className="editor-workspace">
             <NavigationPane editor={editor} open={navOpen} onClose={() => setNavOpen(false)} />
             <div className="editor-main">
@@ -668,15 +743,11 @@ export default function App() {
             setBackstageOpen(false);
           }}
           onExportDocx={async () => {
-            const defaultDir = await getPlatform().getDefaultSaveDir();
-            const path = await getPlatform().saveFile(suggestedSavePath(defaultDir, fileName, 'docx'));
-            if (path) await saveDocument(path);
+            await exportDocumentAs('docx');
             setBackstageOpen(false);
           }}
           onExportDansword={async () => {
-            const defaultDir = await getPlatform().getDefaultSaveDir();
-            const path = await getPlatform().saveFile(suggestedSavePath(defaultDir, fileName, 'dansword'));
-            if (path) await saveDocument(path);
+            await exportDocumentAs('dansword');
             setBackstageOpen(false);
           }}
           onExportPdf={() => {
@@ -696,19 +767,11 @@ export default function App() {
           metadata={envelope.metadata}
           onMetadataChange={(metadata) => updateEnvelope({ metadata })}
           onExportRtf={async () => {
-            const defaultDir = await getPlatform().getDefaultSaveDir();
-            const path = await getPlatform().saveFile(
-              suggestedSavePath(defaultDir, fileName, 'rtf'),
-            );
-            if (path) await saveDocument(path);
+            await exportDocumentAs('rtf');
             setBackstageOpen(false);
           }}
           onExportHtml={async () => {
-            const defaultDir = await getPlatform().getDefaultSaveDir();
-            const path = await getPlatform().saveFile(
-              suggestedSavePath(defaultDir, fileName, 'html'),
-            );
-            if (path) await saveDocument(path);
+            await exportDocumentAs('html');
             setBackstageOpen(false);
           }}
         />
