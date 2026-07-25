@@ -22,6 +22,7 @@ npm run regression
 | `npm run test:unit` | Same as `npm test` |
 | `npm run test:e2e` | Playwright end-to-end tests |
 | `npm run test:e2e:headed` | E2e tests with visible browser |
+| `npm run test:electron` | Tests against a real launched Electron app |
 | `npm run test:visual` | Playwright visual snapshot tests |
 | `npm run test:visual:update` | Refresh visual baselines after intentional UI changes |
 
@@ -37,6 +38,22 @@ npx playwright install chromium
 Playwright browser install is required once per machine/CI image. The regression script assumes dependencies are already installed.
 
 **Note:** Playwright is a local project dependency, not a global command. Use `npm run test:e2e` or `npx playwright test` — running `playwright test` directly in PowerShell will fail with "not recognized".
+
+## Why tests may not drive the editor directly
+
+The suite used to expose `runEditorCommand`, which called TipTap commands
+straight from a test. Ten tests used it, including one named "applies heading
+style from ribbon" that never touched the ribbon — so the wiring between the
+controls and the editor shipped almost entirely untested, and the ribbon's
+state went stale on every caret move without a single test noticing.
+
+That escape hatch is gone. Tests click real controls. If a control is hard to
+reach from a test, that is a signal about the control, not a reason to reach
+past it.
+
+The same applied to dialogs: `uiPrompt` had a test-mode branch that fell back
+to `window.prompt`, so tests drove native dialogs while users only ever saw the
+in-app one. Use `answerPrompt` and `dismissAlert` instead.
 
 ## How the browser harness works
 
@@ -157,3 +174,25 @@ Visual snapshots are generated on Windows. Run `npm run test:visual:update` on W
 - Tests use mock/local fixtures only — no production services or real user data.
 - Existing package tests were kept; the old in-app “Visual QA Auto-Pilot” was removed in favor of this Playwright-based suite.
 - Do not skip failing tests without documenting why in this file.
+
+## Electron tests
+
+`npm run test:electron` builds the app and launches the real main process with
+Playwright's `_electron` API, against a throwaway `userData` directory.
+
+This layer previously had no coverage at all: everything ran against the
+browser harness, so `main.ts`, `preload.ts`, `spell.ts` and `docImport.ts` were
+never executed, and the file that claimed to cover them contained three skipped
+`expect(true).toBe(true)` bodies behind a `testIgnore`.
+
+The Electron suite covers the full host bridge surface, Hunspell against the
+dictionaries the installer actually ships, the persisted user dictionary, real
+file reads and writes, the revision store, real PDF output, settings surviving
+a restart, the unsaved-changes guard, and opening a document passed on the
+command line.
+
+On Linux it needs a display: `xvfb-run -a npm run test:electron`.
+
+If your machine has a pre-provisioned browser at a revision that does not match
+the pinned Playwright, point the browser suite at it with
+`DANSWORD_CHROMIUM_PATH=/path/to/chrome npm run test:e2e`.
