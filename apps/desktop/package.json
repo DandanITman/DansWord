@@ -9,8 +9,8 @@
     "dev:test": "vite --mode test --strictPort --port 5173",
     "icons": "node scripts/process-icon.mjs",
     "prebuild": "npm run icons",
-    "build": "tsc -b && vite build",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.electron.json && vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.electron.json",
     "test": "vitest run",
     "package": "npm run build && electron-builder --win"
   },
@@ -40,7 +40,6 @@
     "dictionary-es": "^4.0.0",
     "dictionary-fr": "^3.0.0",
     "word-extractor": "^1.0.4",
-    "ws": "^8.18.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
@@ -55,7 +54,6 @@
     "png-to-ico": "^2.1.8",
     "sharp": "^0.34.5",
     "typescript": "^5.8.3",
-    "@types/ws": "^8.18.1",
     "vite": "^6.3.5",
     "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.6",
@@ -78,8 +76,7 @@
       "node_modules/dictionary-de/**/*",
       "node_modules/dictionary-es/**/*",
       "node_modules/dictionary-fr/**/*",
-      "node_modules/word-extractor/**/*",
-      "node_modules/ws/**/*"
+      "node_modules/word-extractor/**/*"
     ],
     "extraResources": [
       {

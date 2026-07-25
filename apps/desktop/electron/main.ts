@@ -1,10 +1,9 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, nativeImage, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, nativeImage, Menu } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { existsSync, mkdirSync } from 'node:fs';
 import { checkWords, suggestWord } from './spell';
 import { importDocFile } from './docImport';
-import { startCollabServer, stopCollabServer, getCollabUrl } from './collabServer';
 
 const isDev = !app.isPackaged;
 let mainWindow: BrowserWindow | null = null;
@@ -185,14 +184,6 @@ ipcMain.handle('recents:set', async (_e, recents: unknown) => {
   return true;
 });
 
-ipcMain.handle('shell:showItemInFolder', async (_e, filePath: string) => {
-  shell.showItemInFolder(filePath);
-});
-
-ipcMain.handle('app:getDocumentsPath', () => {
-  return app.getPath('documents');
-});
-
 ipcMain.handle('app:getDefaultSaveDir', async () => {
   const settings = await readJson<{ defaultSaveLocation?: string } | null>(settingsPath, null);
   const configured = settings?.defaultSaveLocation?.trim();
@@ -232,13 +223,6 @@ ipcMain.handle('spell:checkWords', async (_e, words: string[], language?: string
 ipcMain.handle('spell:suggest', async (_e, word: string, language?: string) =>
   suggestWord(word, language ?? 'en-US'),
 );
-
-ipcMain.handle('collab:start', async () => startCollabServer());
-ipcMain.handle('collab:stop', async () => {
-  stopCollabServer();
-  return true;
-});
-ipcMain.handle('collab:getUrl', async () => getCollabUrl());
 
 const revisionsDir = path.join(dataDir, 'revisions');
 

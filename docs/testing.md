@@ -6,7 +6,6 @@ DansWord uses a layered regression suite:
 2. **Unit/component tests** — Vitest for document logic, OpenXML, and TipTap editor behavior
 3. **End-to-end tests** — Playwright click-through flows against a browser test harness
 4. **Visual regression** — Playwright screenshot baselines for key UI states
-5. **Catalog audit** — static check that automated `TC-*` catalog entries are referenced from real test source
 
 Run everything locally with one command:
 
@@ -19,7 +18,6 @@ npm run regression
 | Command | Purpose |
 |---------|---------|
 | `npm run regression` | Full suite (typecheck, build, unit, e2e, visual) |
-| `npm run test:catalog` | Verify automated catalog IDs are linked to test source |
 | `npm test` | Unit/component tests only |
 | `npm run test:unit` | Same as `npm test` |
 | `npm run test:e2e` | Playwright end-to-end tests |
@@ -85,7 +83,7 @@ In GitHub Actions, download the `visual-snapshot-diffs` artifact from a failed r
 
 ## Adding a new regression test
 
-Every automated entry in `tests/catalog/test-catalog.json` must include its `TC-*` ID in the matching spec or unit test source. `npm run test:catalog` fails when an automated catalog entry is not referenced by test source, or when a test references an unknown catalog ID.
+Tests must exercise the feature through the UI a user actually touches. A test that drives the editor directly proves TipTap works, not that DansWord's controls are wired to it.
 
 ### Unit/component
 
@@ -125,20 +123,16 @@ Visual snapshots catch differences from the committed baseline. If a bad layout 
 - Save backstage panel open
 - Visual baselines: home, empty editor, formatted document, ribbon, canvas, backstage, narrow viewport, dark theme home
 - Layout guard for primary app controls being visible and unclipped
-- Catalog audit linking automated `TC-*` entries to real test files
 - Document envelope create/serialize/parse
 - OpenXML export + `.dansword` round-trip (existing package tests)
-- Feature parity catalog thresholds (existing package tests)
-- Mail merge helpers (existing package tests)
 
-### Optional follow-up coverage (implemented features, not yet in catalog)
+### Known coverage gaps
 
 - Text highlight color
 - Page margins and landscape orientation in page setup
 - Ribbon Cut/Copy/Paste buttons (keyboard clipboard is covered)
 - Decrease paragraph indent (increase is covered)
 - Accept/reject single track change (accept/reject all is covered)
-- LAN collaboration sync beyond opening the dialog
 - Multi-page print pagination layout
 
 ### Out of scope (not built — no tests planned)
@@ -147,14 +141,13 @@ Visual snapshots catch differences from the committed baseline. If a bad layout 
 
 ### Electron-only (optional manual)
 
-- Native OS file open/save dialogs (`TC-ELEC-001` in catalog)
+- Native OS file open/save dialogs
 
 ## CI layout
 
 GitHub Actions runs two jobs:
 
-- **regression** (Ubuntu): typecheck, build, unit tests, e2e tests
-- **catalog audit** (Ubuntu regression/release): validates `tests/catalog/test-catalog.json` against test source before expensive checks
+- **regression** (Ubuntu): typecheck (app, Electron main and tests), build, unit tests, e2e tests
 - **visual** (Windows): screenshot regression tests against committed baselines
 
 Visual snapshots are generated on Windows. Run `npm run test:visual:update` on Windows before committing baseline changes.

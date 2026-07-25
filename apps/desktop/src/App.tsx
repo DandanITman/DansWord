@@ -39,27 +39,15 @@ import { DocumentRulers } from './components/DocumentRulers';
 import { EditorTitleBar } from './components/EditorTitleBar';
 import { PageSetupDialog, HeaderFooterDialog } from './components/PageSetupDialog';
 import { CommentsPane } from './components/CommentsPane';
-import { MailMergeDialog } from './components/MailMergeDialog';
-import { CollaborationDialog, type CollabSession } from './components/CollaborationDialog';
 import { UiPromptHost } from './components/UiPromptHost';
 import { useFormatPainter } from './hooks/useFormatPainter';
-import { uiAlert, uiPrompt } from './utils/uiPrompt';
-import { useCollabSync } from './hooks/useCollabSync';
+import { uiAlert } from './utils/uiPrompt';
 import { bytesToDataUrl, mimeForImageExt } from './utils/imageInsert';
-
-function getFileName(path: string | null, fallback = 'Untitled') {
-  if (!path) return fallback;
-  return path.split(/[\\/]/).pop() ?? fallback;
-}
-
-function extOf(path: string) {
-  const idx = path.lastIndexOf('.');
-  return idx >= 0 ? path.slice(idx + 1).toLowerCase() : '';
-}
+import { getPlatform, joinPath, baseName as getFileName, extensionOf as extOf } from './platform';
 
 function suggestedSavePath(defaultDir: string, name: string, ext = 'docx') {
   const base = name.replace(/\.[^.]+$/, '') || 'Untitled';
-  return `${defaultDir}\\${base}.${ext}`;
+  return joinPath(defaultDir, `${base}.${ext}`);
 }
 
 function newComment(text: string, anchorText?: string): DocumentComment {
@@ -111,24 +99,11 @@ export default function App() {
   const [headerFooterOpen, setHeaderFooterOpen] = useState(false);
   const [styleEditorOpen, setStyleEditorOpen] = useState(false);
   const [watermarkOpen, setWatermarkOpen] = useState(false);
-  const [mailMergeOpen, setMailMergeOpen] = useState(false);
-  const [collabOpen, setCollabOpen] = useState(false);
-  const [collabSession, setCollabSession] = useState<CollabSession | null>(null);
   const [editorSyncKey, setEditorSyncKey] = useState(0);
   const [pageCount, setPageCount] = useState(1);
   const [revisions, setRevisions] = useState<DocumentRevision[]>([]);
   const autoSaveTimer = useRef<number | null>(null);
   const { active: formatPainterActive, copyFormat, applyFormat } = useFormatPainter(editor);
-
-  useCollabSync({
-    session: collabSession,
-    envelope,
-    onRemoteEnvelope: (remote) => {
-      setEnvelope(remote);
-      setEditorSyncKey((k) => k + 1);
-      setIsDirty(true);
-    },
-  });
 
   const wordStats = getWordCount(editor, pageCount);
 
@@ -138,7 +113,7 @@ export default function App() {
   }, []);
 
   const loadRevisions = useCallback(async (path: string) => {
-    const list = await window.dansword.listRevisions(path);
+    const list = await getPlatform().listRevisions(path);
     setRevisions(list);
   }, []);
 
@@ -155,16 +130,16 @@ export default function App() {
     );
     document.documentElement.style.setProperty('--font-doc', settings.defaultFontFamily);
     document.documentElement.style.setProperty('--font-doc-size', `${settings.defaultFontSize}pt`);
-    window.dansword.setSettings(settings);
+    getPlatform().setSettings(settings);
   }, [settings]);
 
   useEffect(() => {
     const initApp = async () => {
-      const savedSettings = await window.dansword.getSettings();
+      const savedSettings = await getPlatform().getSettings();
       if (savedSettings) {
         setSettings((prev) => ({ ...prev, ...savedSettings }));
       }
-      const savedRecents = await window.dansword.getRecents();
+      const savedRecents = await getPlatform().getRecents();
       if (savedRecents && savedRecents.length) {
         setRecents(savedRecents);
       }
@@ -174,7 +149,7 @@ export default function App() {
 
   const persistRecents = useCallback(async (next: RecentFile[]) => {
     setRecents(next);
-    await window.dansword.setRecents(next);
+    await getPlatform().setRecents(next);
   }, []);
 
   const updateRecentFile = useCallback(async (path: string) => {
@@ -203,15 +178,15 @@ export default function App() {
   const openDocumentAtPath = useCallback(async (path: string) => {
     const ext = extOf(path);
     if (ext === 'dansword') {
-      const raw = await window.dansword.readTextFile(path);
+      const raw = await getPlatform().readTextFile(path);
       openDocumentEnvelope(unwrapDansWordFile(JSON.parse(raw)), path, getFileName(path));
     } else if (ext === 'docx') {
-      const buffer = await window.dansword.readFile(path);
+      const buffer = await getPlatform().readFile(path);
       const arrayBuffer = (buffer.buffer as ArrayBuffer).slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
       const docNode = await importFromDocx(arrayBuffer);
       openDocumentEnvelope(createDocumentEnvelope(docNode), path, getFileName(path));
     } else if (ext === 'doc') {
-      const res = await window.dansword.importDoc(path);
+      const res = await getPlatform().importDoc(path);
       if (res.format === 'docx') {
         const docNode = await importFromDocx(res.data);
         openDocumentEnvelope(createDocumentEnvelope(docNode), path, getFileName(path));
@@ -220,10 +195,10 @@ export default function App() {
         await uiAlert(res.warning);
       }
     } else if (ext === 'rtf') {
-      const raw = await window.dansword.readTextFile(path);
+      const raw = await getPlatform().readTextFile(path);
       openDocumentEnvelope(createDocumentEnvelope(importFromRtf(raw)), path, getFileName(path));
     } else if (ext === 'txt') {
-      const raw = await window.dansword.readTextFile(path);
+      const raw = await getPlatform().readTextFile(path);
       const lines = raw.split(/\r?\n/).map((line) => ({
         type: 'paragraph' as const,
         content: line ? [{ type: 'text' as const, text: line }] : [],
@@ -244,9 +219,9 @@ export default function App() {
   const saveDocument = useCallback(async (pathOverride?: string | null, forceDialog = false) => {
     let targetPath = pathOverride ?? filePath;
     if (!targetPath || forceDialog) {
-      const defaultDir = await window.dansword.getDefaultSaveDir();
+      const defaultDir = await getPlatform().getDefaultSaveDir();
       const suggested = targetPath ?? suggestedSavePath(defaultDir, fileName, 'docx');
-      targetPath = await window.dansword.saveFile(suggested);
+      targetPath = await getPlatform().saveFile(suggested);
       if (!targetPath) return false;
     }
     const ext = extOf(targetPath);
@@ -254,19 +229,19 @@ export default function App() {
       const docxBlob = await exportToDocx(envelope.content, docxExportOpts(envelope, fileName));
       const arrayBuffer = await docxBlob.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
-      await window.dansword.writeFile(targetPath, uint8Array);
+      await getPlatform().writeFile(targetPath, uint8Array);
     } else if (ext === 'txt') {
       const textContent = editor?.getText() ?? '';
-      await window.dansword.writeFile(targetPath, textContent);
+      await getPlatform().writeFile(targetPath, textContent);
     } else if (ext === 'rtf') {
       const rtfContent = exportToRtf(envelope.content, fileName);
-      await window.dansword.writeFile(targetPath, rtfContent);
+      await getPlatform().writeFile(targetPath, rtfContent);
     } else if (ext === 'html' || ext === 'htm') {
       const htmlContent = exportToHtml(envelope.content, envelope.metadata.title || fileName, {
         author: envelope.metadata.author,
         subject: envelope.metadata.subject,
       });
-      await window.dansword.writeFile(targetPath, htmlContent);
+      await getPlatform().writeFile(targetPath, htmlContent);
     } else {
       const wrapped = wrapDansWordFile(envelope.content, envelope.metadata, {
         pageSetup: envelope.pageSetup,
@@ -277,8 +252,8 @@ export default function App() {
         customStyles: envelope.customStyles,
         footnotes: envelope.footnotes,
       });
-      await window.dansword.writeFile(targetPath, JSON.stringify(wrapped, null, 2));
-      await window.dansword.saveRevision(targetPath, envelope, `Saved ${new Date().toLocaleString()}`);
+      await getPlatform().writeFile(targetPath, JSON.stringify(wrapped, null, 2));
+      await getPlatform().saveRevision(targetPath, envelope, `Saved ${new Date().toLocaleString()}`);
       await loadRevisions(targetPath);
     }
     setFilePath(targetPath);
@@ -308,7 +283,7 @@ export default function App() {
       if (e.ctrlKey && e.key.toLowerCase() === 'o') {
         e.preventDefault();
         (async () => {
-          const path = await window.dansword.openFile();
+          const path = await getPlatform().openFile();
           if (path) await openDocumentAtPath(path);
         })();
       }
@@ -340,14 +315,14 @@ export default function App() {
   }, [openDocumentEnvelope]);
 
   const handleInsertImage = async () => {
-    const path = await window.dansword.openImageFile();
+    const path = await getPlatform().openImageFile();
     if (!path || !editor) return;
     const ext = extOf(path);
     if (!['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) {
       await uiAlert('Please choose an image file.');
       return;
     }
-    const bytes = await window.dansword.readFile(path);
+    const bytes = await getPlatform().readFile(path);
     const dataUrl = bytesToDataUrl(bytes, mimeForImageExt(ext));
     const altText = getFileName(path);
     editor.chain().focus().setImage({ src: dataUrl, alt: altText }).run();
@@ -383,32 +358,16 @@ export default function App() {
   };
 
   const exportPdf = async () => {
-    const defaultDir = await window.dansword.getDefaultSaveDir();
+    const defaultDir = await getPlatform().getDefaultSaveDir();
     const suggested = fileName.replace(/\.[^.]+$/, '') || 'Document';
-    const targetPath = await window.dansword.saveFile(`${defaultDir}\\${suggested}.pdf`);
+    const targetPath = await getPlatform().saveFile(joinPath(defaultDir, `${suggested}.pdf`));
     if (!targetPath) return;
     applyPrintPageSetup(envelope.pageSetup);
     const originalZoom = zoom;
     setZoom(100);
     await new Promise((resolve) => setTimeout(resolve, 200));
-    await window.dansword.exportPdf(targetPath, pdfPageSize(envelope.pageSetup));
+    await getPlatform().exportPdf(targetPath, pdfPageSize(envelope.pageSetup));
     setZoom(originalZoom);
-  };
-
-  const startCollabHost = async (roomId: string) => {
-    const { url } = await window.dansword.startCollabServer();
-    setCollabSession({ wsUrl: url, roomId, role: 'host' });
-    setCollabOpen(false);
-  };
-
-  const joinCollab = (wsUrl: string, roomId: string) => {
-    setCollabSession({ wsUrl, roomId, role: 'join' });
-    setCollabOpen(false);
-  };
-
-  const stopCollab = async () => {
-    await window.dansword.stopCollabServer();
-    setCollabSession(null);
   };
 
   const togglePin = async (path: string) => {
@@ -418,7 +377,7 @@ export default function App() {
 
   const restoreRevision = async (id: string) => {
     if (!filePath) return;
-    const snapshot = await window.dansword.loadRevision(filePath, id);
+    const snapshot = await getPlatform().loadRevision(filePath, id);
     setEnvelope(snapshot as DocumentEnvelope);
     setEditorSyncKey((k) => k + 1);
     setIsDirty(true);
@@ -434,7 +393,7 @@ export default function App() {
           theme={settings.theme}
           onSave={() => void saveDocument()}
           onNew={() => newFromTemplate('blank')}
-          onPrint={() => void window.dansword.printDocument()}
+          onPrint={() => void getPlatform().printDocument()}
           onUndo={() => editor?.chain().focus().undo().run()}
           onRedo={() => editor?.chain().focus().redo().run()}
           canUndo={!!editor?.can().undo()}
@@ -451,7 +410,7 @@ export default function App() {
           activeTab={ribbonTab}
           onTabChange={setRibbonTab}
           editor={editor}
-          onPrint={() => void window.dansword.printDocument()}
+          onPrint={() => void getPlatform().printDocument()}
           onExportPdf={exportPdf}
           onInsertImage={handleInsertImage}
           onOpenPageSetup={() => setPageSetupOpen(true)}
@@ -479,7 +438,7 @@ export default function App() {
           onOpenWatermark={() => setWatermarkOpen(true)}
           onNew={() => newFromTemplate('blank')}
           onOpenFile={async () => {
-            const path = await window.dansword.openFile();
+            const path = await getPlatform().openFile();
             if (path) await openDocumentAtPath(path);
           }}
           onSave={() => void saveDocument()}
@@ -489,17 +448,6 @@ export default function App() {
           }}
           onInsertShape={handleInsertShape}
           onInsertFootnote={handleInsertFootnote}
-          onInsertMergeField={() => {
-            void (async () => {
-              const name = await uiPrompt('Merge field name', 'FirstName');
-              if (name?.trim()) {
-                editor?.chain().focus().insertMergeField(name.trim()).run();
-              }
-            })();
-          }}
-          onOpenMailMerge={() => setMailMergeOpen(true)}
-          onOpenCollaboration={() => setCollabOpen(true)}
-          collabActive={!!collabSession}
         />
       )}
 
@@ -509,14 +457,14 @@ export default function App() {
           settings={settings}
           onNewFromTemplate={newFromTemplate}
           onOpenFile={async () => {
-            const path = await window.dansword.openFile();
+            const path = await getPlatform().openFile();
             if (path) await openDocumentAtPath(path);
           }}
           onOpenRecent={openDocumentAtPath}
           onBrowseFolder={async () => {
-            const path = await window.dansword.openFolder();
+            const path = await getPlatform().openFolder();
             if (!path) return;
-            const docs = await window.dansword.listDocuments(path);
+            const docs = await getPlatform().listDocuments(path);
             if (!docs.length) {
               await uiAlert('No documents found in that folder.');
               return;
@@ -623,20 +571,6 @@ export default function App() {
         onChange={(watermark) => updateEnvelope({ watermark })}
         onClose={() => setWatermarkOpen(false)}
       />
-      <MailMergeDialog
-        open={mailMergeOpen}
-        envelope={envelope}
-        editor={editor}
-        onClose={() => setMailMergeOpen(false)}
-      />
-      <CollaborationDialog
-        open={collabOpen}
-        session={collabSession}
-        onStartHost={startCollabHost}
-        onJoin={joinCollab}
-        onStop={() => void stopCollab()}
-        onClose={() => setCollabOpen(false)}
-      />
       <StyleEditorDialog
         open={styleEditorOpen}
         styles={envelope.customStyles}
@@ -654,7 +588,7 @@ export default function App() {
             setBackstageOpen(false);
           }}
           onOpen={async () => {
-            const path = await window.dansword.openFile();
+            const path = await getPlatform().openFile();
             if (path) await openDocumentAtPath(path);
             setBackstageOpen(false);
           }}
@@ -667,14 +601,14 @@ export default function App() {
             setBackstageOpen(false);
           }}
           onExportDocx={async () => {
-            const defaultDir = await window.dansword.getDefaultSaveDir();
-            const path = await window.dansword.saveFile(suggestedSavePath(defaultDir, fileName, 'docx'));
+            const defaultDir = await getPlatform().getDefaultSaveDir();
+            const path = await getPlatform().saveFile(suggestedSavePath(defaultDir, fileName, 'docx'));
             if (path) await saveDocument(path);
             setBackstageOpen(false);
           }}
           onExportDansword={async () => {
-            const defaultDir = await window.dansword.getDefaultSaveDir();
-            const path = await window.dansword.saveFile(suggestedSavePath(defaultDir, fileName, 'dansword'));
+            const defaultDir = await getPlatform().getDefaultSaveDir();
+            const path = await getPlatform().saveFile(suggestedSavePath(defaultDir, fileName, 'dansword'));
             if (path) await saveDocument(path);
             setBackstageOpen(false);
           }}
@@ -683,7 +617,7 @@ export default function App() {
             setBackstageOpen(false);
           }}
           onPrint={async () => {
-            await window.dansword.printDocument();
+            await getPlatform().printDocument();
             setBackstageOpen(false);
           }}
           settings={settings}
@@ -695,17 +629,17 @@ export default function App() {
           metadata={envelope.metadata}
           onMetadataChange={(metadata) => updateEnvelope({ metadata })}
           onExportRtf={async () => {
-            const defaultDir = await window.dansword.getDefaultSaveDir();
-            const path = await window.dansword.saveFile(
-              `${defaultDir}\\${fileName.replace(/\.[^.]+$/, '')}.rtf`,
+            const defaultDir = await getPlatform().getDefaultSaveDir();
+            const path = await getPlatform().saveFile(
+              suggestedSavePath(defaultDir, fileName, 'rtf'),
             );
             if (path) await saveDocument(path);
             setBackstageOpen(false);
           }}
           onExportHtml={async () => {
-            const defaultDir = await window.dansword.getDefaultSaveDir();
-            const path = await window.dansword.saveFile(
-              `${defaultDir}\\${fileName.replace(/\.[^.]+$/, '')}.html`,
+            const defaultDir = await getPlatform().getDefaultSaveDir();
+            const path = await getPlatform().saveFile(
+              suggestedSavePath(defaultDir, fileName, 'html'),
             );
             if (path) await saveDocument(path);
             setBackstageOpen(false);

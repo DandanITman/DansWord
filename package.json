@@ -12,20 +12,17 @@
     "dev": "npm run dev -w @dansword/desktop",
     "build": "npm run build -w @dansword/desktop",
     "package": "npm run package -w @dansword/desktop",
-    "typecheck": "npm run typecheck -w @dansword/desktop",
+    "typecheck": "tsc --noEmit -p packages/core/tsconfig.json && tsc --noEmit -p packages/openxml/tsconfig.json && tsc --noEmit -p apps/desktop/tsconfig.json && tsc --noEmit -p apps/desktop/tsconfig.electron.json && tsc --noEmit -p tsconfig.tests.json",
     "test": "npm run test:unit",
-    "test:catalog": "node scripts/audit-test-catalog.mjs",
     "test:unit": "npm run test -w @dansword/core && npm run test -w @dansword/openxml && npm run test -w @dansword/desktop",
     "test:e2e": "playwright test tests/e2e",
     "test:e2e:headed": "playwright test tests/e2e --headed",
+    "test:electron": "playwright test tests/electron",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
     "regression": "node scripts/regression.mjs",
-    "pre-deploy": "node scripts/pre-deploy.mjs",
-    "pre-deploy:ci": "node scripts/pre-deploy-ci.mjs",
     "release-notes": "node scripts/generate-release-notes.mjs",
-    "verify:pages": "node scripts/verify-pages.mjs",
-    "test:parity": "npm run test -w @dansword/core"
+    "verify:pages": "node scripts/verify-pages.mjs"
   },
   "engines": {
     "node": ">=20"

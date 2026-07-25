@@ -177,13 +177,6 @@ test.describe('Layout, review, and view', () => {
     await page.getByRole('button', { name: 'Resolve' }).click();
   });
 
-  test('opens collaboration dialog', async ({ page }) => {
-    await openBlankDocument(page);
-    await switchRibbonTab(page, 'review');
-    await page.getByRole('button', { name: /Collaborate/i }).click();
-    await expect(page.getByText(/Collaboration/i)).toBeVisible();
-  });
-
   test('TC-VIEW-003: toggles focus mode from view tab', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'view');
@@ -222,8 +215,9 @@ test.describe('Layout, review, and view', () => {
       window.__DANSWORD_TEST__?.setSettings({ theme: 'dark', spellCheckEnabled: false });
       return window.dansword.getSettings();
     });
-    expect(settings.theme).toBe('dark');
-    expect(settings.spellCheckEnabled).toBe(false);
+    expect(settings).not.toBeNull();
+    expect(settings!.theme).toBe('dark');
+    expect(settings!.spellCheckEnabled).toBe(false);
   });
 });
 
@@ -248,7 +242,7 @@ test.describe('Settings and options', () => {
     await page.getByRole('button', { name: /Save As \/ Export/i }).click();
     await page.getByTestId('backstage-nav-options').click();
     await page.getByLabel(/Enable spell check/i).uncheck();
-    const enabled = await page.evaluate(async () => (await window.dansword.getSettings()).spellCheckEnabled);
+    const enabled = await page.evaluate(async () => (await window.dansword.getSettings())?.spellCheckEnabled);
     expect(enabled).toBe(false);
   });
 

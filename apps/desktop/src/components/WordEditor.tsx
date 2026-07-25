@@ -25,11 +25,11 @@ import { TableOfContents } from '../extensions/TableOfContents';
 import { CommentAnchor } from '../extensions/CommentAnchor';
 import { DocShape } from '../extensions/DocShape';
 import { FootnoteRef } from '../extensions/FootnoteRef';
-import { MergeField } from '../extensions/MergeField';
 import { HunspellCheck } from '../extensions/HunspellCheck';
 import { SuperscriptMark, SubscriptMark } from '../extensions/TextMarks';
 import { ParagraphFormatting } from '../extensions/ParagraphFormatting';
 import { SpellSuggestionMenu, type SpellSuggestionState } from './SpellSuggestionMenu';
+import { getPlatform } from '../platform';
 
 const FontSize = Extension.create({
   name: 'fontSize',
@@ -176,11 +176,10 @@ export function WordEditor({
       CommentAnchor,
       DocShape,
       FootnoteRef,
-      MergeField,
       HunspellCheck.configure({
         enabled: spellCheckEnabled,
         language,
-        checkWords: (words, lang) => window.dansword.spellCheckWords(words, lang),
+        checkWords: (words, lang) => getPlatform().spellCheckWords(words, lang),
       }),
     ],
     [spellCheckEnabled, language],
@@ -243,7 +242,7 @@ export function WordEditor({
         const from = pos;
         const to = pos + word.length;
 
-        void window.dansword.spellSuggest(word, language).then((suggestions) => {
+        void getPlatform().spellSuggest(word, language).then((suggestions) => {
           setSpellMenu({
             x: e.clientX,
             y: e.clientY,

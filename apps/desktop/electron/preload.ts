@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { DocumentRevision } from '@dansword/core';
 
 contextBridge.exposeInMainWorld('dansword', {
   openFile: () => ipcRenderer.invoke('dialog:openFile') as Promise<string | null>,
@@ -19,8 +20,6 @@ contextBridge.exposeInMainWorld('dansword', {
   setSettings: (settings: unknown) => ipcRenderer.invoke('settings:set', settings),
   getRecents: () => ipcRenderer.invoke('recents:get'),
   setRecents: (recents: unknown) => ipcRenderer.invoke('recents:set', recents),
-  showItemInFolder: (filePath: string) => ipcRenderer.invoke('shell:showItemInFolder', filePath),
-  getDocumentsPath: () => ipcRenderer.invoke('app:getDocumentsPath') as Promise<string>,
   getDefaultSaveDir: () => ipcRenderer.invoke('app:getDefaultSaveDir') as Promise<string>,
   printDocument: () => ipcRenderer.invoke('print:document') as Promise<boolean>,
   saveRevision: (docPath: string, snapshot: unknown, label: string) =>
@@ -40,8 +39,4 @@ contextBridge.exposeInMainWorld('dansword', {
     ipcRenderer.invoke('spell:checkWords', words, language) as Promise<boolean[]>,
   spellSuggest: (word: string, language?: string) =>
     ipcRenderer.invoke('spell:suggest', word, language) as Promise<string[]>,
-  startCollabServer: () =>
-    ipcRenderer.invoke('collab:start') as Promise<{ port: number; url: string }>,
-  stopCollabServer: () => ipcRenderer.invoke('collab:stop') as Promise<boolean>,
-  getCollabUrl: () => ipcRenderer.invoke('collab:getUrl') as Promise<string | null>,
 });

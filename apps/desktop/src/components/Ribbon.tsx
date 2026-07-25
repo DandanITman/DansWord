@@ -52,8 +52,6 @@ import {
   ArrowRight,
   Superscript,
   Subscript,
-  Users,
-  Share2,
 } from 'lucide-react';
 import type { ShapeType } from '../extensions/DocShape';
 import { insertTableOfContents } from '../utils/headings';
@@ -89,10 +87,6 @@ interface RibbonProps {
   onOpenBackstage: () => void;
   onInsertShape: (type: ShapeType) => void;
   onInsertFootnote: () => void;
-  onInsertMergeField: () => void;
-  onOpenMailMerge: () => void;
-  onOpenCollaboration: () => void;
-  collabActive?: boolean;
 }
 
 const TABS: { id: RibbonTab; label: string }[] = [
@@ -137,10 +131,6 @@ export function Ribbon({
   onOpenBackstage,
   onInsertShape,
   onInsertFootnote,
-  onInsertMergeField,
-  onOpenMailMerge,
-  onOpenCollaboration,
-  collabActive,
 }: RibbonProps) {
   const preserveEditorFocus = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
@@ -224,9 +214,6 @@ export function Ribbon({
                 </button>
                 <button className="ribbon-btn-horizontal-compact" onClick={onExportPdf} title="Export as PDF">
                   <FileDown size={14} /> <span>Export PDF</span>
-                </button>
-                <button className="ribbon-btn-horizontal-compact" onClick={onOpenMailMerge} title="Mail Merge Wizard">
-                  <Users size={14} /> <span>Mail Merge</span>
                 </button>
               </div>
             </div>
@@ -582,9 +569,6 @@ export function Ribbon({
                     <button className="ribbon-btn-sm-compact" onClick={onInsertFootnote} title="Insert Footnote">
                       <Superscript size={13} className="icon-footnote" /> <span>Footnote</span>
                     </button>
-                    <button className="ribbon-btn-sm-compact" onClick={onInsertMergeField} title="Insert Mail Merge Field">
-                      <Type size={13} /> <span>Merge Field</span>
-                    </button>
                     <button className="ribbon-btn-sm-compact" onClick={setLink} title="Insert Hyperlink">
                       <LinkIcon size={13} className="icon-link" /> <span>Link</span>
                     </button>
@@ -650,9 +634,6 @@ export function Ribbon({
                     </button>
                     <button className="ribbon-btn-horizontal-compact" onClick={onToggleComments} title="Document Comments">
                       <MessageSquare size={14} /> <span>Comments</span>
-                    </button>
-                    <button className={`ribbon-btn-horizontal-compact ${collabActive ? 'active' : ''}`} onClick={onOpenCollaboration} title="Start Collaboration">
-                      <Share2 size={14} /> <span>Collaborate</span>
                     </button>
                   </div>
                   <div className="ribbon-row" style={{ marginTop: '2px' }}>

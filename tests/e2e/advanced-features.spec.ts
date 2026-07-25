@@ -134,14 +134,6 @@ test.describe('Insert depth', () => {
     expect(json).toContain('"shapeType":"arrow"');
   });
 
-  test('TC-INS-011: inserts a merge field marker', async ({ page }) => {
-    await stubPrompt(page, 'FirstName');
-    await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /Merge Field/i }).click();
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
-    expect(json).toContain('mergeField');
-    expect(json).toContain('FirstName');
-  });
 });
 
 test.describe('Review and track changes depth', () => {
@@ -239,8 +231,9 @@ test.describe('Layout, settings, and workflows', () => {
     await page.getByLabel('Proofing language').selectOption('de-DE');
     await page.getByRole('button', { name: /Back to document/i }).click();
     const settings = await page.evaluate(async () => window.dansword.getSettings());
-    expect(settings.accentColor).toBe('#ff5500');
-    expect(settings.language).toBe('de-DE');
+    expect(settings).not.toBeNull();
+    expect(settings!.accentColor).toBe('#ff5500');
+    expect(settings!.language).toBe('de-DE');
   });
 
   test('TC-ADV-001: generates merged DOCX files from mail merge wizard', async ({ page }) => {

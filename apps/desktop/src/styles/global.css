@@ -3600,3 +3600,33 @@ select:focus-visible {
 .design-style-row .ribbon-btn {
   min-width: 72px;
 }
+
+/* Shown when the app is loaded without the Electron bridge (see
+   src/platform/UnavailableScreen.tsx). Deliberately dependency-free so it
+   renders even if the rest of the app never mounts. */
+.platform-unavailable {
+  max-width: 34rem;
+  margin: 15vh auto;
+  padding: 2rem;
+  text-align: center;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  color: var(--text, #1f2937);
+}
+
+.platform-unavailable h1 {
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.platform-unavailable p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+  color: var(--text-muted, #6b7280);
+}
+
+.platform-unavailable code {
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: var(--surface-alt, #f3f4f6);
+  font-family: ui-monospace, monospace;
+}

@@ -185,8 +185,6 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       writeJson(RECENTS_KEY, recents);
       return true;
     },
-    showItemInFolder: async () => {},
-    getDocumentsPath: async () => 'C:\\Users\\Test\\Documents',
     getDefaultSaveDir: async () => 'C:\\DansWordTest',
     printDocument: async () => {
       printCalls += 1;
@@ -228,9 +226,6 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       return words.map((w) => w.toLowerCase() !== 'teh');
     },
     spellSuggest: async () => spellSuggestions,
-    startCollabServer: async () => ({ port: 8765, url: 'ws://127.0.0.1:8765' }),
-    stopCollabServer: async () => true,
-    getCollabUrl: async () => null,
   };
 
   const harness: DansWordTestHarness = {

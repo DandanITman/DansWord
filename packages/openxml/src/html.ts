@@ -60,8 +60,6 @@ function wrapMarks(text: string, marks: TipTapNode['marks']): string {
       case 'footnoteRef':
         result = `<sup class="footnote-ref" data-footnote-id="${escapeHtml(String(mark.attrs?.id ?? ''))}">${escapeHtml(String(mark.attrs?.number ?? ''))}</sup>`;
         break;
-      case 'mergeField':
-        break;
     }
   }
   return result;
