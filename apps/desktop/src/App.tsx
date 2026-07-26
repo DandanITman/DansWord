@@ -5,6 +5,7 @@ import {
   TEMPLATES,
   MARGIN_PRESETS,
   createDocumentEnvelope,
+  builtinStylesWithDefaults,
   type AppSettings,
   type AppView,
   type RecentFile,
@@ -35,7 +36,7 @@ import { Ribbon } from './ribbon/Ribbon';
 import type { RibbonActions } from './ribbon/types';
 import { StatusBar } from './components/StatusBar';
 import { Backstage, type BackstageSection } from './components/Backstage';
-import { WordEditor, getWordCount, insertFootnote } from './components/WordEditor';
+import { WordEditor, insertFootnote } from './components/WordEditor';
 import { FindReplaceBar } from './components/FindReplaceBar';
 import { NavigationPane } from './components/NavigationPane';
 import { DocumentRulers } from './components/DocumentRulers';
@@ -44,9 +45,14 @@ import { PageSetupDialog, HeaderFooterDialog } from './components/PageSetupDialo
 import { CommentsPane } from './components/CommentsPane';
 import { UiPromptHost } from './components/UiPromptHost';
 import { useFormatPainter } from './hooks/useFormatPainter';
+import { useDocumentStats } from './hooks/useDocumentStats';
 import { uiAlert } from './utils/uiPrompt';
+import { promptForLink } from './utils/hyperlink';
 import { bytesToDataUrl, mimeForImageExt } from './utils/imageInsert';
 import { getPlatform, joinPath, baseName as getFileName, extensionOf as extOf } from './platform';
+
+/** How long after the last keystroke the React copy of the document catches up. */
+const CONTENT_MIRROR_DELAY_MS = 300;
 
 function suggestedSavePath(defaultDir: string, name: string, ext = 'docx') {
   const base = name.replace(/\.[^.]+$/, '') || 'Untitled';
@@ -118,9 +124,40 @@ export default function App() {
   const [revisions, setRevisions] = useState<DocumentRevision[]>([]);
   const [userDictionary, setUserDictionary] = useState<string[]>([]);
   const autoSaveTimer = useRef<number | null>(null);
+  const contentMirrorTimer = useRef<number | null>(null);
   const { active: formatPainterActive, copyFormat, applyFormat } = useFormatPainter(editor);
 
-  const wordStats = getWordCount(editor, pageCount);
+  const wordStats = useDocumentStats(editor, pageCount);
+
+  const cancelContentMirror = useCallback(() => {
+    if (contentMirrorTimer.current !== null) {
+      window.clearTimeout(contentMirrorTimer.current);
+      contentMirrorTimer.current = null;
+    }
+  }, []);
+
+  /**
+   * Mirror the document into React state on a short debounce.
+   *
+   * This ran on every keystroke: each character replaced `envelope.content`,
+   * re-rendering App and the whole editor chrome below it. Nothing needs the
+   * mirror to be keystroke-exact — saving reads the editor directly (see
+   * `writeDocumentTo`) and the panes only need to be current once the user
+   * pauses.
+   */
+  const handleEditorUpdate = useCallback(
+    (json: unknown) => {
+      setIsDirty(true);
+      cancelContentMirror();
+      contentMirrorTimer.current = window.setTimeout(() => {
+        contentMirrorTimer.current = null;
+        setEnvelope((prev) => ({ ...prev, content: json }));
+      }, CONTENT_MIRROR_DELAY_MS);
+    },
+    [cancelContentMirror],
+  );
+
+  useEffect(() => cancelContentMirror, [cancelContentMirror]);
 
   const updateEnvelope = useCallback((partial: Partial<DocumentEnvelope>) => {
     setEnvelope((prev) => ({ ...prev, ...partial }));
@@ -179,17 +216,23 @@ export default function App() {
     await persistRecents(updated);
   }, [persistRecents, recents]);
 
-  const openDocumentEnvelope = useCallback((env: DocumentEnvelope, path: string | null, name: string) => {
-    setEnvelope(env);
-    setFilePath(path);
-    setFileName(name);
-    setBackstageOpen(false);
-    setCommentsOpen(false);
-    setNavOpen(false);
-    setFindOpen(false);
-    setView('editor');
-    setEditorSyncKey((k) => k + 1);
-  }, []);
+  const openDocumentEnvelope = useCallback(
+    (env: DocumentEnvelope, path: string | null, name: string) => {
+      // A pending mirror belongs to the document being replaced; letting it
+      // fire would write the old content over the new one.
+      cancelContentMirror();
+      setEnvelope(env);
+      setFilePath(path);
+      setFileName(name);
+      setBackstageOpen(false);
+      setCommentsOpen(false);
+      setNavOpen(false);
+      setFindOpen(false);
+      setView('editor');
+      setEditorSyncKey((k) => k + 1);
+    },
+    [cancelContentMirror],
+  );
 
   const openDocumentAtPath = useCallback(async (path: string) => {
     const ext = extOf(path);
@@ -252,31 +295,38 @@ export default function App() {
     async (targetPath: string, adopt: boolean) => {
       const ext = extOf(targetPath);
 
+      // Read the document from the editor, not from `envelope.content`: the
+      // mirror is debounced, so saving straight after a keystroke would
+      // otherwise write the document as it was up to a third of a second ago.
+      const doc: DocumentEnvelope = editor
+        ? { ...envelope, content: editor.getJSON() }
+        : envelope;
+
       if (ext === 'docx') {
-        const docxBlob = await exportToDocx(envelope.content, docxExportOpts(envelope, fileName));
+        const docxBlob = await exportToDocx(doc.content, docxExportOpts(doc, fileName));
         const arrayBuffer = await docxBlob.arrayBuffer();
         await getPlatform().writeFile(targetPath, new Uint8Array(arrayBuffer));
       } else if (ext === 'txt') {
         await getPlatform().writeFile(targetPath, editor?.getText() ?? '');
       } else if (ext === 'rtf') {
-        await getPlatform().writeFile(targetPath, exportToRtf(envelope.content, fileName));
+        await getPlatform().writeFile(targetPath, exportToRtf(doc.content, fileName));
       } else if (ext === 'html' || ext === 'htm') {
         await getPlatform().writeFile(
           targetPath,
-          exportToHtml(envelope.content, envelope.metadata.title || fileName, {
-            author: envelope.metadata.author,
-            subject: envelope.metadata.subject,
+          exportToHtml(doc.content, doc.metadata.title || fileName, {
+            author: doc.metadata.author,
+            subject: doc.metadata.subject,
           }),
         );
       } else if (ext === 'dansword') {
-        const wrapped = wrapDansWordFile(envelope.content, envelope.metadata, {
-          pageSetup: envelope.pageSetup,
-          headerFooter: envelope.headerFooter,
-          comments: envelope.comments,
-          trackChangesEnabled: envelope.trackChangesEnabled,
-          watermark: envelope.watermark,
-          customStyles: envelope.customStyles,
-          footnotes: envelope.footnotes,
+        const wrapped = wrapDansWordFile(doc.content, doc.metadata, {
+          pageSetup: doc.pageSetup,
+          headerFooter: doc.headerFooter,
+          comments: doc.comments,
+          trackChangesEnabled: doc.trackChangesEnabled,
+          watermark: doc.watermark,
+          customStyles: doc.customStyles,
+          footnotes: doc.footnotes,
         });
         await getPlatform().writeFile(targetPath, JSON.stringify(wrapped, null, 2));
       } else {
@@ -291,7 +341,7 @@ export default function App() {
       // A version snapshot for every format, not just .dansword. Since .docx is
       // the default save format, Version History was empty for normal users.
       await getPlatform()
-        .saveRevision(targetPath, envelope, `Saved ${new Date().toLocaleString()}`)
+        .saveRevision(targetPath, doc, `Saved ${new Date().toLocaleString()}`)
         .catch(() => undefined);
 
       if (adopt) {
@@ -375,13 +425,25 @@ export default function App() {
     };
   }, [envelope, filePath, saveDocument, settings.autoSaveIntervalMs]);
 
-  const newFromTemplate = useCallback((templateId: string) => {
-    const tpl = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
-    openDocumentEnvelope(createDocumentEnvelope(tpl.content), null, 'Untitled');
-    setEditorSyncKey((k) => k + 1);
-    setIsDirty(false);
-    setBackstageOpen(false);
-  }, [openDocumentEnvelope]);
+  const newFromTemplate = useCallback(
+    (templateId: string) => {
+      const tpl = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
+      // The default font belongs in the document, not only in a CSS variable:
+      // export reads the document's Normal style, so a new document has to
+      // carry the preference for it to reach the .docx.
+      const envelopeForTemplate = createDocumentEnvelope(tpl.content, {
+        customStyles: builtinStylesWithDefaults(
+          settings.defaultFontFamily,
+          settings.defaultFontSize,
+        ),
+      });
+      openDocumentEnvelope(envelopeForTemplate, null, 'Untitled');
+      setEditorSyncKey((k) => k + 1);
+      setIsDirty(false);
+      setBackstageOpen(false);
+    },
+    [openDocumentEnvelope, settings.defaultFontFamily, settings.defaultFontSize],
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -389,7 +451,9 @@ export default function App() {
       const editorOnly = view === 'editor';
       if (editorOnly && e.ctrlKey && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        saveDocument();
+        // Ctrl+Shift+S is Save As, so it must force the dialog rather than
+        // silently overwriting the open file.
+        saveDocument(null, e.shiftKey);
       }
       if (e.ctrlKey && e.key.toLowerCase() === 'o') {
         e.preventDefault();
@@ -413,12 +477,21 @@ export default function App() {
         setFindOpen(true);
         setFindFocus('replace');
       }
+      if (editorOnly && e.ctrlKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        void getPlatform().printDocument();
+      }
+      // Ctrl+K runs the same command as Insert > Link.
+      if (editorOnly && e.ctrlKey && e.key.toLowerCase() === 'k' && editor) {
+        e.preventDefault();
+        void promptForLink(editor);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [openDocumentAtPath, saveDocument, view, newFromTemplate]);
+  }, [openDocumentAtPath, saveDocument, view, newFromTemplate, editor]);
 
 
   const handleInsertImage = async () => {
@@ -570,6 +643,8 @@ export default function App() {
           formatPainterActive={formatPainterActive}
           focusMode={focusMode}
           customStyles={envelope.customStyles}
+          pendingInsertions={wordStats.insertions}
+          pendingDeletions={wordStats.deletions}
           actions={ribbonActions}
         />
       )}
@@ -635,7 +710,7 @@ export default function App() {
                     ignoredWords={userDictionary}
                     trackChangesEnabled={envelope.trackChangesEnabled}
                     author={settings.authorName || 'You'}
-                    onUpdate={(json) => updateEnvelope({ content: json })}
+                    onUpdate={handleEditorUpdate}
                     onReady={setEditor}
                     onPageCountChange={setPageCount}
                     onCurrentPageChange={setCurrentPage}
@@ -678,6 +753,7 @@ export default function App() {
             onZoomChange={setZoom}
             language={settings.language}
             trackChangesEnabled={envelope.trackChangesEnabled}
+            pendingChanges={wordStats.insertions + wordStats.deletions}
             currentPage={currentPage}
             viewMode={viewMode}
             onViewModeChange={setViewMode}

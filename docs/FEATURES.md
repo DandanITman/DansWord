@@ -27,6 +27,8 @@ percentage from it.
   (Ctrl+F finds, Ctrl+H replaces)
 - Select all, clear formatting, change case
 - Format painter
+- Keyboard: Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S (Save As), Ctrl+P (print),
+  Ctrl+K (hyperlink), Ctrl+F, Ctrl+H
 
 ## Formatting
 
@@ -37,6 +39,8 @@ percentage from it.
 - Increase and decrease indent; line spacing; space before and after
 - Paragraph borders and shading
 - Style gallery and a style editor for built-in and custom styles
+- A default font and size that new documents adopt as their Normal style, so
+  the preference reaches the exported file rather than only the screen
 
 All of the above track the caret: the ribbon shows the formatting at the
 cursor, not the formatting from the last edit.
@@ -67,6 +71,7 @@ cursor, not the formatting from the last edit.
 - Track changes recording both insertions **and** deletions, so rejecting a
   change restores deleted text
 - Accept and reject, individually or all at once
+- A live count of pending tracked changes, on the Review tab and the status bar
 - Word count
 
 ## View

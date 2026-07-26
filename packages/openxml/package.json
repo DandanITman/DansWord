@@ -16,8 +16,7 @@
     "@dansword/core": "*",
     "docx": "^9.5.0",
     "fast-xml-parser": "^4.5.7",
-    "jszip": "^3.10.1",
-    "mammoth": "^1.9.1"
+    "jszip": "^3.10.1"
   },
   "devDependencies": {
     "jsdom": "^26.1.0",

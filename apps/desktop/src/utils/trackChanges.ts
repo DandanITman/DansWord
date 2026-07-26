@@ -126,13 +126,27 @@ export async function rejectTrackChangeInSelection(editor: Editor) {
   resolve(editor, ranges, false);
 }
 
-/** Tracked change counts, for the status bar and the Review tab. */
+/**
+ * Tracked change counts, for the status bar and the Review tab.
+ *
+ * Adjacent ranges of the same kind are one change. The mark records the time it
+ * was made, so every keystroke produces a separate mark instance and its own
+ * text node — counting those raw would report a ten-character word as ten
+ * changes. Word counts the contiguous run as one revision, and so does Accept.
+ */
 export function countTrackChanges(editor: Editor): { insertions: number; deletions: number } {
   let insertions = 0;
   let deletions = 0;
+  let previous: TrackedRange | null = null;
+
   for (const range of trackedRanges(editor)) {
-    if (range.mark === 'trackInsert') insertions += 1;
-    else deletions += 1;
+    const continues = previous && previous.mark === range.mark && previous.to === range.from;
+    if (!continues) {
+      if (range.mark === 'trackInsert') insertions += 1;
+      else deletions += 1;
+    }
+    previous = range;
   }
+
   return { insertions, deletions };
 }

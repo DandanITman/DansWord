@@ -39,5 +39,8 @@ export interface RibbonTabProps {
     formatPainterActive: boolean;
     focusMode: boolean;
     customStyles: DocumentStyle[];
+    /** Tracked changes awaiting a decision, shown on the Review tab. */
+    pendingInsertions: number;
+    pendingDeletions: number;
   };
 }

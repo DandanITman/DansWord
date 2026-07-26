@@ -4,6 +4,8 @@ import {
   openBlankDocument,
   typeInEditor,
   focusEditor,
+  selectAllInEditor,
+  answerPrompt,
   switchRibbonTab,
   clickRibbon,
   acceptAppDialogs,
@@ -182,6 +184,66 @@ test.describe('Reworked features', () => {
     await clickRibbon(page, 'review', 'ribbon-reject-all');
     await expect(page.getByTestId('word-editor')).toContainText('keep this sentence');
     await expect(page.locator('.track-delete')).toHaveCount(0);
+  });
+
+  test('TC-REV-010: pending tracked changes are counted', async ({ page }) => {
+    await openBlankDocument(page);
+    await typeInEditor(page, 'original wording');
+    await clickRibbon(page, 'review', 'ribbon-track-changes');
+
+    // countTrackChanges existed but nothing in the UI called it, so there was
+    // no way to see how much was waiting for a decision.
+    await expect(page.getByTestId('ribbon-change-summary')).toHaveText('No pending changes');
+
+    await focusEditor(page);
+    await page.keyboard.press('Control+End');
+    await page.keyboard.type(' plus more');
+
+    await switchRibbonTab(page, 'review');
+    await expect(page.getByTestId('ribbon-pending-insertions')).toHaveText('1 inserted');
+    await expect(page.getByTestId('status-pending-changes')).toHaveText('1 pending change');
+
+    await clickRibbon(page, 'review', 'ribbon-accept-all');
+    await expect(page.getByTestId('ribbon-change-summary')).toHaveText('No pending changes');
+    await expect(page.getByTestId('status-pending-changes')).toHaveCount(0);
+  });
+
+  test('TC-EDIT-026: Ctrl+K links the selection', async ({ page }) => {
+    await openBlankDocument(page);
+    await typeInEditor(page, 'DansWord site');
+    await selectAllInEditor(page);
+
+    // Insert > Link existed; the shortcut every word processor has did not.
+    await page.keyboard.press('Control+k');
+    await answerPrompt(page, 'https://example.com/docs');
+
+    await expect(page.getByTestId('word-editor').locator('a')).toHaveAttribute(
+      'href',
+      'https://example.com/docs',
+    );
+  });
+
+  test('TC-FILE-010: Ctrl+P prints and Ctrl+Shift+S saves under a new name', async ({ page }) => {
+    await openBlankDocument(page);
+    await typeInEditor(page, 'shortcut coverage');
+    await saveToPath(page, PATHS.savedDansword);
+
+    await page.keyboard.press('Control+p');
+    await expect
+      .poll(async () => page.evaluate(() => window.__DANSWORD_TEST__?.getPrintCallCount()))
+      .toBe(1);
+
+    // Ctrl+Shift+S must ask where to save rather than overwriting the open
+    // file the way a plain Ctrl+S does.
+    const copyPath = 'C:\\DansWordTest\\copy.dansword';
+    await page.evaluate((p) => window.__DANSWORD_TEST__?.setSaveFileResult(p), copyPath);
+    await page.keyboard.press('Control+Shift+S');
+
+    await expect
+      .poll(async () =>
+        page.evaluate((p) => window.__DANSWORD_TEST__?.readStoredFile(p), copyPath),
+      )
+      .not.toBeNull();
   });
 
   test('TC-REV-009: add to dictionary stops a word being flagged', async ({ page }) => {

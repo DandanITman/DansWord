@@ -40,6 +40,8 @@ export interface RibbonProps {
   formatPainterActive: boolean;
   focusMode: boolean;
   customStyles: DocumentStyle[];
+  pendingInsertions: number;
+  pendingDeletions: number;
 }
 
 export function Ribbon({
@@ -51,6 +53,8 @@ export function Ribbon({
   formatPainterActive,
   focusMode,
   customStyles,
+  pendingInsertions,
+  pendingDeletions,
 }: RibbonProps) {
   // Recomputed on every editor transaction, so control state follows the caret.
   const state = useRibbonState(editor);
@@ -82,7 +86,14 @@ export function Ribbon({
           editor={editor}
           state={state}
           actions={actions}
-          flags={{ trackChangesEnabled, formatPainterActive, focusMode, customStyles }}
+          flags={{
+            trackChangesEnabled,
+            formatPainterActive,
+            focusMode,
+            customStyles,
+            pendingInsertions,
+            pendingDeletions,
+          }}
         />
       </div>
     </div>

@@ -47,8 +47,3 @@ export function extensionOf(path: string): string {
   const idx = base.lastIndexOf('.');
   return idx > 0 ? base.slice(idx + 1).toLowerCase() : '';
 }
-
-/** Replace (or add) a file extension, preserving the directory. */
-export function withExtension(path: string, ext: string): string {
-  return path.replace(/\.[^.\\/]*$/, '') + `.${ext}`;
-}

@@ -8,6 +8,8 @@ interface StatusBarProps {
   onZoomChange: (zoom: number) => void;
   language: string;
   trackChangesEnabled?: boolean;
+  /** Pending tracked changes in the document, shown next to the mode flag. */
+  pendingChanges?: number;
   viewMode?: 'print' | 'web' | 'focus';
   onViewModeChange?: (mode: 'print' | 'web' | 'focus') => void;
 }
@@ -20,6 +22,7 @@ export function StatusBar({
   onZoomChange,
   language,
   trackChangesEnabled,
+  pendingChanges = 0,
   viewMode = 'print',
   onViewModeChange,
 }: StatusBarProps) {
@@ -35,6 +38,16 @@ export function StatusBar({
           <>
             <span className="status-divider" />
             <span className="status-track">Track Changes</span>
+          </>
+        )}
+        {/* Pending changes outlive the mode: turning tracking off does not
+            resolve them, so the count shows either way. */}
+        {pendingChanges > 0 && (
+          <>
+            <span className="status-divider" />
+            <span className="status-track" data-testid="status-pending-changes">
+              {pendingChanges} pending {pendingChanges === 1 ? 'change' : 'changes'}
+            </span>
           </>
         )}
       </div>

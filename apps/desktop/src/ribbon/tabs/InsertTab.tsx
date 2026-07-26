@@ -21,7 +21,7 @@ import {
   Table2,
 } from 'lucide-react';
 import { insertTableOfContents } from '../../utils/headings';
-import { uiPrompt } from '../../utils/uiPrompt';
+import { promptForLink } from '../../utils/hyperlink';
 import type { RibbonTabProps } from '../types';
 
 const IMAGE_WRAPS = [
@@ -33,15 +33,8 @@ const IMAGE_WRAPS = [
 ] as const;
 
 export function InsertTab({ editor, state, actions }: RibbonTabProps) {
-  const setLink = async () => {
-    if (!editor) return;
-    const url = await uiPrompt('Enter URL', state.linkHref || 'https://');
-    if (url === null) return;
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  const setLink = () => {
+    if (editor) void promptForLink(editor);
   };
 
   return (

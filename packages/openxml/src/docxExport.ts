@@ -696,7 +696,19 @@ function styleDefinitions(customStyles: DocumentStyle[] | undefined) {
     const pt = parseFloat(String(size ?? ''));
     return Number.isFinite(pt) && pt > 0 ? Math.round(pt * 2) : undefined;
   };
+
+  // The document's Normal style is the body font. Emitting it as the document
+  // default is what makes the app's default font real: without this every run
+  // exported in Word's own Calibri 11 no matter what the document said, so
+  // changing the default font changed the screen and nothing else.
+  const normal = customStyles.find((style) => style.id === 'normal');
+  const normalRun = {
+    ...(normal?.fontFamily ? { font: normal.fontFamily } : {}),
+    ...(halfPoints(normal?.fontSize) ? { size: halfPoints(normal?.fontSize) } : {}),
+  };
+
   return {
+    default: Object.keys(normalRun).length ? { document: { run: normalRun } } : undefined,
     paragraphStyles: customStyles.map((style) => ({
       id: style.id,
       name: style.name,

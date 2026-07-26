@@ -3739,3 +3739,18 @@ select:focus-visible {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* Review tab: the count of tracked changes awaiting a decision. */
+.ribbon-change-summary {
+  justify-content: center;
+  gap: 2px;
+  padding: 0 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ribbon-change-none {
+  font-style: italic;
+}

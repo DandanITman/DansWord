@@ -93,6 +93,20 @@ describe('docxExport', () => {
     expect([bytes[0], bytes[1], bytes[2], bytes[3]]).toEqual([0x50, 0x4b, 0x03, 0x04]);
   });
 
+  it("writes the document's Normal style as the package default font", async () => {
+    // The app's default font used to set a CSS variable and nothing else, so a
+    // document written in Georgia 13 exported as Word's Calibri 11.
+    const blob = await exportToDocx(sampleWithRichContent, {
+      customStyles: [{ id: 'normal', name: 'Normal', fontFamily: 'Georgia', fontSize: '13pt' }],
+    });
+    const styles = await partOf(blob, 'word/styles.xml');
+
+    const defaults = styles.slice(0, styles.indexOf('</w:docDefaults>'));
+    expect(defaults).toContain('Georgia');
+    // 13pt in half-points.
+    expect(defaults).toContain('w:val="26"');
+  });
+
   it('writes comment content into the comments part', async () => {
     const blob = await exportToDocx(sampleWithRichContent, {
       comments: [

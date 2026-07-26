@@ -96,6 +96,17 @@ describe('track changes', () => {
     expect(editor.getText()).not.toContain('appended');
   });
 
+  // The mark stores the time of the edit, so typing produces one mark instance
+  // and one text node per keystroke. Counted raw, a single typed word reads as
+  // a dozen separate changes.
+  it('counts a run of typing as one insertion', () => {
+    enableTracking();
+    editor.commands.setTextSelection(editor.state.doc.content.size - 1);
+    for (const char of ' appended') editor.commands.insertContent(char);
+
+    expect(countTrackChanges(editor).insertions).toBe(1);
+  });
+
   it('records nothing while tracking is off', () => {
     enableTracking(false);
     editor.commands.setTextSelection(editor.state.doc.content.size - 1);
