@@ -10,6 +10,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   spellCheckEnabled: true,
   language: 'en-US',
   authorName: 'You',
+  grammarCheckEnabled: true,
+  autoCorrectEnabled: true,
+  showFormattingMarks: false,
+  showRuler: true,
 };
 
 export const TEMPLATES = [

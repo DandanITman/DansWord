@@ -51,6 +51,16 @@ declare global {
      */
     dansword: DansWordAPI;
     __DANSWORD_TEST__?: DansWordTestHarness;
+    /**
+     * The Draw tab's current pen. Ink canvases read it on every stroke, because
+     * in Word the pen belongs to the tool rather than to a drawing — changing
+     * colour must not rewrite the drawings already on the page.
+     */
+    __DANSWORD_INK__?: {
+      tool: import('./extensions/InkDrawing').InkTool;
+      color: string;
+      width: number;
+    };
   }
 }
 

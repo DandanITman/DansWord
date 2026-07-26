@@ -8,6 +8,8 @@ import {
   answerPrompt,
   switchRibbonTab,
   clickRibbon,
+  openRibbonDialog,
+  resolveAllChanges,
   acceptAppDialogs,
   saveToPath,
   PATHS,
@@ -58,7 +60,7 @@ test.describe('Reworked features', () => {
   test('TC-VIEW-007: the page indicator follows the caret', async ({ page }) => {
     await openBlankDocument(page);
     const indicator = page.getByTestId('status-page-indicator');
-    await expect(indicator).toHaveText(/^1\//);
+    await expect(indicator).toHaveText(/^Page 1 of/);
 
     // Seed a document long enough to paginate. The feature under test is the
     // indicator following the caret, so the content is fixture data.
@@ -72,17 +74,17 @@ test.describe('Reworked features', () => {
       });
     });
 
-    await expect.poll(async () => indicator.textContent()).not.toMatch(/^1\/1$/);
+    await expect.poll(async () => indicator.textContent()).not.toMatch(/^Page 1 of 1$/);
 
     // At the end of a multi-page document the caret is past page one. Click the
     // paragraph itself rather than the middle of the editor: that lands on the
     // text for certain, so the caret really is where the assertion assumes.
     const paragraphs = page.getByTestId('word-editor').locator('> p');
     await paragraphs.last().click();
-    await expect.poll(async () => indicator.textContent()).not.toMatch(/^1\//);
+    await expect.poll(async () => indicator.textContent()).not.toMatch(/^Page 1 of/);
 
     await paragraphs.first().click();
-    await expect.poll(async () => indicator.textContent()).toMatch(/^1\//);
+    await expect.poll(async () => indicator.textContent()).toMatch(/^Page 1 of/);
   });
 
   test('TC-EDIT-023: find reports a live match count', async ({ page }) => {
@@ -117,8 +119,7 @@ test.describe('Reworked features', () => {
 
   test('TC-LAY-006: the margin preset select reflects the active margins', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'pageLayout');
-    await page.getByRole('button', { name: /Page Setup/i }).click();
+    await openRibbonDialog(page, 'pageLayout', 'Page Setup dialog');
 
     const preset = page.getByTestId('page-margin-preset');
     // Defaults are the Normal preset; the select had no `value` before, so it
@@ -131,8 +132,7 @@ test.describe('Reworked features', () => {
 
   test('TC-EDIT-025: the style editor lists the built-in styles', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'edit');
-    await page.getByRole('button', { name: /More Styles/i }).click();
+    await openRibbonDialog(page, 'home', 'Styles pane');
 
     // The list filtered out the five built-in ids, but a new document's
     // customStyles *is* those built-ins — so it was always empty.
@@ -181,7 +181,7 @@ test.describe('Reworked features', () => {
     // The text stays, struck through, rather than disappearing.
     await expect(page.locator('.track-delete')).toHaveCount(1);
 
-    await clickRibbon(page, 'review', 'ribbon-reject-all');
+    await resolveAllChanges(page, 'reject');
     await expect(page.getByTestId('word-editor')).toContainText('keep this sentence');
     await expect(page.locator('.track-delete')).toHaveCount(0);
   });
@@ -203,7 +203,7 @@ test.describe('Reworked features', () => {
     await expect(page.getByTestId('ribbon-pending-insertions')).toHaveText('1 inserted');
     await expect(page.getByTestId('status-pending-changes')).toHaveText('1 pending change');
 
-    await clickRibbon(page, 'review', 'ribbon-accept-all');
+    await resolveAllChanges(page, 'accept');
     await expect(page.getByTestId('ribbon-change-summary')).toHaveText('No pending changes');
     await expect(page.getByTestId('status-pending-changes')).toHaveCount(0);
   });

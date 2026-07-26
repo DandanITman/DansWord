@@ -1,6 +1,6 @@
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
 
-const SHAPES = ['rect', 'circle', 'line', 'arrow'] as const;
+const SHAPES = ['rect', 'circle', 'triangle', 'line', 'arrow'] as const;
 
 export function ShapeBlockView({ node, updateAttributes, selected, editor, getPos }: NodeViewProps) {
   const { shapeType, width, height, fill, stroke, strokeWidth } = node.attrs as {
@@ -18,6 +18,15 @@ export function ShapeBlockView({ node, updateAttributes, selected, editor, getPo
       case 'circle':
         return (
           <ellipse cx={width / 2} cy={height / 2} rx={width / 2 - sw} ry={height / 2 - sw} fill={fill} stroke={stroke} strokeWidth={sw} />
+        );
+      case 'triangle':
+        return (
+          <polygon
+            points={`${width / 2},${sw} ${width - sw},${height - sw} ${sw},${height - sw}`}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={sw}
+          />
         );
       case 'line':
         return <line x1={0} y1={height / 2} x2={width} y2={height / 2} stroke={stroke} strokeWidth={sw + 1} />;

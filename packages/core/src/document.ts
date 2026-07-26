@@ -2,12 +2,15 @@ import type { DansWordDocument, DocumentMetadata } from './types';
 import {
   DEFAULT_HEADER_FOOTER,
   DEFAULT_PAGE_SETUP,
+  completePageSetup,
   type DocumentComment,
   type DocumentFootnote,
   type HeaderFooter,
   type PageSetup,
 } from './pageSetup';
 import { BUILTIN_STYLES, DEFAULT_WATERMARK, type DocumentStyle, type Watermark } from './styles';
+import type { CitationSource, CitationStyle } from './references';
+import { EMPTY_MAIL_MERGE, type MailMergeData } from './mailMerge';
 
 export interface DocumentEnvelope {
   metadata: DocumentMetadata;
@@ -19,6 +22,16 @@ export interface DocumentEnvelope {
   watermark: Watermark;
   customStyles: DocumentStyle[];
   footnotes: DocumentFootnote[];
+  /** Endnotes collect at the end of the document rather than the page. */
+  endnotes: DocumentFootnote[];
+  /** Bibliography sources, as Manage Sources lists them. */
+  sources: CitationSource[];
+  citationStyle: CitationStyle;
+  mailMerge: MailMergeData;
+  /** Review > Restrict Editing: the document opens read-only. */
+  restrictEditing: boolean;
+  /** Which Design style set produced the current formatting. */
+  styleSetId: string;
 }
 
 export function createDocumentEnvelope(
@@ -34,13 +47,19 @@ export function createDocumentEnvelope(
       modified: now,
     },
     content,
-    pageSetup: partial?.pageSetup ?? { ...DEFAULT_PAGE_SETUP },
+    pageSetup: partial?.pageSetup ?? { ...DEFAULT_PAGE_SETUP, margins: { ...DEFAULT_PAGE_SETUP.margins } },
     headerFooter: partial?.headerFooter ?? { ...DEFAULT_HEADER_FOOTER },
     comments: partial?.comments ?? [],
     trackChangesEnabled: partial?.trackChangesEnabled ?? false,
     watermark: partial?.watermark ?? { ...DEFAULT_WATERMARK },
     customStyles: partial?.customStyles ?? [...BUILTIN_STYLES],
     footnotes: partial?.footnotes ?? [],
+    endnotes: partial?.endnotes ?? [],
+    sources: partial?.sources ?? [],
+    citationStyle: partial?.citationStyle ?? 'apa',
+    mailMerge: partial?.mailMerge ?? { ...EMPTY_MAIL_MERGE },
+    restrictEditing: partial?.restrictEditing ?? false,
+    styleSetId: partial?.styleSetId ?? 'default',
   };
 }
 
@@ -49,29 +68,29 @@ export function parseDansWordFile(raw: unknown): DocumentEnvelope {
     return createDocumentEnvelope({ type: 'doc', content: [{ type: 'paragraph' }] });
   }
   const file = raw as DansWordDocument;
-  const pageSetup = file.pageSetup
-    ? {
-        ...DEFAULT_PAGE_SETUP,
-        ...file.pageSetup,
-        margins: { ...DEFAULT_PAGE_SETUP.margins, ...file.pageSetup.margins },
-        columns: file.pageSetup.columns ?? DEFAULT_PAGE_SETUP.columns,
-      }
-    : undefined;
   return createDocumentEnvelope(file.content, {
     metadata: file.metadata,
-    pageSetup,
+    // Files written before page colour, borders, line numbers and hyphenation
+    // existed carry only some of PageSetup; fill the rest from the defaults.
+    pageSetup: file.pageSetup ? completePageSetup(file.pageSetup) : undefined,
     headerFooter: file.headerFooter,
     comments: file.comments,
     trackChangesEnabled: file.trackChangesEnabled,
     watermark: file.watermark,
     customStyles: file.customStyles,
     footnotes: file.footnotes,
+    endnotes: file.endnotes,
+    sources: file.sources,
+    citationStyle: file.citationStyle,
+    mailMerge: file.mailMerge,
+    restrictEditing: file.restrictEditing,
+    styleSetId: file.styleSetId,
   });
 }
 
 export function serializeDansWordFile(envelope: DocumentEnvelope): DansWordDocument {
   return {
-    version: 2,
+    version: 3,
     metadata: { ...envelope.metadata, modified: new Date().toISOString() },
     content: envelope.content,
     pageSetup: envelope.pageSetup,
@@ -81,5 +100,11 @@ export function serializeDansWordFile(envelope: DocumentEnvelope): DansWordDocum
     watermark: envelope.watermark,
     customStyles: envelope.customStyles,
     footnotes: envelope.footnotes,
+    endnotes: envelope.endnotes,
+    sources: envelope.sources,
+    citationStyle: envelope.citationStyle,
+    mailMerge: envelope.mailMerge,
+    restrictEditing: envelope.restrictEditing,
+    styleSetId: envelope.styleSetId,
   };
 }

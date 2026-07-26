@@ -3,3 +3,7 @@ export * from './defaults';
 export * from './pageSetup';
 export * from './document';
 export * from './styles';
+export * from './proofing';
+export * from './references';
+export * from './mailMerge';
+export * from './thesaurus';

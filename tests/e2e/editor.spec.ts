@@ -30,7 +30,7 @@ test.describe('DansWord editor e2e', () => {
     // pre-marked JSON and asserted it rendered, proving only that TipTap works.
     await typeInEditor(page, 'Bold text');
     await selectAllInEditor(page);
-    await clickRibbon(page, 'edit', 'ribbon-bold');
+    await clickRibbon(page, 'home', 'ribbon-bold');
     await expect(page.getByTestId('word-editor').locator('strong')).toContainText('Bold text');
 
     await focusEditor(page);
@@ -38,7 +38,7 @@ test.describe('DansWord editor e2e', () => {
     await page.keyboard.press('Enter');
     await typeInEditor(page, 'Italic text');
     await page.keyboard.press('Shift+Home');
-    await clickRibbon(page, 'edit', 'ribbon-italic');
+    await clickRibbon(page, 'home', 'ribbon-italic');
     await expect(page.getByTestId('word-editor').locator('em')).toContainText('Italic text');
 
     await focusEditor(page);
@@ -46,7 +46,7 @@ test.describe('DansWord editor e2e', () => {
     await page.keyboard.press('Enter');
     await typeInEditor(page, 'Underlined text');
     await page.keyboard.press('Shift+Home');
-    await clickRibbon(page, 'edit', 'ribbon-underline');
+    await clickRibbon(page, 'home', 'ribbon-underline');
     await expect(page.getByTestId('word-editor').locator('u')).toContainText('Underlined text');
   });
 
@@ -55,9 +55,9 @@ test.describe('DansWord editor e2e', () => {
     await typeInEditor(page, 'Sized and aligned text');
     await focusEditor(page);
     await page.keyboard.press('Control+A');
-    await switchRibbonTab(page, 'edit');
+    await switchRibbonTab(page, 'home');
     await page.getByTestId('ribbon-font-size').selectOption('18');
-    await clickRibbon(page, 'edit', 'ribbon-align-center');
+    await clickRibbon(page, 'home', 'ribbon-align-center');
 
     const editorJson = await page.evaluate(() => window.__DANSWORD_TEST__?.getEditorJson());
     expect(JSON.stringify(editorJson)).toContain('"textAlign":"center"');
@@ -67,7 +67,7 @@ test.describe('DansWord editor e2e', () => {
   test('TC-EDIT-005: creates bullet and numbered lists', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Bullet one');
-    await clickRibbon(page, 'edit', 'ribbon-bullet-list');
+    await clickRibbon(page, 'home', 'ribbon-bullet-list');
     await focusEditor(page);
     await page.keyboard.press('Enter');
     await typeInEditor(page, 'Bullet two');
@@ -76,7 +76,7 @@ test.describe('DansWord editor e2e', () => {
     await page.keyboard.press('Enter');
     await page.keyboard.press('Enter');
     await typeInEditor(page, 'Number one');
-    await clickRibbon(page, 'edit', 'ribbon-ordered-list');
+    await clickRibbon(page, 'home', 'ribbon-ordered-list');
     await focusEditor(page);
     await page.keyboard.press('Enter');
     await typeInEditor(page, 'Number two');

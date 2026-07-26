@@ -57,9 +57,25 @@ export async function cutSelection(editor: Editor): Promise<boolean> {
   return copied;
 }
 
-export async function pasteFromClipboard(editor: Editor): Promise<boolean> {
+/**
+ * Paste, honouring Word's Paste Options.
+ *
+ * `default` keeps the source formatting, `text` is Keep Text Only (Ctrl+Shift+V)
+ * and `match` merges into the surrounding formatting by stripping the pasted
+ * marks and letting the caret's own formatting apply.
+ */
+export async function pasteFromClipboard(
+  editor: Editor,
+  mode: 'default' | 'text' | 'match' = 'default',
+): Promise<boolean> {
   editor.view.focus();
   try {
+    if (mode !== 'default') {
+      const plain = await navigator.clipboard.readText();
+      if (!plain) return false;
+      editor.commands.insertContent(plain);
+      return true;
+    }
     // Prefer the rich payload so pasted formatting is preserved.
     if (navigator.clipboard?.read) {
       const items = await navigator.clipboard.read();

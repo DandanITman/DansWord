@@ -494,13 +494,17 @@ function pageSetupFromSectPr(sectPr: XmlNode | undefined): PageSetup {
   const space = attr(cols, 'w:space');
 
   return {
+    ...DEFAULT_PAGE_SETUP,
     size,
     orientation: landscape ? 'landscape' : 'portrait',
     margins,
     columns: {
+      ...DEFAULT_PAGE_SETUP.columns,
       count: Number.isFinite(count) && count > 1 ? count : 1,
       gap: space ? twipsToPx(space) : DEFAULT_PAGE_SETUP.columns.gap,
+      line: attr(cols, 'w:sep') === '1' || attr(cols, 'w:sep') === 'true',
     },
+    border: { ...DEFAULT_PAGE_SETUP.border },
   };
 }
 

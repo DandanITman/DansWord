@@ -1,5 +1,5 @@
-import type { PageSetup, PageOrientation, PageSizePreset } from '@dansword/core';
-import { MARGIN_PRESETS } from '@dansword/core';
+import type { PageSetup, PageOrientation, PageSizePreset, LineNumberMode } from '@dansword/core';
+import { MARGIN_PRESETS, PAGE_SIZE_LABELS } from '@dansword/core';
 
 interface PageSetupDialogProps {
   open: boolean;
@@ -34,9 +34,11 @@ export function PageSetupDialog({ open, pageSetup, onChange, onClose }: PageSetu
               value={pageSetup.size}
               onChange={(e) => onChange({ ...pageSetup, size: e.target.value as PageSizePreset })}
             >
-              <option value="letter">Letter (8.5 × 11)</option>
-              <option value="a4">A4</option>
-              <option value="legal">Legal</option>
+              {(Object.keys(PAGE_SIZE_LABELS) as PageSizePreset[]).map((size) => (
+                <option key={size} value={size}>
+                  {PAGE_SIZE_LABELS[size]}
+                </option>
+              ))}
             </select>
           </label>
           <label>
@@ -106,21 +108,57 @@ export function PageSetupDialog({ open, pageSetup, onChange, onClose }: PageSetu
             </select>
           </label>
           {pageSetup.columns.count > 1 && (
-            <label>
-              Column gap (px)
-              <input
-                type="number"
-                min={12}
-                value={pageSetup.columns.gap}
-                onChange={(e) =>
-                  onChange({
-                    ...pageSetup,
-                    columns: { ...pageSetup.columns, gap: Number(e.target.value) },
-                  })
-                }
-              />
-            </label>
+            <>
+              <label>
+                Column gap (px)
+                <input
+                  type="number"
+                  min={12}
+                  value={pageSetup.columns.gap}
+                  onChange={(e) =>
+                    onChange({
+                      ...pageSetup,
+                      columns: { ...pageSetup.columns, gap: Number(e.target.value) },
+                    })
+                  }
+                />
+              </label>
+              <label className="checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={pageSetup.columns.line}
+                  onChange={(e) =>
+                    onChange({
+                      ...pageSetup,
+                      columns: { ...pageSetup.columns, line: e.target.checked },
+                    })
+                  }
+                />
+                Line between columns
+              </label>
+            </>
           )}
+          <label>
+            Line numbers
+            <select
+              value={pageSetup.lineNumbers}
+              onChange={(e) =>
+                onChange({ ...pageSetup, lineNumbers: e.target.value as LineNumberMode })
+              }
+            >
+              <option value="none">None</option>
+              <option value="continuous">Continuous</option>
+              <option value="restartEachPage">Restart each page</option>
+            </select>
+          </label>
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              checked={pageSetup.hyphenation}
+              onChange={(e) => onChange({ ...pageSetup, hyphenation: e.target.checked })}
+            />
+            Hyphenate automatically
+          </label>
         </div>
         <div className="dialog-actions">
           <button className="icon-btn primary" onClick={onClose}>

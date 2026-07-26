@@ -70,7 +70,18 @@ test.describe('UI layout guards', () => {
     await expectNoClippedControls(page.getByTestId('home-screen'), 'home screen');
 
     await openBlankDocument(page);
-    for (const tab of ['file', 'edit', 'insert', 'design', 'pageLayout', 'review', 'view'] as const) {
+    for (const tab of [
+      'file',
+      'home',
+      'insert',
+      'draw',
+      'design',
+      'pageLayout',
+      'references',
+      'mailings',
+      'review',
+      'view',
+    ] as const) {
       await switchRibbonTab(page, tab);
       await expectNoClippedControls(page.getByTestId('ribbon'), `ribbon ${tab} tab`);
     }

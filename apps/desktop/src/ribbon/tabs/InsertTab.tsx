@@ -1,277 +1,408 @@
+import { useState } from 'react';
 import {
+  ArrowRight,
+  Bookmark as BookmarkIcon,
+  Calendar,
+  Circle,
+  FileText,
+  Hash,
   Image as ImageIcon,
   Link as LinkIcon,
-  Table as TableIcon,
-  BookOpen,
-  SeparatorHorizontal,
-  Calendar,
-  Square,
-  Circle,
+  MessageSquarePlus,
   Minus,
-  ArrowRight,
-  Superscript,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Rows3,
-  Columns3,
-  Trash2,
-  Combine,
-  Split,
-  Table2,
+  Omega,
+  PanelBottom,
+  PanelTop,
+  SeparatorHorizontal,
+  Shapes,
+  Sigma,
+  Square,
+  Table as TableIcon,
+  TextCursorInput,
+  Triangle,
 } from 'lucide-react';
-import { insertTableOfContents } from '../../utils/headings';
 import { promptForLink } from '../../utils/hyperlink';
+import { QUICK_SYMBOLS } from '../../constants/symbols';
+import {
+  RibbonButton,
+  RibbonGroup,
+  RibbonLine,
+  RibbonMenuButton,
+  RibbonMenuHeader,
+  RibbonMenuItem,
+  RibbonMenuSeparator,
+  RibbonStack,
+  useRibbonMenu,
+} from '../RibbonKit';
 import type { RibbonTabProps } from '../types';
 
-const IMAGE_WRAPS = [
-  { value: 'inline', label: 'Inline' },
-  { value: 'square', label: 'Square' },
-  { value: 'tight', label: 'Tight' },
-  { value: 'through', label: 'Through' },
-  { value: 'topBottom', label: 'Top/Bottom' },
-] as const;
+const COVER_PAGES = [
+  { id: 'banded', label: 'Banded' },
+  { id: 'facet', label: 'Facet' },
+  { id: 'motion', label: 'Motion' },
+  { id: 'plain', label: 'Plain' },
+];
 
-export function InsertTab({ editor, state, actions }: RibbonTabProps) {
+/** Word's table grid: hover to size, click to insert. */
+function TableGridPicker({ onPick }: { onPick: (rows: number, cols: number) => void }) {
+  const { close } = useRibbonMenu();
+  const [hover, setHover] = useState({ rows: 0, cols: 0 });
+  const maxRows = 8;
+  const maxCols = 10;
+
+  return (
+    <div className="rb-table-picker">
+      <div className="rb-table-picker-label">
+        {hover.rows > 0 ? `${hover.cols} × ${hover.rows} Table` : 'Insert Table'}
+      </div>
+      <div
+        className="rb-table-grid"
+        style={{ gridTemplateColumns: `repeat(${maxCols}, 14px)` }}
+        onMouseLeave={() => setHover({ rows: 0, cols: 0 })}
+      >
+        {Array.from({ length: maxRows * maxCols }, (_, index) => {
+          const row = Math.floor(index / maxCols) + 1;
+          const col = (index % maxCols) + 1;
+          const lit = row <= hover.rows && col <= hover.cols;
+          return (
+            <button
+              key={index}
+              type="button"
+              className={`rb-table-cell${lit ? ' is-lit' : ''}`}
+              aria-label={`${col} by ${row} table`}
+              onMouseEnter={() => setHover({ rows: row, cols: col })}
+              onClick={() => {
+                onPick(row, col);
+                close();
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function InsertTab({ editor, state, actions, flags }: RibbonTabProps) {
   const setLink = () => {
     if (editor) void promptForLink(editor);
   };
 
+  const insertSymbol = (symbol: string) => {
+    editor?.chain().focus().insertContent(symbol).run();
+  };
+
   return (
     <>
-      {/* Contextual picture tools. This group is gated on the image selection,
-          which only updates now that ribbon state tracks every transaction. */}
-      {state.imageActive && (
-        <div className="ribbon-group" data-testid="ribbon-picture-tools">
-          <div className="ribbon-group-content">
-            <div className="ribbon-row">
-              {(
-                [
-                  ['left', AlignLeft, 'Align Picture Left'],
-                  ['center', AlignCenter, 'Align Picture Center'],
-                  ['right', AlignRight, 'Align Picture Right'],
-                ] as const
-              ).map(([value, Icon, label]) => (
-                <button
-                  key={value}
-                  className={`ribbon-btn-icon ${state.imageAlign === value ? 'active' : ''}`}
-                  onClick={() => editor?.chain().focus().updateAttributes('image', { align: value }).run()}
-                  title={label}
-                >
-                  <Icon size={15} />
-                </button>
-              ))}
-              <div className="ribbon-divider-v" />
-              {/* All five wrap modes the image node view supports; the ribbon
-                  previously exposed only two, orphaning the rest. */}
-              {IMAGE_WRAPS.map((wrap) => (
-                <button
-                  key={wrap.value}
-                  className={`ribbon-btn-sm-compact ${state.imageWrap === wrap.value ? 'active' : ''}`}
-                  onClick={() => editor?.chain().focus().updateAttributes('image', { wrap: wrap.value }).run()}
-                  title={`${wrap.label} text wrapping`}
-                >
-                  {wrap.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <RibbonGroup label="Pages">
+        <RibbonStack>
+          <RibbonMenuButton
+            icon={<FileText size={14} />}
+            label="Cover Page"
+            title="Cover Page"
+            testId="ribbon-cover-page"
+          >
+            <RibbonMenuHeader label="Built-in" />
+            {COVER_PAGES.map((page) => (
+              <RibbonMenuItem
+                key={page.id}
+                label={page.label}
+                onClick={() => actions.onInsertCoverPage(page.id)}
+              />
+            ))}
+          </RibbonMenuButton>
+          <RibbonButton
+            icon={<FileText size={14} />}
+            label="Blank Page"
+            title="Blank Page"
+            onClick={actions.onInsertBlankPage}
+            testId="ribbon-blank-page"
+          />
+          <RibbonButton
+            icon={<SeparatorHorizontal size={14} />}
+            label="Page Break"
+            title="Page Break (Ctrl+Enter)"
+            onClick={() => editor?.chain().focus().insertPageBreak().run()}
+            testId="ribbon-page-break"
+          />
+        </RibbonStack>
+      </RibbonGroup>
 
-      {/* Contextual table tools — the app previously had no way at all to edit
-          a table's structure once it had been inserted. */}
-      {state.inTable && (
-        <div className="ribbon-group" data-testid="ribbon-table-tools">
-          <div className="ribbon-group-content">
-            <div className="ribbon-column">
-              <div className="ribbon-row">
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().addRowBefore().run()}
-                  title="Insert row above"
-                  data-testid="table-add-row-before"
-                >
-                  <Rows3 size={13} /> <span>Row ↑</span>
-                </button>
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().addRowAfter().run()}
-                  title="Insert row below"
-                  data-testid="table-add-row-after"
-                >
-                  <Rows3 size={13} /> <span>Row ↓</span>
-                </button>
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().deleteRow().run()}
-                  title="Delete row"
-                  data-testid="table-delete-row"
-                >
-                  <Trash2 size={13} /> <span>Row</span>
-                </button>
-                <div className="ribbon-divider-v" />
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().addColumnBefore().run()}
-                  title="Insert column left"
-                  data-testid="table-add-col-before"
-                >
-                  <Columns3 size={13} /> <span>Col ←</span>
-                </button>
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().addColumnAfter().run()}
-                  title="Insert column right"
-                  data-testid="table-add-col-after"
-                >
-                  <Columns3 size={13} /> <span>Col →</span>
-                </button>
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().deleteColumn().run()}
-                  title="Delete column"
-                  data-testid="table-delete-col"
-                >
-                  <Trash2 size={13} /> <span>Col</span>
-                </button>
-              </div>
-              <div className="ribbon-row" style={{ marginTop: '2px' }}>
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().mergeCells().run()}
-                  title="Merge selected cells"
-                  data-testid="table-merge-cells"
-                >
-                  <Combine size={13} /> <span>Merge</span>
-                </button>
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().splitCell().run()}
-                  title="Split cell"
-                  data-testid="table-split-cell"
-                >
-                  <Split size={13} /> <span>Split</span>
-                </button>
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().toggleHeaderRow().run()}
-                  title="Toggle header row"
-                  data-testid="table-toggle-header"
-                >
-                  <Table2 size={13} /> <span>Header</span>
-                </button>
-                <button
-                  className="ribbon-btn-sm-compact"
-                  onClick={() => editor?.chain().focus().deleteTable().run()}
-                  title="Delete table"
-                  data-testid="table-delete"
-                >
-                  <Trash2 size={13} /> <span>Table</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <RibbonGroup label="Tables">
+        <RibbonMenuButton
+          icon={<TableIcon size={22} className="icon-table" />}
+          label="Table"
+          title="Table"
+          size="large"
+          active={state.inTable}
+          testId="ribbon-table"
+          menuWidth={200}
+        >
+          <TableGridPicker
+            onPick={(rows, cols) =>
+              editor?.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run()
+            }
+          />
+          <RibbonMenuSeparator />
+          <RibbonMenuItem
+            label="Insert 3 × 3 Table"
+            onClick={() =>
+              editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+            }
+            testId="ribbon-insert-table-3x3"
+          />
+          <RibbonMenuItem
+            label="Quick Table: Calendar"
+            onClick={() =>
+              editor?.chain().focus().insertTable({ rows: 6, cols: 7, withHeaderRow: true }).run()
+            }
+          />
+          <RibbonMenuItem
+            label="Delete Table"
+            disabled={!state.inTable}
+            onClick={() => editor?.chain().focus().deleteTable().run()}
+          />
+        </RibbonMenuButton>
+      </RibbonGroup>
 
-      <div className="ribbon-group">
-        <div className="ribbon-group-content">
-          <div className="ribbon-column">
-            <div className="ribbon-row">
-              <button
-                className="ribbon-btn-horizontal-compact"
-                onClick={actions.onInsertImage}
-                title="Insert Picture"
-              >
-                <ImageIcon size={14} className="icon-picture" /> <span>Picture</span>
-              </button>
-              <div className="ribbon-divider-v" />
-              <button
-                className="ribbon-btn-sm-compact"
+      <RibbonGroup label="Illustrations">
+        <RibbonStack>
+          <RibbonLine>
+            <RibbonButton
+              icon={<ImageIcon size={22} className="icon-picture" />}
+              label="Pictures"
+              title="Insert a picture from this device"
+              size="large"
+              onClick={actions.onInsertImage}
+              testId="ribbon-pictures"
+            />
+            <RibbonMenuButton
+              icon={<Shapes size={22} />}
+              label="Shapes"
+              title="Shapes"
+              size="large"
+              testId="ribbon-shapes"
+            >
+              <RibbonMenuHeader label="Basic shapes" />
+              <RibbonMenuItem
+                icon={<Square size={13} />}
+                label="Rectangle"
                 onClick={() => actions.onInsertShape('rect')}
-                title="Rectangle"
-              >
-                <Square size={13} /> <span>Rect</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
+                testId="shape-rect"
+              />
+              <RibbonMenuItem
+                icon={<Circle size={13} />}
+                label="Oval"
                 onClick={() => actions.onInsertShape('circle')}
-                title="Oval Shape"
-              >
-                <Circle size={13} /> <span>Oval</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
+                testId="shape-circle"
+              />
+              <RibbonMenuItem
+                icon={<Triangle size={13} />}
+                label="Triangle"
+                onClick={() => actions.onInsertShape('triangle')}
+                testId="shape-triangle"
+              />
+              <RibbonMenuSeparator />
+              <RibbonMenuHeader label="Lines" />
+              <RibbonMenuItem
+                icon={<Minus size={13} />}
+                label="Line"
                 onClick={() => actions.onInsertShape('line')}
-                title="Line Shape"
-              >
-                <Minus size={13} /> <span>Line</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
+                testId="shape-line"
+              />
+              <RibbonMenuItem
+                icon={<ArrowRight size={13} />}
+                label="Arrow"
                 onClick={() => actions.onInsertShape('arrow')}
-                title="Arrow Shape"
-              >
-                <ArrowRight size={13} /> <span>Arrow</span>
-              </button>
+                testId="shape-arrow"
+              />
+            </RibbonMenuButton>
+          </RibbonLine>
+        </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Links">
+        <RibbonStack>
+          <RibbonButton
+            icon={<LinkIcon size={14} className="icon-link" />}
+            label="Link"
+            title="Insert Hyperlink (Ctrl+K)"
+            active={state.link}
+            onClick={setLink}
+            testId="ribbon-link"
+          />
+          <RibbonButton
+            icon={<BookmarkIcon size={14} />}
+            label="Bookmark"
+            title="Add a bookmark to this place in the document"
+            onClick={actions.onInsertBookmark}
+            testId="ribbon-bookmark"
+          />
+          <RibbonButton
+            icon={<ArrowRight size={14} />}
+            label="Cross-reference"
+            title="Refer to a heading, bookmark, figure or footnote"
+            onClick={actions.onOpenCrossReference}
+            testId="ribbon-cross-reference"
+          />
+        </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Comments">
+        <RibbonButton
+          icon={<MessageSquarePlus size={22} />}
+          label="Comment"
+          title="New Comment (Ctrl+Alt+M)"
+          size="large"
+          onClick={actions.onNewComment}
+          testId="ribbon-insert-comment"
+        />
+      </RibbonGroup>
+
+      <RibbonGroup label="Header &amp; Footer">
+        <RibbonStack>
+          <RibbonButton
+            icon={<PanelTop size={14} />}
+            label="Header"
+            title="Edit the page header"
+            onClick={actions.onOpenHeaderFooter}
+            testId="ribbon-header"
+          />
+          <RibbonButton
+            icon={<PanelBottom size={14} />}
+            label="Footer"
+            title="Edit the page footer"
+            onClick={actions.onOpenHeaderFooter}
+            testId="ribbon-footer"
+          />
+          <RibbonMenuButton
+            icon={<Hash size={14} />}
+            label="Page Number"
+            title="Page Number"
+            testId="ribbon-page-number"
+          >
+            <RibbonMenuItem
+              label="Bottom of Page"
+              checked={flags.showPageNumbers}
+              onClick={() => actions.onInsertPageNumbers(true)}
+            />
+            <RibbonMenuItem label="Remove Page Numbers" onClick={() => actions.onInsertPageNumbers(false)} />
+            <RibbonMenuSeparator />
+            <RibbonMenuItem label="Header and Footer…" onClick={actions.onOpenHeaderFooter} />
+          </RibbonMenuButton>
+        </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Text">
+        <RibbonStack>
+          <RibbonMenuButton
+            icon={<TextCursorInput size={14} />}
+            label="Text Box"
+            title="Text Box"
+            active={state.textBoxActive}
+            testId="ribbon-text-box"
+          >
+            <RibbonMenuHeader label="Built-in" />
+            <RibbonMenuItem label="Simple Text Box" onClick={() => actions.onInsertTextBox('simple')} />
+            <RibbonMenuItem label="Sidebar" onClick={() => actions.onInsertTextBox('sidebar')} />
+            <RibbonMenuItem label="Pull Quote" onClick={() => actions.onInsertTextBox('quote')} />
+          </RibbonMenuButton>
+          <RibbonMenuButton
+            icon={<span className="rb-glyph">A</span>}
+            label="Drop Cap"
+            title="Drop Cap"
+            active={state.dropCap}
+            testId="ribbon-drop-cap"
+          >
+            <RibbonMenuItem
+              label="Dropped"
+              checked={state.dropCap}
+              onClick={() => editor?.chain().focus().toggleDropCap().run()}
+            />
+            <RibbonMenuItem
+              label="None"
+              checked={!state.dropCap}
+              onClick={() => editor?.chain().focus().setParagraphStyleId(null).run()}
+            />
+          </RibbonMenuButton>
+          <RibbonMenuButton
+            icon={<Calendar size={14} className="icon-calendar" />}
+            label="Date &amp; Time"
+            title="Date & Time"
+            testId="ribbon-date"
+          >
+            <RibbonMenuItem
+              label={new Date().toLocaleDateString()}
+              onClick={() => insertSymbol(new Date().toLocaleDateString())}
+            />
+            <RibbonMenuItem
+              label={new Date().toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+              onClick={() =>
+                insertSymbol(
+                  new Date().toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  }),
+                )
+              }
+            />
+            <RibbonMenuItem
+              label={new Date().toLocaleString()}
+              onClick={() => insertSymbol(new Date().toLocaleString())}
+            />
+          </RibbonMenuButton>
+        </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Symbols">
+        <RibbonStack>
+          <RibbonButton
+            icon={<Sigma size={14} />}
+            label="Equation"
+            title="Insert an equation run, typed in linear format"
+            onClick={() => editor?.chain().focus().toggleEquationRun().run()}
+            testId="ribbon-equation"
+          />
+          <RibbonMenuButton
+            icon={<Omega size={14} />}
+            label="Symbol"
+            title="Symbol"
+            testId="ribbon-symbol"
+            menuWidth={236}
+          >
+            <RibbonMenuHeader label="Recently used symbols" />
+            <div className="rb-symbol-grid">
+              {QUICK_SYMBOLS.map((symbol) => (
+                <button
+                  key={symbol}
+                  type="button"
+                  className="rb-symbol"
+                  title={symbol}
+                  onClick={() => insertSymbol(symbol)}
+                >
+                  {symbol}
+                </button>
+              ))}
             </div>
-            <div className="ribbon-row" style={{ marginTop: '2px' }}>
-              <button
-                className="ribbon-btn-sm-compact"
-                onClick={actions.onInsertFootnote}
-                title="Insert Footnote"
-                data-testid="ribbon-footnote"
-              >
-                <Superscript size={13} className="icon-footnote" /> <span>Footnote</span>
-              </button>
-              <button
-                className={`ribbon-btn-sm-compact ${state.link ? 'active' : ''}`}
-                onClick={setLink}
-                title="Insert Hyperlink"
-                data-testid="ribbon-link"
-              >
-                <LinkIcon size={13} className="icon-link" /> <span>Link</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
-                onClick={() =>
-                  editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-                }
-                title="Insert 3x3 Table"
-                data-testid="ribbon-table"
-              >
-                <TableIcon size={13} className="icon-table" /> <span>Table</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
-                onClick={() => editor && insertTableOfContents(editor)}
-                title="Insert Table of Contents"
-                data-testid="ribbon-toc"
-              >
-                <BookOpen size={13} className="icon-toc" /> <span>TOC</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
-                onClick={() => editor?.chain().focus().insertPageBreak().run()}
-                title="Insert Page Break"
-                data-testid="ribbon-page-break"
-              >
-                <SeparatorHorizontal size={13} /> <span>Page Break</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
-                onClick={() =>
-                  editor?.chain().focus().insertContent(` ${new Date().toLocaleDateString()} `).run()
-                }
-                title="Insert Current Date"
-              >
-                <Calendar size={13} className="icon-calendar" /> <span>Date</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+            <RibbonMenuSeparator />
+            <RibbonMenuItem label="More Symbols…" onClick={actions.onOpenSymbolPicker} />
+          </RibbonMenuButton>
+          <RibbonButton
+            icon={<Minus size={14} />}
+            label="Horizontal Line"
+            title="Insert a horizontal line"
+            onClick={() => editor?.chain().focus().setHorizontalRule().run()}
+            testId="ribbon-horizontal-rule"
+          />
+        </RibbonStack>
+      </RibbonGroup>
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it, afterEach } from 'vitest';
 import type { Editor } from '@tiptap/core';
 import { createTestEditor } from './testEditor';
-import { extractWords } from '../extensions/HunspellCheck';
+import { extractWords } from '../extensions/ProofingCheck';
 
 let editor: Editor | null = null;
 

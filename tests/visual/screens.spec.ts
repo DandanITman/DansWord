@@ -34,10 +34,10 @@ test.describe('DansWord visual regression', () => {
     );
   });
 
-  test('TC-VIS-004: ribbon edit tab', async ({ page }) => {
+  test('TC-VIS-004: ribbon home tab', async ({ page }) => {
     await openBlankDocument(page);
-    await page.locator('.ribbon-tab[data-tab="edit"]').click();
-    await expect(page.getByTestId('ribbon')).toHaveScreenshot('ribbon-edit.png', {
+    await page.locator('.ribbon-tab[data-tab="home"]').click();
+    await expect(page.getByTestId('ribbon')).toHaveScreenshot('ribbon-home.png', {
       mask: visualMaskLocators(page),
     });
   });

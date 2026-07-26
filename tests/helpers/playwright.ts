@@ -59,7 +59,7 @@ export async function insertMockImage(page: Page) {
     window.__DANSWORD_TEST__?.setOpenImageFileResult('C:\\DansWordTest\\photo.png'),
   );
   await switchRibbonTab(page, 'insert');
-  await page.getByRole('button', { name: /^Picture$/ }).click();
+  await page.getByTestId('ribbon-pictures').click();
   await page.getByTestId('word-editor').locator('img').waitFor({ state: 'visible' });
 }
 
@@ -107,6 +107,33 @@ export async function expectRibbonActive(page: Page, testId: string, active: boo
   const button = page.getByTestId(testId);
   if (active) await expect(button).toHaveClass(/active/);
   else await expect(button).not.toHaveClass(/active/);
+}
+
+/** Insert the default table through the Insert > Table gallery. */
+export async function insertDefaultTable(page: Page) {
+  await switchRibbonTab(page, 'insert');
+  await page.getByTestId('ribbon-table').click();
+  await page.getByTestId('ribbon-insert-table-3x3').click();
+}
+
+/** Pick a shape from the Insert > Shapes menu. */
+export async function insertShape(page: Page, shape: 'rect' | 'circle' | 'triangle' | 'line' | 'arrow') {
+  await switchRibbonTab(page, 'insert');
+  await page.getByTestId('ribbon-shapes').click();
+  await page.getByTestId(`shape-${shape}`).click();
+}
+
+/** Resolve every tracked change at once, through the Accept/Reject split menus. */
+export async function resolveAllChanges(page: Page, decision: 'accept' | 'reject') {
+  await switchRibbonTab(page, 'review');
+  await page.getByTestId(`ribbon-${decision}-more`).click();
+  await page.getByTestId(`ribbon-${decision}-all`).click();
+}
+
+/** Open a dialog from a ribbon group's corner launcher, as Word's dialogs open. */
+export async function openRibbonDialog(page: Page, tab: string, launcherTitle: string) {
+  await switchRibbonTab(page, tab);
+  await page.getByTitle(launcherTitle).click();
 }
 
 export async function openBackstage(page: Page, section?: string) {

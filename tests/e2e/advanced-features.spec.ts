@@ -7,6 +7,10 @@ import {
   focusEditor,
   selectAllInEditor,
   switchRibbonTab,
+  insertDefaultTable,
+  insertShape,
+  openRibbonDialog,
+  resolveAllChanges,
   clickRibbon,
   goHome,
   openBackstage,
@@ -41,21 +45,21 @@ test.describe('Clipboard and editing depth', () => {
   test('TC-EDIT-017: copies and pastes text with the ribbon clipboard buttons', async ({ page }) => {
     await typeInEditor(page, 'Clipboard sample');
     await selectAllInEditor(page);
-    await clickRibbon(page, 'edit', 'ribbon-copy');
+    await clickRibbon(page, 'home', 'ribbon-copy');
     await expect
       .poll(async () => page.evaluate(() => navigator.clipboard.readText()))
       .toBe('Clipboard sample');
 
     await focusEditor(page);
     await page.keyboard.press('Control+End');
-    await clickRibbon(page, 'edit', 'ribbon-paste');
+    await clickRibbon(page, 'home', 'ribbon-paste');
     await expect(page.getByTestId('word-editor')).toContainText('Clipboard sampleClipboard sample');
   });
 
   test('TC-EDIT-018: cuts and pastes text with the ribbon clipboard buttons', async ({ page }) => {
     await typeInEditor(page, 'Cut target');
     await selectAllInEditor(page);
-    await clickRibbon(page, 'edit', 'ribbon-cut');
+    await clickRibbon(page, 'home', 'ribbon-cut');
 
     // Cut removes the selection and leaves the text on the clipboard.
     await expect(page.getByTestId('word-editor')).not.toContainText('Cut target');
@@ -63,15 +67,15 @@ test.describe('Clipboard and editing depth', () => {
       .poll(async () => page.evaluate(() => navigator.clipboard.readText()))
       .toBe('Cut target');
 
-    await clickRibbon(page, 'edit', 'ribbon-paste');
+    await clickRibbon(page, 'home', 'ribbon-paste');
     await expect(page.getByTestId('word-editor')).toContainText('Cut target');
   });
 
   test('TC-EDIT-019: applies paragraph border color via swatch picker', async ({ page }) => {
     await typeInEditor(page, 'Bordered paragraph');
     await selectAllInEditor(page);
-    await switchRibbonTab(page, 'edit');
-    await page.getByRole('button', { name: 'Border', exact: true }).click();
+    await switchRibbonTab(page, 'home');
+    await page.getByTitle('Border Color').click();
     await pickColorSwatch(page, '#334155');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('borderColor');
@@ -80,16 +84,15 @@ test.describe('Clipboard and editing depth', () => {
   test('TC-EDIT-020: applies paragraph shading via swatch picker', async ({ page }) => {
     await typeInEditor(page, 'Shaded paragraph');
     await selectAllInEditor(page);
-    await switchRibbonTab(page, 'edit');
-    await page.getByRole('button', { name: 'Shade', exact: true }).click();
+    await switchRibbonTab(page, 'home');
+    await page.getByTitle('Shading', { exact: true }).click();
     await pickColorSwatch(page, '#fef08a');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('shading');
   });
 
   test('TC-EDIT-021: adds a custom style from the style editor dialog', async ({ page }) => {
-    await switchRibbonTab(page, 'edit');
-    await page.getByRole('button', { name: /More Styles/i }).click();
+    await openRibbonDialog(page, 'home', 'Styles pane');
     await expect(page.getByTestId('style-editor')).toBeVisible();
     await page.getByTestId('style-add').click();
     await page.getByTestId('style-name').fill('Report Body');
@@ -119,8 +122,7 @@ test.describe('Insert depth', () => {
   });
 
   test('TC-INS-008: edits text inside a table cell', async ({ page }) => {
-    await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /^Table$/ }).click();
+    await insertDefaultTable(page);
     await page.getByTestId('word-editor').locator('td').first().click();
     await page.keyboard.type('Cell A1');
     await expect(page.getByTestId('word-editor').locator('td').first()).toContainText('Cell A1');
@@ -129,8 +131,11 @@ test.describe('Insert depth', () => {
   test('TC-INS-009: aligns and wraps an inserted image from the ribbon', async ({ page }) => {
     await insertMockImage(page);
     await page.locator('.image-block').click({ force: true });
-    await page.getByTitle('Align Picture Center').click();
-    await page.getByTitle('Inline text wrapping').click();
+    // Selecting a picture activates the contextual Picture Format tab.
+    await switchRibbonTab(page, 'pictureFormat');
+    await page.getByTestId('picture-align-center').click();
+    await page.getByTestId('picture-wrap-text').click();
+    await page.getByTestId('picture-wrap-inline').click();
     await expect(page.getByTestId('word-editor').locator('.image-block')).toHaveAttribute(
       'data-wrap',
       'inline',
@@ -140,9 +145,8 @@ test.describe('Insert depth', () => {
   });
 
   test('TC-INS-010: inserts oval, line, and arrow shapes', async ({ page }) => {
-    await switchRibbonTab(page, 'insert');
-    for (const shape of ['Oval', 'Line', 'Arrow'] as const) {
-      await page.getByRole('button', { name: shape, exact: true }).click();
+    for (const shape of ['circle', 'line', 'arrow'] as const) {
+      await insertShape(page, shape);
       await focusEditor(page);
       await page.keyboard.press('End');
       await page.keyboard.press('Enter');
@@ -165,12 +169,11 @@ test.describe('Review and track changes depth', () => {
 
   test('TC-REV-004: accepts all tracked changes', async ({ page }) => {
     await switchRibbonTab(page, 'review');
-    await page.getByRole('button', { name: /Track Changes/i }).click();
+    await page.getByTestId('ribbon-track-changes').click();
     await typeInEditor(page, 'Accepted change');
     let json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('trackInsert');
-    await switchRibbonTab(page, 'review');
-    await page.getByTestId('ribbon').getByRole('button', { name: 'Accept All' }).click();
+    await resolveAllChanges(page, 'accept');
     json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).not.toContain('trackInsert');
     await expect(page.getByTestId('word-editor')).toContainText('Accepted change');
@@ -178,10 +181,9 @@ test.describe('Review and track changes depth', () => {
 
   test('TC-REV-005: rejects all tracked changes', async ({ page }) => {
     await switchRibbonTab(page, 'review');
-    await page.getByRole('button', { name: /Track Changes/i }).click();
+    await page.getByTestId('ribbon-track-changes').click();
     await typeInEditor(page, 'Rejected change');
-    await switchRibbonTab(page, 'review');
-    await page.getByTestId('ribbon').getByRole('button', { name: 'Reject All' }).click();
+    await resolveAllChanges(page, 'reject');
     await expect(page.getByTestId('word-editor')).not.toContainText('Rejected change');
   });
 
@@ -202,7 +204,7 @@ test.describe('Review and track changes depth', () => {
     await typeInEditor(page, 'Comment persistence target');
     await selectAllInEditor(page);
     await switchRibbonTab(page, 'review');
-    await page.getByRole('button', { name: /Comments/i }).click();
+    await page.getByTestId('ribbon-comments').click();
     await page.getByRole('button', { name: '+ Selection' }).click();
     await answerPrompt(page, 'Reopen me');
     await expect(page.locator('.comment-card p')).toContainText('Reopen me');
@@ -221,7 +223,7 @@ test.describe('Review and track changes depth', () => {
     );
     await page.getByTestId('home-recent-row').first().click();
     await switchRibbonTab(page, 'review');
-    await page.getByRole('button', { name: /Comments/i }).click();
+    await page.getByTestId('ribbon-comments').click();
     await expect(page.locator('.comment-card')).toHaveCount(1);
     await expect(page.locator('.comment-card p')).toContainText('Reopen me');
   });
@@ -235,8 +237,8 @@ test.describe('Layout, settings, and workflows', () => {
 
   test('TC-LAY-005: shows page numbers when enabled in header and footer dialog', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'pageLayout');
-    await page.getByRole('button', { name: /Header\/Footer/i }).click();
+    await switchRibbonTab(page, 'insert');
+    await page.getByTestId('ribbon-footer').click();
     await page.getByPlaceholder('Footer appears at bottom of each page').fill('Footer note');
     await page.getByLabel('Show page numbers in footer').check();
     await page.getByRole('button', { name: 'Done' }).click();
