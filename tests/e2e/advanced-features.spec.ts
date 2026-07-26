@@ -7,6 +7,7 @@ import {
   focusEditor,
   selectAllInEditor,
   switchRibbonTab,
+  clickRibbon,
   goHome,
   openBackstage,
   saveToPath,
@@ -26,25 +27,43 @@ test.describe('Clipboard and editing depth', () => {
     await openBlankDocument(page);
   });
 
-  test('TC-EDIT-017: copies and pastes text with keyboard clipboard shortcuts', async ({ page }) => {
+  /*
+   * These drive the ribbon Cut/Copy/Paste buttons rather than Ctrl+C/X/V.
+   *
+   * The keyboard path is Chromium's own clipboard handling, and a
+   * script-triggered Ctrl+V does not reliably deliver a system-clipboard paste
+   * headlessly — so the old version of these tests was flaky for reasons that
+   * had nothing to do with DansWord. The buttons run our `utils/clipboard.ts`,
+   * which is the code that was actually broken: Paste used
+   * `document.execCommand('paste')`, which Chromium blocks outright, so the
+   * button was a silent no-op.
+   */
+  test('TC-EDIT-017: copies and pastes text with the ribbon clipboard buttons', async ({ page }) => {
     await typeInEditor(page, 'Clipboard sample');
     await selectAllInEditor(page);
-    await page.keyboard.press('Control+C');
+    await clickRibbon(page, 'edit', 'ribbon-copy');
     await expect
       .poll(async () => page.evaluate(() => navigator.clipboard.readText()))
       .toBe('Clipboard sample');
+
     await focusEditor(page);
     await page.keyboard.press('Control+End');
-    await page.keyboard.press('Control+V');
+    await clickRibbon(page, 'edit', 'ribbon-paste');
     await expect(page.getByTestId('word-editor')).toContainText('Clipboard sampleClipboard sample');
   });
 
-  test('TC-EDIT-018: cuts and pastes text with keyboard clipboard shortcuts', async ({ page }) => {
+  test('TC-EDIT-018: cuts and pastes text with the ribbon clipboard buttons', async ({ page }) => {
     await typeInEditor(page, 'Cut target');
     await selectAllInEditor(page);
-    await page.keyboard.press('Control+X');
+    await clickRibbon(page, 'edit', 'ribbon-cut');
+
+    // Cut removes the selection and leaves the text on the clipboard.
     await expect(page.getByTestId('word-editor')).not.toContainText('Cut target');
-    await page.keyboard.press('Control+V');
+    await expect
+      .poll(async () => page.evaluate(() => navigator.clipboard.readText()))
+      .toBe('Cut target');
+
+    await clickRibbon(page, 'edit', 'ribbon-paste');
     await expect(page.getByTestId('word-editor')).toContainText('Cut target');
   });
 

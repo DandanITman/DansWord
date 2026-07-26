@@ -67,6 +67,19 @@ export async function pickColorSwatch(page: Page, hex: string) {
   await page.getByTestId(`color-swatch-${hex}`).click();
 }
 
+/**
+ * Put the caret inside a specific top-level paragraph of the document.
+ *
+ * `focusEditor` clicks the middle of the editor, which is fine for typing but
+ * not for tests that then navigate with arrow keys: where the caret lands
+ * depends on the layout, so the same key presses end up at different positions
+ * as content changes. Clicking the paragraph itself is deterministic.
+ */
+export function editorParagraph(page: Page, index: number) {
+  const paragraphs = page.getByTestId('word-editor').locator('> p');
+  return index < 0 ? paragraphs.last() : paragraphs.nth(index);
+}
+
 export async function selectAllInEditor(page: Page) {
   await focusEditor(page);
   await page.keyboard.press('Control+A');

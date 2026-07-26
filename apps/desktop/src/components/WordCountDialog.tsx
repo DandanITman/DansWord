@@ -19,12 +19,14 @@ export function WordCountDialog({ open, editor, pages, onClose }: WordCountDialo
         .length
     : 0;
 
-  const rows: Array<[string, number]> = [
-    ['Pages', pages],
-    ['Words', words],
-    ['Characters (with spaces)', text.length],
-    ['Characters (no spaces)', charactersNoSpaces],
-    ['Paragraphs', paragraphs],
+  // Explicit keys: deriving them from the label collided the two character
+  // rows onto one id.
+  const rows: Array<{ key: string; label: string; value: number }> = [
+    { key: 'pages', label: 'Pages', value: pages },
+    { key: 'words', label: 'Words', value: words },
+    { key: 'characters', label: 'Characters (with spaces)', value: text.length },
+    { key: 'characters-no-spaces', label: 'Characters (no spaces)', value: charactersNoSpaces },
+    { key: 'paragraphs', label: 'Paragraphs', value: paragraphs },
   ];
 
   return (
@@ -33,12 +35,10 @@ export function WordCountDialog({ open, editor, pages, onClose }: WordCountDialo
         <h2>Word Count</h2>
         <table className="word-count-table">
           <tbody>
-            {rows.map(([label, value]) => (
-              <tr key={label}>
-                <th scope="row">{label}</th>
-                <td data-testid={`word-count-${label.split(' ')[0].toLowerCase()}`}>
-                  {value.toLocaleString()}
-                </td>
+            {rows.map((row) => (
+              <tr key={row.key}>
+                <th scope="row">{row.label}</th>
+                <td data-testid={`word-count-${row.key}`}>{row.value.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
