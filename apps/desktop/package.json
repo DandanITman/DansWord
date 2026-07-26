@@ -62,7 +62,7 @@
   "build": {
     "appId": "com.dansword.app",
     "productName": "DansWord",
-    "electronVersion": "36.9.5",
+    "electronVersion": "39.8.5",
     "icon": "build/icon.ico",
     "directories": {
       "output": "release",
