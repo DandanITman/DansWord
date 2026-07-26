@@ -333,3 +333,200 @@ describe('DOCX round trip', () => {
     expect(topLevel.some((n) => n.type === 'image')).toBe(true);
   });
 });
+
+describe('DOCX round trip — review and structure', () => {
+  // Previously: nothing read word/comments.xml and nothing wrote it, so a
+  // reviewed document lost every comment in both directions.
+  it('preserves comments and their anchors', async () => {
+    const result = await roundTrip(
+      {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Plain start. ' },
+              {
+                type: 'text',
+                text: 'flagged phrase',
+                marks: [{ type: 'commentAnchor', attrs: { commentId: 'c1' } }],
+              },
+              { type: 'text', text: ' plain end.' },
+            ],
+          },
+        ],
+      },
+      {
+        comments: [
+          {
+            id: 'c1',
+            text: 'Please reword this.',
+            author: 'Reviewer',
+            created: '2026-01-15T12:00:00.000Z',
+            resolved: false,
+          },
+        ],
+      },
+    );
+
+    expect(result.comments).toHaveLength(1);
+    expect(result.comments[0].text).toContain('Please reword this.');
+    expect(result.comments[0].author).toBe('Reviewer');
+
+    // The comment must come back attached to the same words.
+    const anchored = collect(result.content, 'text').filter((t) =>
+      (t.marks ?? []).some((m) => m.type === 'commentAnchor'),
+    );
+    expect(anchored.map((t) => t.text).join('')).toContain('flagged phrase');
+  });
+
+  // Previously: the trackInsert/trackDelete marks were never written, and
+  // w:ins/w:del were never read, so pending changes vanished on export.
+  it('preserves tracked insertions and deletions', async () => {
+    const result = await roundTrip({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'kept ' },
+            {
+              type: 'text',
+              text: 'added words',
+              marks: [{ type: 'trackInsert', attrs: { author: 'Ann', at: '2026-01-15T12:00:00Z' } }],
+            },
+            {
+              type: 'text',
+              text: 'removed words',
+              marks: [{ type: 'trackDelete', attrs: { author: 'Bob', at: '2026-01-15T12:00:00Z' } }],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(marksOn(result.content, 'added words')).toContain('trackInsert');
+    expect(marksOn(result.content, 'removed words')).toContain('trackDelete');
+
+    const inserted = collect(result.content, 'text').find((t) => t.text === 'added words');
+    const mark = inserted?.marks?.find((m) => m.type === 'trackInsert');
+    expect(mark?.attrs?.author).toBe('Ann');
+  });
+
+  // Previously: w:ilvl was read only to choose bullet vs ordered and every
+  // item went into one buffer, so a three-level list came back flat.
+  it('preserves nested list structure', async () => {
+    const nested = {
+      type: 'doc',
+      content: [
+        {
+          type: 'bulletList',
+          content: [
+            {
+              type: 'listItem',
+              content: [
+                { type: 'paragraph', content: [{ type: 'text', text: 'level one' }] },
+                {
+                  type: 'bulletList',
+                  content: [
+                    {
+                      type: 'listItem',
+                      content: [
+                        { type: 'paragraph', content: [{ type: 'text', text: 'level two' }] },
+                        {
+                          type: 'bulletList',
+                          content: [
+                            {
+                              type: 'listItem',
+                              content: [
+                                {
+                                  type: 'paragraph',
+                                  content: [{ type: 'text', text: 'level three' }],
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = await roundTrip(nested);
+
+    // Three distinct lists, not one flat list of three items.
+    expect(collect(result.content, 'bulletList')).toHaveLength(3);
+
+    const outer = collect(result.content, 'bulletList')[0];
+    expect((outer.content ?? []).length).toBe(1);
+    expect(textOf(result.content)).toContain('level three');
+
+    // The deepest item must actually be nested two levels down.
+    const depthOf = (node: TipTapNode | undefined, needle: string, depth = 0): number => {
+      if (!node) return -1;
+      if (node.type === 'text' && (node.text ?? '').includes(needle)) return depth;
+      for (const child of node.content ?? []) {
+        const found = depthOf(child, needle, child.type === 'bulletList' ? depth + 1 : depth);
+        if (found >= 0) return found;
+      }
+      return -1;
+    };
+    expect(depthOf(result.content, 'level three')).toBe(3);
+    expect(depthOf(result.content, 'level one')).toBe(1);
+  });
+
+  it('keeps sibling list items at the same level', async () => {
+    const result = await roundTrip({
+      type: 'doc',
+      content: [
+        {
+          type: 'orderedList',
+          content: ['first', 'second', 'third'].map((text) => ({
+            type: 'listItem',
+            content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+          })),
+        },
+      ],
+    });
+
+    const lists = collect(result.content, 'orderedList');
+    expect(lists).toHaveLength(1);
+    expect((lists[0].content ?? []).length).toBe(3);
+  });
+
+  // Previously: shapes exported as SVG with a 1x1 PNG fallback, and the
+  // importer read only the fallback, so every shape returned as one pixel.
+  it('preserves shapes as shapes', async () => {
+    const result = await roundTrip({
+      type: 'doc',
+      content: [
+        {
+          type: 'docShape',
+          attrs: {
+            shapeType: 'circle',
+            width: 180,
+            height: 120,
+            fill: '#3b82f6',
+            stroke: '#1e40af',
+            strokeWidth: 2,
+          },
+        },
+      ],
+    });
+
+    const shapes = collect(result.content, 'docShape');
+    expect(shapes).toHaveLength(1);
+    expect(shapes[0].attrs?.shapeType).toBe('circle');
+    expect(shapes[0].attrs?.width).toBe(180);
+    expect(shapes[0].attrs?.height).toBe(120);
+    expect(shapes[0].attrs?.fill).toBe('#3b82f6');
+    // It must not have degraded into the raster fallback.
+    expect(collect(result.content, 'image')).toHaveLength(0);
+  });
+});

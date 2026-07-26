@@ -22,10 +22,17 @@ import {
   Footer,
   PageNumber,
   LevelFormat,
+  InsertedTextRun,
+  DeletedTextRun,
+  CommentRangeStart,
+  CommentRangeEnd,
+  CommentReference,
+  type ICommentOptions,
   type ISectionPropertiesOptions,
   type ParagraphChild,
 } from 'docx';
 import type {
+  DocumentComment,
   DocumentFootnote,
   DocumentStyle,
   HeaderFooter,
@@ -49,6 +56,8 @@ export interface DocxExportOptions {
   footnotes?: DocumentFootnote[];
   watermark?: Watermark;
   customStyles?: DocumentStyle[];
+  /** Review comments, anchored by the `commentAnchor` mark in the content. */
+  comments?: DocumentComment[];
 }
 
 const BULLET_REFERENCE = 'dansword-bullet';
@@ -124,7 +133,12 @@ function shapeSvgData(attrs: Record<string, unknown>): Uint8Array {
     default:
       body = `<rect x="${sw / 2}" y="${sw / 2}" width="${width - sw}" height="${height - sw}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" rx="4"/>`;
   }
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${body}</svg>`;
+  // Carry the shape's own attributes on the root element so reopening the file
+  // restores an editable shape rather than a flat picture.
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"` +
+    ` data-dansword-shape="${shapeType}" data-fill="${fill}" data-stroke="${stroke}"` +
+    ` data-stroke-width="${sw}">${body}</svg>`;
   return new TextEncoder().encode(svg);
 }
 
@@ -202,51 +216,131 @@ function runOptionsFromMarks(marks: TipTapNode['marks']): Record<string, unknown
   return options;
 }
 
+/** Stable numeric ids for comments, which OOXML requires. */
+type CommentIndex = Map<string, number>;
+
 /**
- * Inline children of a block. Hyperlinks are emitted as real
- * `ExternalHyperlink` runs — the `link` mark used to be ignored entirely, so
- * every link exported as plain text with the href silently dropped.
+ * Inline children of a block.
+ *
+ * Hyperlinks become real `ExternalHyperlink` runs, tracked changes become real
+ * `w:ins`/`w:del` revisions, and comment anchors open and close real comment
+ * ranges — so a document reviewed in DansWord arrives in Word with its links,
+ * pending changes and comments intact. All three used to be dropped silently.
  */
-function inlineChildren(node: TipTapNode, idToNumber: Map<string, number>): ParagraphChild[] {
+function inlineChildren(
+  node: TipTapNode,
+  idToNumber: Map<string, number>,
+  commentIds: CommentIndex = new Map(),
+): ParagraphChild[] {
   const out: ParagraphChild[] = [];
+  // Comment ranges opened in this block, closed when the anchor run ends.
+  const openComments = new Set<number>();
+
+  const closeComments = () => {
+    for (const id of openComments) {
+      out.push(new CommentRangeEnd(id));
+      out.push(new CommentReference(id));
+    }
+    openComments.clear();
+  };
 
   for (const child of node.content ?? []) {
     if (child.type === 'hardBreak') {
+      closeComments();
       out.push(new TextRun({ break: 1 }));
       continue;
     }
     if (child.type === 'image') {
+      closeComments();
       const run = imageRun(child);
       if (run) out.push(run);
       continue;
     }
     if (child.type !== 'text' || !child.text) continue;
 
-    const footnote = (child.marks ?? []).find((m) => m.type === 'footnoteRef');
+    const marks = child.marks ?? [];
+
+    const footnote = marks.find((m) => m.type === 'footnoteRef');
     if (footnote) {
+      closeComments();
       const id = String(footnote.attrs?.id ?? '');
       const num = idToNumber.get(id) ?? Number(footnote.attrs?.number ?? 1);
       out.push(new FootnoteReferenceRun(num));
       continue;
     }
 
-    const options = runOptionsFromMarks(child.marks);
-    const link = (child.marks ?? []).find((m) => m.type === 'link');
-    const run = new TextRun({
-      ...options,
-      text: child.text,
-    } as ConstructorParameters<typeof TextRun>[0]);
+    // Open a comment range when the anchor mark starts, close it when it ends,
+    // so a reviewer sees the comment attached to the same words in Word.
+    const anchor = marks.find((m) => m.type === 'commentAnchor');
+    const anchorNumber = anchor ? commentIds.get(String(anchor.attrs?.commentId ?? '')) : undefined;
+    if (anchorNumber !== undefined && !openComments.has(anchorNumber)) {
+      closeComments();
+      out.push(new CommentRangeStart(anchorNumber));
+      openComments.add(anchorNumber);
+    } else if (anchorNumber === undefined) {
+      closeComments();
+    }
 
-    if (link?.attrs?.href) {
+    const options = runOptionsFromMarks(marks);
+    const link = marks.find((m) => m.type === 'link');
+    const insertion = marks.find((m) => m.type === 'trackInsert');
+    const deletion = marks.find((m) => m.type === 'trackDelete');
+
+    // Tracked changes become real revisions so Word shows them in its own
+    // review pane and its Accept/Reject applies to them.
+    let run: ParagraphChild;
+    if (deletion) {
+      run = new DeletedTextRun({
+        ...options,
+        text: child.text,
+        id: out.length + 1,
+        author: String(deletion.attrs?.author ?? 'Unknown'),
+        date: String(deletion.attrs?.at ?? new Date().toISOString()),
+      } as ConstructorParameters<typeof DeletedTextRun>[0]);
+    } else if (insertion) {
+      run = new InsertedTextRun({
+        ...options,
+        text: child.text,
+        id: out.length + 1,
+        author: String(insertion.attrs?.author ?? 'Unknown'),
+        date: String(insertion.attrs?.at ?? new Date().toISOString()),
+      } as ConstructorParameters<typeof InsertedTextRun>[0]);
+    } else {
+      run = new TextRun({
+        ...options,
+        text: child.text,
+      } as ConstructorParameters<typeof TextRun>[0]);
+    }
+
+    if (link?.attrs?.href && !deletion && !insertion) {
       out.push(
-        new ExternalHyperlink({ children: [run], link: String(link.attrs.href) }),
+        new ExternalHyperlink({ children: [run as TextRun], link: String(link.attrs.href) }),
       );
     } else {
       out.push(run);
     }
   }
 
+  closeComments();
   return out;
+}
+
+/** Build the `word/comments.xml` payload and the anchor-id lookup. */
+function buildCommentIndex(comments: DocumentComment[] | undefined) {
+  const commentIds: CommentIndex = new Map();
+  const docxComments: ICommentOptions[] = [];
+
+  (comments ?? []).forEach((comment, i) => {
+    commentIds.set(comment.id, i);
+    docxComments.push({
+      id: i,
+      author: comment.author || 'Unknown',
+      date: new Date(comment.created),
+      children: [new Paragraph({ children: [new TextRun(comment.text)] })],
+    });
+  });
+
+  return { commentIds, docxComments };
 }
 
 function paragraphFormattingOptions(attrs: Record<string, unknown> = {}) {
@@ -292,8 +386,9 @@ function paragraphFromNode(
   node: TipTapNode,
   idToNumber: Map<string, number>,
   extra: Record<string, unknown> = {},
+  commentIds: CommentIndex = new Map(),
 ): Paragraph {
-  const children = inlineChildren(node, idToNumber);
+  const children = inlineChildren(node, idToNumber, commentIds);
   const attrs = node.attrs ?? {};
   return new Paragraph({
     ...paragraphFormattingOptions(attrs),
@@ -365,6 +460,7 @@ function listBlocks(
   node: TipTapNode,
   idToNumber: Map<string, number>,
   depth: number,
+  commentIds: CommentIndex = new Map(),
 ): Array<Paragraph | Table> {
   const blocks: Array<Paragraph | Table> = [];
   const ordered = node.type === 'orderedList';
@@ -373,25 +469,32 @@ function listBlocks(
   for (const item of node.content ?? []) {
     for (const inner of item.content ?? []) {
       if (inner.type === 'bulletList' || inner.type === 'orderedList') {
-        blocks.push(...listBlocks(inner, idToNumber, depth + 1));
+        blocks.push(...listBlocks(inner, idToNumber, depth + 1, commentIds));
         continue;
       }
       if (inner.type === 'paragraph' || inner.type === 'heading') {
         blocks.push(
-          paragraphFromNode(inner, idToNumber, {
-            numbering: { reference: ordered ? ORDERED_REFERENCE : BULLET_REFERENCE, level },
-          }),
+          paragraphFromNode(
+            inner,
+            idToNumber,
+            { numbering: { reference: ordered ? ORDERED_REFERENCE : BULLET_REFERENCE, level } },
+            commentIds,
+          ),
         );
         continue;
       }
-      blocks.push(...blocksFromNodes([inner], idToNumber, depth));
+      blocks.push(...blocksFromNodes([inner], idToNumber, depth, commentIds));
     }
   }
 
   return blocks;
 }
 
-function tableBlock(node: TipTapNode, idToNumber: Map<string, number>): Table {
+function tableBlock(
+  node: TipTapNode,
+  idToNumber: Map<string, number>,
+  commentIds: CommentIndex = new Map(),
+): Table {
   const rows: TableRow[] = [];
 
   for (const rowNode of node.content ?? []) {
@@ -403,7 +506,7 @@ function tableBlock(node: TipTapNode, idToNumber: Map<string, number>): Table {
       const attrs = cellNode.attrs ?? {};
 
       // Cells may hold lists, images and nested tables — not just paragraphs.
-      const cellChildren = blocksFromNodes(cellNode.content ?? [], idToNumber, 0);
+      const cellChildren = blocksFromNodes(cellNode.content ?? [], idToNumber, 0, commentIds);
       const shading = hex(attrs.backgroundColor);
       const colwidth = Array.isArray(attrs.colwidth) ? Number(attrs.colwidth[0]) : undefined;
 
@@ -430,40 +533,49 @@ function blocksFromNodes(
   nodes: TipTapNode[],
   idToNumber: Map<string, number>,
   depth = 0,
+  commentIds: CommentIndex = new Map(),
 ): Array<Paragraph | Table> {
   const blocks: Array<Paragraph | Table> = [];
 
   for (const node of nodes) {
     switch (node.type) {
       case 'paragraph':
-        blocks.push(paragraphFromNode(node, idToNumber));
+        blocks.push(paragraphFromNode(node, idToNumber, {}, commentIds));
         break;
 
       case 'heading':
         blocks.push(
-          paragraphFromNode(node, idToNumber, {
-            heading: headingLevel(Number(node.attrs?.level ?? 1)),
-          }),
+          paragraphFromNode(
+            node,
+            idToNumber,
+            { heading: headingLevel(Number(node.attrs?.level ?? 1)) },
+            commentIds,
+          ),
         );
         break;
 
       case 'bulletList':
       case 'orderedList':
-        blocks.push(...listBlocks(node, idToNumber, depth));
+        blocks.push(...listBlocks(node, idToNumber, depth, commentIds));
         break;
 
       case 'table':
-        blocks.push(tableBlock(node, idToNumber));
+        blocks.push(tableBlock(node, idToNumber, commentIds));
         break;
 
       case 'blockquote': {
         // Rendered as indented paragraphs with a left rule, matching the editor.
         for (const inner of node.content ?? []) {
           blocks.push(
-            paragraphFromNode(inner, idToNumber, {
-              indent: { left: pxToDxa(36) },
-              border: { left: { style: BorderStyle.SINGLE, color: 'CBD5E1', size: 12 } },
-            }),
+            paragraphFromNode(
+              inner,
+              idToNumber,
+              {
+                indent: { left: pxToDxa(36) },
+                border: { left: { style: BorderStyle.SINGLE, color: 'CBD5E1', size: 12 } },
+              },
+              commentIds,
+            ),
           );
         }
         break;
@@ -512,7 +624,8 @@ function blocksFromNodes(
         break;
 
       default:
-        if (node.content?.length) blocks.push(...blocksFromNodes(node.content, idToNumber, depth));
+        if (node.content?.length)
+          blocks.push(...blocksFromNodes(node.content, idToNumber, depth, commentIds));
         break;
     }
   }
@@ -627,8 +740,9 @@ export async function exportToDocx(
   const opts: DocxExportOptions = typeof options === 'string' ? { title: options } : options;
   const docNode = content as TipTapNode;
   const { idToNumber, docxFootnotes } = buildFootnoteIndex(opts.footnotes ?? []);
+  const { commentIds, docxComments } = buildCommentIndex(opts.comments);
 
-  const body = blocksFromNodes(docNode.content ?? [], idToNumber);
+  const body = blocksFromNodes(docNode.content ?? [], idToNumber, 0, commentIds);
 
   const section: {
     properties?: ISectionPropertiesOptions;
@@ -677,6 +791,7 @@ export async function exportToDocx(
   const doc = new Document({
     title: opts.title ?? 'Document',
     footnotes: Object.keys(docxFootnotes).length ? docxFootnotes : undefined,
+    comments: docxComments.length ? { children: docxComments } : undefined,
     numbering: numberingConfig(),
     styles: styleDefinitions(opts.customStyles),
     sections: [section],

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import JSZip from 'jszip';
 import { exportToDocx } from './docxExport';
 import { DEFAULT_PAGE_SETUP } from '@dansword/core';
 
@@ -16,6 +17,7 @@ const sampleWithRichContent = {
       attrs: {
         src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
         width: 120,
+        height: 90,
         align: 'left',
       },
     },
@@ -28,13 +30,81 @@ const sampleWithRichContent = {
   ],
 };
 
+/** Read a part out of the exported package as text. */
+async function partOf(blob: Blob, name: string): Promise<string> {
+  const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+  const file = zip.file(name);
+  if (!file) throw new Error(`Missing part: ${name}`);
+  return file.async('string');
+}
+
+async function entriesOf(blob: Blob): Promise<string[]> {
+  const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+  return Object.keys(zip.files);
+}
+
 describe('docxExport', () => {
-  it('TC-UNIT-002: exports rich document with footnotes, images, shapes, and page breaks', async () => {
+  // This used to assert `blob.size > 500` and nothing else, while being the
+  // only coverage of images, shapes, footnotes and multi-column layout.
+  it('TC-UNIT-002: writes footnotes, images, shapes and page breaks into the package', async () => {
     const blob = await exportToDocx(sampleWithRichContent, {
       title: 'Rich',
       pageSetup: { ...DEFAULT_PAGE_SETUP, columns: { count: 2, gap: 48 } },
       footnotes: [{ id: 'fn-1', text: 'Footnote body' }],
     });
-    expect(blob.size).toBeGreaterThan(500);
+
+    const entries = await entriesOf(blob);
+    expect(entries).toContain('word/document.xml');
+    expect(entries).toContain('word/footnotes.xml');
+    // Both the image and the shape's SVG land in the media folder.
+    expect(entries.filter((e) => e.startsWith('word/media/')).length).toBeGreaterThanOrEqual(2);
+
+    const document = await partOf(blob, 'word/document.xml');
+    expect(document).toContain('<w:drawing>');
+    expect(document).toContain('w:footnoteReference');
+    expect(document).toContain('w:type="page"');
+
+    const footnotes = await partOf(blob, 'word/footnotes.xml');
+    expect(footnotes).toContain('Footnote body');
+  });
+
+  it('writes the requested column layout into the section properties', async () => {
+    const blob = await exportToDocx(sampleWithRichContent, {
+      pageSetup: { ...DEFAULT_PAGE_SETUP, columns: { count: 3, gap: 24 } },
+    });
+
+    const document = await partOf(blob, 'word/document.xml');
+    expect(document).toMatch(/<w:cols[^>]*w:num="3"/);
+  });
+
+  it('writes an image at the size it was given, not a forced 4:3 box', async () => {
+    const blob = await exportToDocx(sampleWithRichContent, {});
+    const document = await partOf(blob, 'word/document.xml');
+
+    // 120x90 px at 9525 EMU per pixel.
+    expect(document).toContain(`cx="${120 * 9525}"`);
+    expect(document).toContain(`cy="${90 * 9525}"`);
+  });
+
+  it('produces a real zip package', async () => {
+    const blob = await exportToDocx(sampleWithRichContent, {});
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    // PK\x03\x04
+    expect([bytes[0], bytes[1], bytes[2], bytes[3]]).toEqual([0x50, 0x4b, 0x03, 0x04]);
+  });
+
+  it('writes comment content into the comments part', async () => {
+    const blob = await exportToDocx(sampleWithRichContent, {
+      comments: [
+        {
+          id: 'c1',
+          text: 'Needs a source.',
+          author: 'Reviewer',
+          created: '2026-01-15T12:00:00.000Z',
+          resolved: false,
+        },
+      ],
+    });
+    expect(await partOf(blob, 'word/comments.xml')).toContain('Needs a source.');
   });
 });

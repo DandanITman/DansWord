@@ -72,6 +72,7 @@ function docxExportOpts(envelope: DocumentEnvelope, title: string): DocxExportOp
     footnotes: envelope.footnotes,
     watermark: envelope.watermark,
     customStyles: envelope.customStyles,
+    comments: envelope.comments,
   };
 }
 

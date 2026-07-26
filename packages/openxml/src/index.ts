@@ -29,6 +29,7 @@ export async function importDocxEnvelope(
     pageSetup: result.pageSetup,
     headerFooter: result.headerFooter,
     footnotes: result.footnotes,
+    comments: result.comments,
   });
 }
 

@@ -2,6 +2,7 @@ import {
   DEFAULT_HEADER_FOOTER,
   DEFAULT_PAGE_SETUP,
   PAGE_DIMENSIONS,
+  type DocumentComment,
   type DocumentFootnote,
   type HeaderFooter,
   type PageSetup,
@@ -35,6 +36,7 @@ export interface DocxImportResult {
   pageSetup: PageSetup;
   headerFooter: HeaderFooter;
   footnotes: DocumentFootnote[];
+  comments: DocumentComment[];
 }
 
 type Mark = { type: string; attrs?: Record<string, unknown> };
@@ -155,15 +157,56 @@ function paragraphAttrs(pPr: XmlNode | undefined): Record<string, unknown> {
   return attrs;
 }
 
+/**
+ * Rebuild a shape node from an SVG this app exported.
+ *
+ * `shapeSvgData` stamps the shape's attributes onto the SVG root, so a shape
+ * survives a round trip as a shape. Without this the SVG's raster fallback --
+ * a 1x1 PNG -- came back instead, turning every shape into a single pixel.
+ */
+function shapeFromSvg(svgDataUri: string, width: number, height: number): TipTapNode | null {
+  const match = svgDataUri.match(/^data:image\/svg\+xml;base64,(.+)$/i);
+  if (!match) return null;
+
+  let svg: string;
+  try {
+    svg = atob(match[1]);
+  } catch {
+    return null;
+  }
+
+  const shapeType = svg.match(/data-dansword-shape="([^"]+)"/)?.[1];
+  if (!shapeType) return null;
+
+  const attrs: Record<string, unknown> = { shapeType };
+  if (width > 0) attrs.width = width;
+  if (height > 0) attrs.height = height;
+
+  const fill = svg.match(/data-fill="([^"]+)"/)?.[1];
+  const stroke = svg.match(/data-stroke="([^"]+)"/)?.[1];
+  const strokeWidth = svg.match(/data-stroke-width="([^"]+)"/)?.[1];
+  if (fill) attrs.fill = fill;
+  if (stroke) attrs.stroke = stroke;
+  if (strokeWidth && Number.isFinite(Number(strokeWidth))) attrs.strokeWidth = Number(strokeWidth);
+
+  return { type: 'docShape', attrs };
+}
+
 function imageFromDrawing(node: XmlNode, pkg: DocxPackage): TipTapNode | null {
   // a:blip carries r:embed; wp:extent carries the display size in EMUs.
   let embed: string | undefined;
+  // asvg:svgBlip carries the vector original when the picture is an SVG; the
+  // blip above is then only its raster fallback.
+  let svgEmbed: string | undefined;
   let cx: string | undefined;
   let cy: string | undefined;
   let alt = '';
 
   const walk = (n: XmlNode) => {
     if (n.name === 'a:blip') embed = attr(n, 'r:embed') ?? attr(n, 'r:link');
+    if (n.name === 'asvg:svgBlip' || n.name === 'svg:svgBlip') {
+      svgEmbed = attr(n, 'r:embed') ?? attr(n, 'r:link');
+    }
     if (n.name === 'wp:extent') {
       cx = attr(n, 'cx');
       cy = attr(n, 'cy');
@@ -173,12 +216,19 @@ function imageFromDrawing(node: XmlNode, pkg: DocxPackage): TipTapNode | null {
   };
   walk(node);
 
+  const width = emuToPx(cx);
+  const height = emuToPx(cy);
+
+  const svgData = pkg.imageData(svgEmbed);
+  if (svgData) {
+    const shape = shapeFromSvg(svgData, width, height);
+    if (shape) return shape;
+  }
+
   const src = pkg.imageData(embed);
   if (!src) return null;
 
   const attrs: Record<string, unknown> = { src, alt };
-  const width = emuToPx(cx);
-  const height = emuToPx(cy);
   // Carry the real height so aspect ratio survives, instead of assuming 4:3.
   if (width > 0) attrs.width = width;
   if (height > 0) attrs.height = height;
@@ -188,6 +238,10 @@ function imageFromDrawing(node: XmlNode, pkg: DocxPackage): TipTapNode | null {
 interface RunContext {
   pkg: DocxPackage;
   footnoteNumberById: Map<string, number>;
+  /** Comment number -> the app's comment id, for rebuilding anchors. */
+  commentIdByNumber: Map<string, string>;
+  /** Comment ranges currently open at this point in the document. */
+  openComments: Set<string>;
 }
 
 /** Convert the runs of a paragraph (or hyperlink) into inline nodes. */
@@ -195,6 +249,32 @@ function inlineFromRuns(container: XmlNode, ctx: RunContext, inherited: Mark[]):
   const out: TipTapNode[] = [];
 
   for (const node of container.children) {
+    // A comment range covers the runs between these two markers.
+    if (node.name === 'w:commentRangeStart') {
+      const id = ctx.commentIdByNumber.get(attr(node, 'w:id') ?? '');
+      if (id) ctx.openComments.add(id);
+      continue;
+    }
+    if (node.name === 'w:commentRangeEnd') {
+      const id = ctx.commentIdByNumber.get(attr(node, 'w:id') ?? '');
+      if (id) ctx.openComments.delete(id);
+      continue;
+    }
+
+    // Tracked revisions wrap the runs they apply to.
+    if (node.name === 'w:ins' || node.name === 'w:del') {
+      const markType = node.name === 'w:ins' ? 'trackInsert' : 'trackDelete';
+      const revision: Mark = {
+        type: markType,
+        attrs: {
+          author: attr(node, 'w:author') ?? 'Unknown',
+          at: attr(node, 'w:date') ?? new Date().toISOString(),
+        },
+      };
+      out.push(...inlineFromRuns(node, ctx, [...inherited, revision]));
+      continue;
+    }
+
     if (node.name === 'w:hyperlink') {
       const href = ctx.pkg.hyperlink(attr(node, 'r:id'));
       const anchor = attr(node, 'w:anchor');
@@ -210,12 +290,25 @@ function inlineFromRuns(container: XmlNode, ctx: RunContext, inherited: Mark[]):
     if (node.name !== 'w:r') continue;
 
     const rPr = child(node, 'w:rPr');
-    const marks = [...inherited, ...runMarks(rPr)];
+    // Any comment ranges open at this point anchor to this run.
+    const commentMarks: Mark[] = [...ctx.openComments].map((commentId) => ({
+      type: 'commentAnchor',
+      attrs: { commentId },
+    }));
+    const marks = [...inherited, ...runMarks(rPr), ...commentMarks];
 
     for (const part of node.children) {
       switch (part.name) {
-        case 'w:t': {
-          const text = textOf({ ...part, children: part.children });
+        case 'w:t':
+        // Deleted text under track changes lives in w:delText, not w:t. Read it
+        // directly here; textOf() deliberately skips it as non-visible content.
+        case 'w:delText': {
+          let text = '';
+          const collect = (n: XmlNode) => {
+            if (n.name === '#text') text += n.text ?? '';
+            n.children.forEach(collect);
+          };
+          part.children.forEach(collect);
           if (text) out.push({ type: 'text', text, marks: marks.length ? marks : undefined });
           break;
         }
@@ -254,7 +347,7 @@ function inlineFromRuns(container: XmlNode, ctx: RunContext, inherited: Mark[]):
 }
 
 /** Node types that are blocks in the editor schema and must not sit inside a paragraph. */
-const BLOCK_INLINE_TYPES = new Set(['image', 'pageBreak']);
+const BLOCK_INLINE_TYPES = new Set(['image', 'pageBreak', 'docShape']);
 
 /**
  * Split a paragraph's inline run into block-level siblings.
@@ -431,6 +524,41 @@ function headerFooterText(part: XmlNode | undefined): { text: string; hasPageNum
   return { text: lines.join('\n'), hasPageNumber };
 }
 
+/**
+ * Read `word/comments.xml`.
+ *
+ * Nothing read this part before, so a document reviewed in Word arrived in
+ * DansWord with every comment silently missing.
+ */
+function commentsFrom(commentsXml: XmlNode | undefined): {
+  list: DocumentComment[];
+  idByNumber: Map<string, string>;
+} {
+  const list: DocumentComment[] = [];
+  const idByNumber = new Map<string, string>();
+  if (!commentsXml) return { list, idByNumber };
+
+  const root = child(commentsXml, 'w:comments') ?? commentsXml;
+  for (const node of children(root, 'w:comment')) {
+    const number = attr(node, 'w:id');
+    if (number === undefined) continue;
+
+    const id = `cmt-${number}`;
+    idByNumber.set(number, id);
+
+    const created = attr(node, 'w:date');
+    list.push({
+      id,
+      text: textOf(node).trim(),
+      author: attr(node, 'w:author') ?? 'Unknown',
+      created: created && !Number.isNaN(Date.parse(created)) ? created : new Date().toISOString(),
+      resolved: attr(node, 'w:done') === '1',
+    });
+  }
+
+  return { list, idByNumber };
+}
+
 function footnotesFrom(footnotesXml: XmlNode | undefined): {
   list: DocumentFootnote[];
   numberById: Map<string, number>;
@@ -482,21 +610,74 @@ export async function importDocx(data: ArrayBuffer | Uint8Array): Promise<DocxIm
   };
 
   const { list: footnotes, numberById } = footnotesFrom(pkg.footnotes);
-  const ctx: RunContext = { pkg, footnoteNumberById: numberById };
+  const { list: comments, idByNumber: commentIdByNumber } = commentsFrom(pkg.comments);
+  const ctx: RunContext = {
+    pkg,
+    footnoteNumberById: numberById,
+    commentIdByNumber,
+    openComments: new Set(),
+  };
 
   // pkg.document is already the <w:document> element, not a wrapper around it.
   const body = child(pkg.document, 'w:body');
   const content: TipTapNode[] = [];
 
-  // Consecutive numbered paragraphs sharing a numId collapse into one list.
-  let listBuffer: { numId: string; kind: 'bullet' | 'ordered'; items: TipTapNode[] } | null = null;
+  /**
+   * Open list levels, outermost first.
+   *
+   * OOXML expresses nesting as a flat run of paragraphs each carrying a
+   * `w:ilvl` depth, so the structure has to be rebuilt. The previous version
+   * read `w:ilvl` only to choose bullet-versus-ordered and appended every item
+   * to one buffer, which flattened a three-level Word list into a single level.
+   */
+  const openLists: Array<{ level: number; node: TipTapNode }> = [];
+  let listNumId: string | null = null;
+
   const flushList = () => {
-    if (!listBuffer) return;
-    content.push({
-      type: listBuffer.kind === 'ordered' ? 'orderedList' : 'bulletList',
-      content: listBuffer.items,
-    });
-    listBuffer = null;
+    if (openLists.length) content.push(openLists[0].node);
+    openLists.length = 0;
+    listNumId = null;
+  };
+
+  const appendListItem = (numId: string, level: number, kind: 'bullet' | 'ordered', item: TipTapNode) => {
+    const listType = kind === 'ordered' ? 'orderedList' : 'bulletList';
+
+    // A different numbering definition starts a new list outright.
+    if (listNumId !== numId) {
+      flushList();
+      listNumId = numId;
+    }
+
+    // Close any levels deeper than this paragraph.
+    while (openLists.length && openLists[openLists.length - 1].level > level) {
+      openLists.pop();
+    }
+
+    let top = openLists[openLists.length - 1];
+
+    // Open levels until we reach this paragraph's depth. A nested list belongs
+    // inside the previous item at the level above it.
+    while (!top || top.level < level) {
+      const nested: TipTapNode = { type: listType, content: [] };
+      if (!top) {
+        openLists.push({ level, node: nested });
+      } else {
+        const parentItems = top.node.content ?? [];
+        const parentItem = parentItems[parentItems.length - 1];
+        if (!parentItem) {
+          // Deeper level with no item to hang it on: treat it as this level.
+          top.level = level;
+          break;
+        }
+        parentItem.content = [...(parentItem.content ?? []), nested];
+        openLists.push({ level, node: nested });
+      }
+      top = openLists[openLists.length - 1];
+    }
+
+    // The same depth may switch between bullet and ordered mid-list.
+    if (top.node.type !== listType) top.node.type = listType;
+    top.node.content = [...(top.node.content ?? []), item];
   };
 
   for (const node of body?.children ?? []) {
@@ -508,16 +689,10 @@ export async function importDocx(data: ArrayBuffer | Uint8Array): Promise<DocxIm
       if (numId && numId !== '0') {
         const kind = numbering.get(numId)?.get(ilvl) ?? 'bullet';
         const blocks = explode(paragraphNode(node, ctx, undefined));
-        const item: TipTapNode = {
+        appendListItem(numId, ilvl, kind, {
           type: 'listItem',
           content: blocks.length ? blocks : [{ type: 'paragraph' }],
-        };
-        if (listBuffer && listBuffer.numId === numId && listBuffer.kind === kind) {
-          listBuffer.items.push(item);
-        } else {
-          flushList();
-          listBuffer = { numId, kind, items: [item] };
-        }
+        });
         continue;
       }
 
@@ -551,5 +726,5 @@ export async function importDocx(data: ArrayBuffer | Uint8Array): Promise<DocxIm
     showPageNumbers: header.hasPageNumber || footer.hasPageNumber,
   };
 
-  return { content: { type: 'doc', content }, pageSetup, headerFooter, footnotes };
+  return { content: { type: 'doc', content }, pageSetup, headerFooter, footnotes, comments };
 }

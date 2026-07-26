@@ -42,6 +42,7 @@ export class DocxPackage {
     readonly numbering: XmlNode | undefined,
     readonly styles: XmlNode | undefined,
     readonly footnotes: XmlNode | undefined,
+    readonly comments: XmlNode | undefined,
     readonly rels: Relationships,
     private readonly media: Map<string, string>,
   ) {}
@@ -57,11 +58,12 @@ export class DocxPackage {
       return roots.find((r) => r.name !== '?xml');
     };
 
-    const [document, numbering, styles, footnotes, relsXml] = await Promise.all([
+    const [document, numbering, styles, footnotes, comments, relsXml] = await Promise.all([
       readXml('word/document.xml'),
       readXml('word/numbering.xml'),
       readXml('word/styles.xml'),
       readXml('word/footnotes.xml'),
+      readXml('word/comments.xml'),
       readXml('word/_rels/document.xml.rels'),
     ]);
 
@@ -90,7 +92,7 @@ export class DocxPackage {
       }),
     );
 
-    return new DocxPackage(zip, document, numbering, styles, footnotes, rels, media);
+    return new DocxPackage(zip, document, numbering, styles, footnotes, comments, rels, media);
   }
 
   /** Resolve a relationship id to its target, or undefined. */

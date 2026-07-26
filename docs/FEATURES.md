@@ -82,7 +82,8 @@ DOCX import and export cover paragraphs, headings, character formatting
 (bold, italic, underline, strike, colour, font, size, highlight, super- and
 subscript), tables including header rows and cell shading, hyperlinks,
 bulleted and numbered lists with nesting, images at their real dimensions,
-page breaks, footnotes, page setup, and headers and footers.
+page breaks, footnotes, page setup, headers and footers, review comments,
+tracked insertions and deletions, and shapes.
 
 RTF import reads character and paragraph formatting; RTF export covers marks,
 paragraphs, headings, lists and page breaks. HTML import and export cover
@@ -90,8 +91,6 @@ marks, links, tables, lists and images.
 
 ### Known limitations
 
-- Comments and track changes are stored in `.dansword` and are not written to
-  DOCX
 - The editor scrolls continuously; pagination is applied to print and PDF
   output rather than being reflowed live on screen
 - `.doc` (the pre-2007 binary format) is imported by shelling out to
