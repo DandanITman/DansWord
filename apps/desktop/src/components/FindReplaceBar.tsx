@@ -1,110 +1,155 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
-import { Search, Replace } from 'lucide-react';
-import { findInEditor, replaceInEditor } from '../utils/findInEditor';
-import { uiAlert } from '../utils/uiPrompt';
+import { Search, Replace, ChevronUp, ChevronDown, X } from 'lucide-react';
+import { findAllInEditor, replaceInEditor } from '../utils/findInEditor';
 
 interface FindReplaceBarProps {
   editor: Editor | null;
   open: boolean;
+  /** Which field to focus when the bar opens (Ctrl+F vs Ctrl+H). */
+  focusField?: 'find' | 'replace';
   onClose: () => void;
 }
 
-export function FindReplaceBar({ editor, open, onClose }: FindReplaceBarProps) {
+export function FindReplaceBar({ editor, open, focusField = 'find', onClose }: FindReplaceBarProps) {
   const [findQuery, setFindQuery] = useState('');
   const [replaceQuery, setReplaceQuery] = useState('');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [status, setStatus] = useState('');
+  const findRef = useRef<HTMLInputElement>(null);
+  const replaceRef = useRef<HTMLInputElement>(null);
+
+  // Recomputed so the count follows edits and query changes.
+  const matches = useMemo(
+    () => (editor && findQuery ? findAllInEditor(editor, findQuery) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [editor, findQuery, open, status],
+  );
+
+  useEffect(() => {
+    if (!open) return;
+    // Ctrl+H opened the bar but left focus in the find field, so Replace was
+    // reachable only by clicking; the two shortcuts were byte-identical.
+    const target = focusField === 'replace' ? replaceRef.current : findRef.current;
+    target?.focus();
+    target?.select();
+  }, [open, focusField]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [findQuery]);
 
   if (!open) return null;
 
-  const findNext = async () => {
-    if (!editor) return;
-    const start = editor.state.selection.to;
-    const match = findInEditor(editor, findQuery, start) ?? findInEditor(editor, findQuery, 0);
-    if (!match) {
-      await uiAlert('No matches found.');
-      return;
-    }
-    editor.chain().focus().setTextSelection(match).run();
+  const goTo = (index: number) => {
+    if (!editor || !matches.length) return;
+    const wrapped = ((index % matches.length) + matches.length) % matches.length;
+    setActiveIndex(wrapped);
+    editor.chain().focus().setTextSelection(matches[wrapped]).scrollIntoView().run();
   };
 
-  const findPrev = async () => {
-    if (!editor) return;
-    const { doc } = editor.state;
-    const lowerQuery = findQuery.toLowerCase();
-    let lastMatch: { from: number; to: number } | null = null;
-    const cursor = editor.state.selection.from;
+  const findNext = () => goTo(activeIndex + 1);
+  const findPrev = () => goTo(activeIndex - 1);
 
-    doc.descendants((node, pos) => {
-      if (!node.isText || !node.text) return;
-      const lowerText = node.text.toLowerCase();
-      let start = 0;
-      while (start < lowerText.length) {
-        const index = lowerText.indexOf(lowerQuery, start);
-        if (index === -1) break;
-        const from = pos + index;
-        const to = from + findQuery.length;
-        if (to <= cursor) lastMatch = { from, to };
-        start = index + 1;
-      }
-    });
-
-    if (!lastMatch) {
-      await uiAlert('No previous matches.');
-      return;
-    }
-    editor.chain().focus().setTextSelection(lastMatch).run();
-  };
-
-  const replaceOne = async () => {
+  const replaceOne = () => {
     if (!editor) return;
     const count = replaceInEditor(editor, findQuery, replaceQuery, false);
-    if (!count) await uiAlert('No matches found.');
-    else await findNext();
+    setStatus(count ? 'Replaced 1' : 'No matches');
   };
 
-  const replaceAll = async () => {
+  const replaceAll = () => {
     if (!editor) return;
     const count = replaceInEditor(editor, findQuery, replaceQuery, true);
-    await uiAlert(count ? `Replaced ${count} occurrence(s).` : 'No matches found.');
+    setStatus(count ? `Replaced ${count} occurrence${count === 1 ? '' : 's'}` : 'No matches');
   };
+
+  // An inline count, rather than a blocking modal on every miss.
+  const countLabel = !findQuery
+    ? ''
+    : matches.length === 0
+      ? 'No results'
+      : `${Math.min(activeIndex + 1, matches.length)} of ${matches.length}`;
 
   return (
     <div className="find-replace-bar" data-testid="find-replace-bar">
       <div className="find-field">
         <Search size={14} />
         <input
+          ref={findRef}
           data-testid="find-input"
           value={findQuery}
-          onChange={(e) => setFindQuery(e.target.value)}
+          onChange={(e) => {
+            setFindQuery(e.target.value);
+            setStatus('');
+          }}
           placeholder="Find"
-          onKeyDown={(e) => e.key === 'Enter' && findNext()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (e.shiftKey) findPrev();
+              else findNext();
+            }
+            if (e.key === 'Escape') onClose();
+          }}
         />
+        <span className="find-count" data-testid="find-count">
+          {countLabel}
+        </span>
       </div>
       <div className="find-field">
         <Replace size={14} />
         <input
+          ref={replaceRef}
           data-testid="replace-input"
           value={replaceQuery}
           onChange={(e) => setReplaceQuery(e.target.value)}
           placeholder="Replace with"
-          onKeyDown={(e) => e.key === 'Enter' && replaceOne()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              replaceOne();
+            }
+            if (e.key === 'Escape') onClose();
+          }}
         />
       </div>
       <div className="find-actions">
-        <button className="icon-btn" onClick={findNext} data-testid="find-next">
-          Next
+        <button
+          className="icon-btn"
+          onClick={findPrev}
+          disabled={!matches.length}
+          title="Previous match"
+          data-testid="find-prev"
+        >
+          <ChevronUp size={14} />
         </button>
-        <button className="icon-btn" onClick={findPrev}>
-          Previous
+        <button
+          className="icon-btn"
+          onClick={findNext}
+          disabled={!matches.length}
+          title="Next match"
+          data-testid="find-next"
+        >
+          <ChevronDown size={14} />
         </button>
-        <button className="icon-btn" onClick={replaceOne}>
+        <button className="icon-btn" onClick={replaceOne} disabled={!matches.length}>
           Replace
         </button>
-        <button className="icon-btn" onClick={replaceAll} data-testid="replace-all">
+        <button
+          className="icon-btn"
+          onClick={replaceAll}
+          disabled={!matches.length}
+          data-testid="replace-all"
+        >
           Replace All
         </button>
-        <button className="icon-btn ghost-muted" onClick={onClose}>
-          Close
+        {status && (
+          <span className="find-status" data-testid="find-status">
+            {status}
+          </span>
+        )}
+        <button className="icon-btn ghost-muted" onClick={onClose} aria-label="Close find bar">
+          <X size={14} />
         </button>
       </div>
     </div>

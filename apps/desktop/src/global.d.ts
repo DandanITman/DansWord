@@ -1,56 +1,16 @@
 /// <reference types="vite/client" />
 
-import type { AppSettings, RecentFile, DocumentRevision } from '@dansword/core';
+import type { AppSettings, RecentFile } from '@dansword/core';
+import type { DansWordAPI, ImportDocResult } from './platform/api';
 
-export interface ListedDocument {
-  path: string;
-  name: string;
-  modified: number;
-  size: number;
-}
-
-export interface DansWordAPI {
-  openFile: () => Promise<string | null>;
-  openImageFile: () => Promise<string | null>;
-  saveFile: (defaultPath?: string) => Promise<string | null>;
-  openFolder: () => Promise<string | null>;
-  readFile: (filePath: string) => Promise<Uint8Array>;
-  readTextFile: (filePath: string) => Promise<string>;
-  writeFile: (filePath: string, data: Uint8Array | string) => Promise<boolean>;
-  listDocuments: (folderPath: string) => Promise<ListedDocument[]>;
-  getSettings: () => Promise<AppSettings | null>;
-  setSettings: (settings: AppSettings) => Promise<boolean>;
-  getRecents: () => Promise<RecentFile[]>;
-  setRecents: (recents: RecentFile[]) => Promise<boolean>;
-  showItemInFolder: (filePath: string) => Promise<void>;
-  getDocumentsPath: () => Promise<string>;
-  getDefaultSaveDir: () => Promise<string>;
-  printDocument: () => Promise<boolean>;
-  saveRevision: (docPath: string, snapshot: unknown, label: string) => Promise<DocumentRevision>;
-  listRevisions: (docPath: string) => Promise<DocumentRevision[]>;
-  loadRevision: (docPath: string, id: string) => Promise<unknown>;
-  exportPdf: (savePath?: string, pageSize?: string) => Promise<Uint8Array | null>;
-  importDoc: (filePath: string) => Promise<
-    | { format: 'docx'; data: ArrayBuffer; source: 'libreoffice' }
-    | { format: 'text'; data: string; source: 'extractor'; warning: string }
-  >;
-  spellCheckWords: (words: string[], language?: string) => Promise<boolean[]>;
-  spellSuggest: (word: string, language?: string) => Promise<string[]>;
-  startCollabServer: () => Promise<{ port: number; url: string }>;
-  stopCollabServer: () => Promise<boolean>;
-  getCollabUrl: () => Promise<string | null>;
-}
+export type { DansWordAPI, ListedDocument, ImportDocResult } from './platform/api';
 
 export interface DansWordTestHarness {
   reset: () => void;
   setOpenFileResult: (path: string | null) => void;
   setOpenImageFileResult: (path: string | null) => void;
   setSaveFileResult: (path: string | null) => void;
-  setImportDocResult: (
-    result:
-      | { format: 'docx'; data: ArrayBuffer; source: 'libreoffice' }
-      | { format: 'text'; data: string; source: 'extractor'; warning: string },
-  ) => void;
+  setImportDocResult: (result: ImportDocResult) => void;
   setSpellCheckResults: (results: boolean[]) => void;
   setSpellSuggestions: (words: string[]) => void;
   readStoredFile: (path: string) => string | null;
@@ -62,35 +22,33 @@ export interface DansWordTestHarness {
   setRecents: (recents: RecentFile[]) => void;
   getRecents: () => RecentFile[];
   setEditor: (editor: import('@tiptap/react').Editor | null) => void;
+  /**
+   * @deprecated Phase 6 removes these. They let a test drive the editor
+   * directly, which is how the ribbon shipped with almost no real coverage —
+   * `TC-EDIT-014 "applies heading style from ribbon"` never touched the ribbon.
+   * Do not add new call sites.
+   */
   loadEditorContent: (content: unknown) => void;
+  /** @deprecated See `loadEditorContent`. */
   getEditorJson: () => unknown;
   getEditorText: () => string;
   getEditorSelectionText: () => string;
-  runEditorCommand: (
-    command:
-      | 'toggleBulletList'
-      | 'toggleOrderedList'
-      | 'setTextAlignCenter'
-      | 'setTextAlignJustify'
-      | 'toggleStrike'
-      | 'toggleSuperscript'
-      | 'toggleSubscript'
-      | 'toggleBold'
-      | 'setFontFamily'
-      | 'insertTable'
-      | 'insertPageBreak'
-      | 'selectAll'
-      | 'moveSelectionToEnd'
-      | 'clearFormatting'
-      | 'toggleHeading1',
-    arg?: string,
-  ) => void;
+  isDirty: () => boolean;
+  setPendingFile: (path: string | null) => void;
+  emitOpenFile: (path: string) => void;
+  emitSaveAndClose: () => void;
   getExportPdfCallCount: () => number;
   getPrintCallCount: () => number;
 }
 
 declare global {
   interface Window {
+    /**
+     * Injected by `electron/preload.ts` (or by the test harness). Typed as
+     * always-present for ergonomics; use `isPlatformAvailable()` from
+     * `src/platform` before touching it on any path that can run without the
+     * Electron bridge.
+     */
     dansword: DansWordAPI;
     __DANSWORD_TEST__?: DansWordTestHarness;
   }

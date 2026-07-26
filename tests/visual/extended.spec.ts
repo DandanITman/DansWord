@@ -69,7 +69,8 @@ test.describe('Extended visual regression', () => {
 
   test('document with table and formatted content', async ({ page }) => {
     await loadRegressionFixture(page);
-    await page.evaluate(() => window.__DANSWORD_TEST__?.runEditorCommand('insertTable'));
+    await page.getByTestId('ribbon-tab-insert').click();
+    await page.getByTestId('ribbon-table').click();
     await expect(page.getByTestId('document-canvas')).toHaveScreenshot('editor-table-content.png', {
       mask: visualMaskLocators(page),
     });

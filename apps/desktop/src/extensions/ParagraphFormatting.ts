@@ -54,34 +54,30 @@ export const ParagraphFormatting = Extension.create({
           lineHeight: {
             default: null,
             parseHTML: (element) => element.style.lineHeight || null,
+            renderHTML: () => ({}),
           },
           spaceBefore: {
             default: null,
             parseHTML: (element) => readPx(element.style.marginTop),
+            renderHTML: () => ({}),
           },
           spaceAfter: {
             default: null,
             parseHTML: (element) => readPx(element.style.marginBottom),
+            renderHTML: () => ({}),
           },
+          // No renderHTML on these: indentLevel.renderHTML above already
+          // serialises the complete attribute set through paragraphStyle().
+          // Emitting them here too duplicated every border and shading rule.
           borderColor: {
             default: null,
             parseHTML: (element) => element.style.borderLeftColor || null,
-            renderHTML: (attributes) => {
-              if (!attributes.borderColor) return {};
-              return {
-                style: `border-left: 3px solid ${attributes.borderColor}; padding-left: 10px`,
-              };
-            },
+            renderHTML: () => ({}),
           },
           shading: {
             default: null,
             parseHTML: (element) => element.style.backgroundColor || null,
-            renderHTML: (attributes) => {
-              if (!attributes.shading) return {};
-              return {
-                style: `background-color: ${attributes.shading}; padding-top: 2px; padding-bottom: 2px`,
-              };
-            },
+            renderHTML: () => ({}),
           },
         },
       },

@@ -9,6 +9,8 @@ export interface AppSettings {
   autoSaveIntervalMs: number;
   spellCheckEnabled: boolean;
   language: string;
+  /** Attributed to comments and tracked changes. */
+  authorName: string;
 }
 
 export interface RecentFile {
@@ -41,15 +43,6 @@ export interface DansWordDocument {
   footnotes?: import('./pageSetup').DocumentFootnote[];
 }
 
-export type RibbonTab = 'file' | 'edit' | 'insert' | 'design' | 'pageLayout' | 'mailings' | 'review' | 'view';
+export type RibbonTab = 'file' | 'edit' | 'insert' | 'design' | 'pageLayout' | 'review' | 'view';
 
 export type AppView = 'home' | 'editor';
-
-export interface DocumentState {
-  id: string;
-  filePath: string | null;
-  fileName: string;
-  isDirty: boolean;
-  lastSaved: number | null;
-  content: unknown;
-}

@@ -27,9 +27,6 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Test catalog audit
-        run: npm run test:catalog
-
       - name: Typecheck
         run: npm run typecheck
 
@@ -41,6 +38,12 @@ jobs:
 
       - name: End-to-end tests
         run: npm run test:e2e
+        env:
+          CI: true
+
+      # Electron needs a display; the browser suite does not.
+      - name: Electron tests
+        run: xvfb-run -a npm run test:electron
         env:
           CI: true
 

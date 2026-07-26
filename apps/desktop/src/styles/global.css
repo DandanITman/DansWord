@@ -3600,3 +3600,157 @@ select:focus-visible {
 .design-style-row .ribbon-btn {
   min-width: 72px;
 }
+
+/* Shown when the app is loaded without the Electron bridge (see
+   src/platform/UnavailableScreen.tsx). Deliberately dependency-free so it
+   renders even if the rest of the app never mounts. */
+.platform-unavailable {
+  max-width: 34rem;
+  margin: 15vh auto;
+  padding: 2rem;
+  text-align: center;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  color: var(--text, #1f2937);
+}
+
+.platform-unavailable h1 {
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.platform-unavailable p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+  color: var(--text-muted, #6b7280);
+}
+
+.platform-unavailable code {
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: var(--surface-alt, #f3f4f6);
+  font-family: ui-monospace, monospace;
+}
+
+/* Text deleted while track changes is on. Kept in the document so the change
+   can be rejected and the text restored (see extensions/TrackDelete.ts). */
+.track-delete {
+  text-decoration: line-through;
+  color: #b91c1c;
+  background: rgba(185, 28, 28, 0.08);
+}
+
+:root[data-theme='dark'] .track-delete {
+  color: #fca5a5;
+  background: rgba(252, 165, 165, 0.12);
+}
+
+.spell-suggestion-add {
+  border-top: 1px solid var(--border, #e5e7eb);
+  font-style: italic;
+}
+
+/* Web layout: a continuous column rather than fixed-width pages. The status
+   bar button for this mode previously did nothing at all. */
+.editor-scroll.web-layout .doc-page {
+  width: 100% !important;
+  max-width: 100%;
+  min-height: 0 !important;
+  box-shadow: none;
+}
+
+.editor-scroll.web-layout .doc-pages-stack,
+.editor-scroll.web-layout .page-guides {
+  display: none;
+}
+
+/* Find & Replace: inline match count and status, replacing the modal alerts
+   that fired on every miss. */
+.find-count,
+.find-status {
+  font-size: 11px;
+  color: var(--text-muted, #6b7280);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.find-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Style editor: a list beside a form, rather than chained modal prompts. */
+.style-editor-body {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(220px, 1.4fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.style-editor-body .style-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.style-editor-body .style-list-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+}
+
+.style-editor-body .style-list-item:hover {
+  background: var(--surface-alt, #f3f4f6);
+}
+
+.style-editor-body .style-list-item.active {
+  background: color-mix(in srgb, var(--accent, #2563eb) 14%, transparent);
+}
+
+.style-editor-form .checkbox-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Word count dialog */
+.word-count-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0 16px;
+}
+
+.word-count-table th,
+.word-count-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  text-align: left;
+  font-weight: 400;
+}
+
+.word-count-table td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Review tab: the count of tracked changes awaiting a decision. */
+.ribbon-change-summary {
+  justify-content: center;
+  gap: 2px;
+  padding: 0 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ribbon-change-none {
+  font-style: italic;
+}

@@ -24,11 +24,17 @@ DansWord is built so students, teachers, families, and anyone who needs to write
 
 - Home screen with recent files, pinned documents, and templates
 - Ribbon UI: File, Edit, Insert, Design, Page Layout, Review, View
-- Rich text: fonts, colors, lists, tables, images, links, styles
-- Native `.dansword` format plus `.docx`, `.rtf`, `.html`, `.txt`
-- Hunspell spell check, find/replace, word count, zoom, light/dark theme
-- Auto-save, print, PDF export
-- Windows installer (NSIS)
+- Rich text: fonts, colors, lists, tables (with full row/column editing),
+  images, links, styles
+- Open and save `.docx`, `.rtf`, `.html`, `.txt` and the native `.dansword`
+- Hunspell spell check in English, German, Spanish and French
+- Track changes with insertions *and* deletions, anchored comments
+- Find and replace, word count, zoom, light/dark theme
+- Auto-save, version history, print, PDF export
+- Windows installer (NSIS) with `.docx` / `.dansword` file associations
+
+See [docs/FEATURES.md](docs/FEATURES.md) for the full list, including known
+limitations.
 
 ## Quick start (users)
 
@@ -48,9 +54,14 @@ npm run dev
 ### Testing
 
 ```bash
-npm run regression   # full suite
-npm test             # unit tests only
+npm run regression    # typecheck, build, unit, e2e, Electron, visual
+npm test              # unit tests only
+npm run test:e2e      # UI tests in a browser harness
+npm run test:electron # tests against a real Electron process
 ```
+
+Tests must reach the app through the controls a user actually clicks. There is
+deliberately no way for a test to drive the editor directly.
 
 See [docs/testing.md](docs/testing.md) for the complete testing guide.
 

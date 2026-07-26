@@ -36,6 +36,7 @@ interface HomeScreenProps {
   onOpenRecent: (path: string) => void;
   onBrowseFolder: () => void;
   onTogglePin: (path: string) => void;
+  onRemoveRecent: (path: string) => void;
   onOpenSettings: () => void;
   onToggleTheme: () => void;
   onGoToEditor: () => void;
@@ -107,10 +108,12 @@ export function HomeScreen({
   onOpenRecent,
   onBrowseFolder,
   onTogglePin,
+  onRemoveRecent,
   onOpenSettings,
   onToggleTheme,
   onGoToEditor,
 }: HomeScreenProps) {
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [sidebarItem, setSidebarItem] = useState<SidebarItem>('home');
   const [tab, setTab] = useState<HomeTab>('recent');
   const [newExpanded, setNewExpanded] = useState(true);
@@ -127,6 +130,23 @@ export function HomeScreen({
 
   return (
     <div className="home-backstage" data-testid="home-screen">
+      {aboutOpen && (
+        <div className="backdrop" onClick={() => setAboutOpen(false)}>
+          <div className="dialog" onClick={(e) => e.stopPropagation()} data-testid="about-dialog">
+            <h2>About DansWord</h2>
+            <p className="muted">
+              A free, open-source word processor. Local-first: documents stay on this
+              machine and the app makes no network requests.
+            </p>
+            <p className="muted">Licensed under MIT.</p>
+            <div className="dialog-actions">
+              <button className="btn-primary" onClick={() => setAboutOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <aside className="home-sidebar">
         <button className="home-sidebar-back" onClick={onGoToEditor} title="Back to editor">
           <ChevronLeft size={20} />
@@ -163,7 +183,7 @@ export function HomeScreen({
             {settings.theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             {settings.theme === 'light' ? 'Dark mode' : 'Light mode'}
           </button>
-          <button disabled className="muted-item">
+          <button onClick={() => setAboutOpen(true)} data-testid="home-about">
             <Info size={18} /> About
           </button>
         </nav>
@@ -283,7 +303,12 @@ export function HomeScreen({
                         >
                           {file.pinned ? <PinOff size={16} /> : <Pin size={16} />}
                         </button>
-                        <button className="icon-btn ghost-muted" title="More">
+                        <button
+                          className="icon-btn ghost-muted"
+                          onClick={() => onRemoveRecent(file.path)}
+                          title="Remove from recent"
+                          data-testid={`home-remove-recent-${file.name}`}
+                        >
                           <MoreHorizontal size={16} />
                         </button>
                       </td>

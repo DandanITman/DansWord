@@ -21,7 +21,10 @@ const mockHarness = {
   getEditorJson: () => null,
   getEditorText: () => '',
   getEditorSelectionText: () => '',
-  runEditorCommand: () => {},
+  isDirty: () => false,
+  setPendingFile: () => {},
+  emitOpenFile: () => {},
+  emitSaveAndClose: () => {},
   getExportPdfCallCount: () => 0,
   getPrintCallCount: () => 0,
 };
@@ -39,8 +42,6 @@ window.dansword = {
   setSettings: async () => true,
   getRecents: async () => [],
   setRecents: async () => true,
-  showItemInFolder: async () => {},
-  getDocumentsPath: async () => 'C:\\Users\\Test\\Documents',
   getDefaultSaveDir: async () => 'C:\\DansWordTest',
   printDocument: async () => true,
   saveRevision: async () => ({
@@ -60,9 +61,13 @@ window.dansword = {
   }),
   spellCheckWords: async (words: string[]) => words.map(() => true),
   spellSuggest: async () => ['suggestion'],
-  startCollabServer: async () => ({ port: 8765, url: 'ws://127.0.0.1:8765' }),
-  stopCollabServer: async () => true,
-  getCollabUrl: async () => null,
+  getUserDictionary: async () => [],
+  addWordToDictionary: async () => [],
+  setDirty: async () => true,
+  closeNow: async () => true,
+  onSaveAndClose: () => () => {},
+  takePendingFile: async () => null,
+  onOpenFile: () => () => {},
 };
 
 window.__DANSWORD_TEST__ = mockHarness;

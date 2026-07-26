@@ -33,25 +33,10 @@ export interface DansWordTestHarness {
   getEditorJson: () => unknown;
   getEditorText: () => string;
   getEditorSelectionText: () => string;
-  runEditorCommand: (
-    command:
-      | 'toggleBulletList'
-      | 'toggleOrderedList'
-      | 'setTextAlignCenter'
-      | 'setTextAlignJustify'
-      | 'toggleStrike'
-      | 'toggleSuperscript'
-      | 'toggleSubscript'
-      | 'toggleBold'
-      | 'setFontFamily'
-      | 'insertTable'
-      | 'insertPageBreak'
-      | 'selectAll'
-      | 'moveSelectionToEnd'
-      | 'clearFormatting'
-      | 'toggleHeading1',
-    arg?: string,
-  ) => void;
+  isDirty: () => boolean;
+  setPendingFile: (path: string | null) => void;
+  emitOpenFile: (path: string) => void;
+  emitSaveAndClose: () => void;
   getExportPdfCallCount: () => number;
   getPrintCallCount: () => number;
 }
@@ -96,6 +81,11 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
   let exportPdfCalls = 0;
   let printCalls = 0;
   let editorRef: Editor | null = null;
+  let dirty = false;
+  const userDictionary = new Set<string>();
+  let pendingFile: string | null = null;
+  const saveAndCloseListeners = new Set<() => void>();
+  const openFileListeners = new Set<(filePath: string) => void>();
 
   const getFs = (): Record<string, string> => readJson(FS_KEY, {});
   const setFs = (fs: Record<string, string>) => writeJson(FS_KEY, fs);
@@ -185,8 +175,6 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       writeJson(RECENTS_KEY, recents);
       return true;
     },
-    showItemInFolder: async () => {},
-    getDocumentsPath: async () => 'C:\\Users\\Test\\Documents',
     getDefaultSaveDir: async () => 'C:\\DansWordTest',
     printDocument: async () => {
       printCalls += 1;
@@ -228,9 +216,29 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       return words.map((w) => w.toLowerCase() !== 'teh');
     },
     spellSuggest: async () => spellSuggestions,
-    startCollabServer: async () => ({ port: 8765, url: 'ws://127.0.0.1:8765' }),
-    stopCollabServer: async () => true,
-    getCollabUrl: async () => null,
+    getUserDictionary: async () => [...userDictionary],
+    addWordToDictionary: async (word: string) => {
+      userDictionary.add(word.toLowerCase());
+      return [...userDictionary];
+    },
+    setDirty: async (value: boolean) => {
+      dirty = value;
+      return true;
+    },
+    closeNow: async () => true,
+    onSaveAndClose: (callback: () => void) => {
+      saveAndCloseListeners.add(callback);
+      return () => saveAndCloseListeners.delete(callback);
+    },
+    takePendingFile: async () => {
+      const value = pendingFile;
+      pendingFile = null;
+      return value;
+    },
+    onOpenFile: (callback: (filePath: string) => void) => {
+      openFileListeners.add(callback);
+      return () => openFileListeners.delete(callback);
+    },
   };
 
   const harness: DansWordTestHarness = {
@@ -244,6 +252,11 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       exportPdfCalls = 0;
       printCalls = 0;
       editorRef = null;
+      dirty = false;
+      userDictionary.clear();
+      pendingFile = null;
+      saveAndCloseListeners.clear();
+      openFileListeners.clear();
       localStorage.removeItem(FS_KEY);
       localStorage.removeItem(SETTINGS_KEY);
       localStorage.removeItem(RECENTS_KEY);
@@ -307,58 +320,15 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       const { from, to } = editorRef.state.selection;
       return editorRef.state.doc.textBetween(from, to, ' ');
     },
-    runEditorCommand: (command, arg) => {
-      if (!editorRef) return;
-      const chain = editorRef.chain().focus();
-      switch (command) {
-        case 'toggleBulletList':
-          chain.toggleBulletList().run();
-          break;
-        case 'toggleOrderedList':
-          chain.toggleOrderedList().run();
-          break;
-        case 'setTextAlignCenter':
-          chain.setTextAlign('center').run();
-          break;
-        case 'setTextAlignJustify':
-          chain.setTextAlign('justify').run();
-          break;
-        case 'toggleStrike':
-          chain.toggleStrike().run();
-          break;
-        case 'toggleSuperscript':
-          chain.toggleSuperscript().run();
-          break;
-        case 'toggleSubscript':
-          chain.toggleSubscript().run();
-          break;
-        case 'toggleBold':
-          chain.toggleBold().run();
-          break;
-        case 'setFontFamily':
-          chain.setFontFamily(arg ?? 'Georgia').run();
-          break;
-        case 'insertTable':
-          chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
-          break;
-        case 'insertPageBreak':
-          chain.insertPageBreak().run();
-          break;
-        case 'selectAll':
-          chain.selectAll().run();
-          break;
-        case 'moveSelectionToEnd':
-          chain.setTextSelection(editorRef.state.doc.content.size).run();
-          break;
-        case 'clearFormatting':
-          chain.clearNodes().unsetAllMarks().clearParagraphFormatting().run();
-          break;
-        case 'toggleHeading1':
-          chain.toggleHeading({ level: 1 }).run();
-          break;
-        default:
-          break;
-      }
+    isDirty: () => dirty,
+    setPendingFile: (path: string | null) => {
+      pendingFile = path ? normalizePath(path) : null;
+    },
+    emitOpenFile: (path: string) => {
+      openFileListeners.forEach((cb) => cb(normalizePath(path)));
+    },
+    emitSaveAndClose: () => {
+      saveAndCloseListeners.forEach((cb) => cb());
     },
     getExportPdfCallCount: () => exportPdfCalls,
     getPrintCallCount: () => printCalls,

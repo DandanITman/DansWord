@@ -93,8 +93,12 @@ export async function getSampleHtml() {
 
 export function getSampleDansword() {
   const envelope = createDocumentEnvelope(sampleContent, {
-    title: 'Sample DansWord',
-    author: 'Tester',
+    metadata: {
+      title: 'Sample DansWord',
+      author: 'Tester',
+      created: '2026-01-15T12:00:00.000Z',
+      modified: '2026-01-15T12:00:00.000Z',
+    },
   });
   return JSON.stringify(
     wrapDansWordFile(envelope.content, envelope.metadata, {

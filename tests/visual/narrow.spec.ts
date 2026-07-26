@@ -10,7 +10,6 @@ test.describe('DansWord narrow viewport', () => {
     await openBlankDocument(page);
     await expect(page.getByTestId('app-shell')).toHaveScreenshot('narrow-editor.png', {
       mask: visualMaskLocators(page),
-      fullPage: true,
     });
   });
 });

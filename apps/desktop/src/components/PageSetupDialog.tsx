@@ -9,6 +9,18 @@ interface PageSetupDialogProps {
 }
 
 export function PageSetupDialog({ open, pageSetup, onChange, onClose }: PageSetupDialogProps) {
+  // Which preset the current margins match, so the select reflects reality.
+  const activeMarginPreset =
+    Object.keys(MARGIN_PRESETS).find((name) => {
+      const preset = MARGIN_PRESETS[name];
+      return (
+        preset.top === pageSetup.margins.top &&
+        preset.bottom === pageSetup.margins.bottom &&
+        preset.left === pageSetup.margins.left &&
+        preset.right === pageSetup.margins.right
+      );
+    }) ?? '';
+
   if (!open) return null;
 
   return (
@@ -41,7 +53,11 @@ export function PageSetupDialog({ open, pageSetup, onChange, onClose }: PageSetu
           </label>
           <label>
             Margin preset
+            {/* Controlled: without a `value` this always displayed "Custom",
+                and re-picking the preset already in effect fired nothing. */}
             <select
+              data-testid="page-margin-preset"
+              value={activeMarginPreset}
               onChange={(e) => {
                 const preset = MARGIN_PRESETS[e.target.value];
                 if (preset) onChange({ ...pageSetup, margins: { ...preset } });

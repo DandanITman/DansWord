@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
               vite: {
                 build: {
                   rollupOptions: {
-                    external: ['dictionary-en', 'dictionary-de', 'dictionary-es', 'dictionary-fr', 'nspell', 'word-extractor', 'ws'],
+                    external: ['dictionary-en', 'dictionary-de', 'dictionary-es', 'dictionary-fr', 'nspell', 'word-extractor'],
                   },
                 },
               },
