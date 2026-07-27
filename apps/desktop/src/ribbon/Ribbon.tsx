@@ -1,51 +1,54 @@
-import { useEffect, useRef, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import type { Editor } from '@tiptap/react';
 import type { RibbonTab } from '@dansword/core';
 import { useRibbonState } from './useRibbonState';
 import type { RibbonActions, RibbonFlags, RibbonTabProps } from './types';
-import { FileTab } from './tabs/FileTab';
 import { HomeTab } from './tabs/HomeTab';
 import { InsertTab } from './tabs/InsertTab';
 import { DrawTab } from './tabs/DrawTab';
-import { DesignTab } from './tabs/DesignTab';
 import { LayoutTab } from './tabs/LayoutTab';
 import { ReferencesTab } from './tabs/ReferencesTab';
-import { MailingsTab } from './tabs/MailingsTab';
 import { ReviewTab } from './tabs/ReviewTab';
 import { ViewTab } from './tabs/ViewTab';
+import { HelpTab } from './tabs/HelpTab';
 import { PictureFormatTab } from './tabs/PictureFormatTab';
 import { TableLayoutTab } from './tabs/TableLayoutTab';
+import { FileMenu } from '../components/FileMenu';
+import {
+  RibbonStripActions,
+  type EditingMode,
+  type RibbonLayout,
+  type RibbonVisibility,
+} from '../components/RibbonStripActions';
 
 const TABS: { id: RibbonTab; label: string }[] = [
   { id: 'file', label: 'File' },
   { id: 'home', label: 'Home' },
   { id: 'insert', label: 'Insert' },
-  { id: 'draw', label: 'Draw' },
-  { id: 'design', label: 'Design' },
   { id: 'pageLayout', label: 'Layout' },
   { id: 'references', label: 'References' },
-  { id: 'mailings', label: 'Mailings' },
   { id: 'review', label: 'Review' },
   { id: 'view', label: 'View' },
+  { id: 'help', label: 'Help' },
 ];
 
 /** Tabs that only appear while their object is selected, as in Word. */
 const CONTEXTUAL: { id: RibbonTab; label: string }[] = [
+  { id: 'draw', label: 'Draw' },
   { id: 'pictureFormat', label: 'Picture Format' },
   { id: 'tableLayout', label: 'Table Layout' },
 ];
 
-const PANELS: Record<RibbonTab, (props: RibbonTabProps) => React.ReactElement> = {
-  file: FileTab,
+// 'file' is absent on purpose: it opens a dropdown, not a panel.
+const PANELS: Record<Exclude<RibbonTab, 'file'>, (props: RibbonTabProps) => React.ReactElement> = {
   home: HomeTab,
   insert: InsertTab,
-  draw: DrawTab,
-  design: DesignTab,
   pageLayout: LayoutTab,
   references: ReferencesTab,
-  mailings: MailingsTab,
   review: ReviewTab,
   view: ViewTab,
+  help: HelpTab,
+  draw: DrawTab,
   pictureFormat: PictureFormatTab,
   tableLayout: TableLayoutTab,
 };
@@ -59,6 +62,15 @@ export interface RibbonProps {
   /** Collapse the ribbon to just its tab strip, as Ctrl+F1 does in Word. */
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  /** File > Rename, Create a Copy and Delete need a document on disk. */
+  hasFile: boolean;
+  layout: RibbonLayout;
+  onSetLayout: (layout: RibbonLayout) => void;
+  visibility: RibbonVisibility;
+  onSetVisibility: (visibility: RibbonVisibility) => void;
+  editingMode: EditingMode;
+  onSetEditingMode: (mode: EditingMode) => void;
+  onToggleComments: () => void;
 }
 
 export function Ribbon({
@@ -69,10 +81,20 @@ export function Ribbon({
   flags,
   collapsed,
   onToggleCollapsed,
+  hasFile,
+  layout,
+  onSetLayout,
+  visibility,
+  onSetVisibility,
+  editingMode,
+  onSetEditingMode,
+  onToggleComments,
 }: RibbonProps) {
+  const [fileMenuAnchor, setFileMenuAnchor] = useState<HTMLElement | null>(null);
+  const [fileMenuOpen, setFileMenuOpen] = useState(false);
   // Recomputed on every editor transaction, so control state follows the caret.
   const state = useRibbonState(editor);
-  const previous = useRef({ image: false, table: false });
+  const previous = useRef({ image: false, table: false, ink: false });
 
   /**
    * Follow the selection into the contextual tabs and back out again.
@@ -84,8 +106,15 @@ export function Ribbon({
   useEffect(() => {
     const wasImage = previous.current.image;
     const wasTable = previous.current.table;
-    previous.current = { image: state.imageActive, table: state.inTable };
+    const wasInk = previous.current.ink;
+    previous.current = { image: state.imageActive, table: state.inTable, ink: state.inkActive };
 
+    // Ink first: a drawing canvas is a block atom, so it can never be selected
+    // at the same time as a picture or from inside a table.
+    if (state.inkActive && !wasInk) {
+      onTabChange('draw');
+      return;
+    }
     if (state.imageActive && !wasImage) {
       onTabChange('pictureFormat');
       return;
@@ -94,9 +123,10 @@ export function Ribbon({
       onTabChange('tableLayout');
       return;
     }
+    if (!state.inkActive && activeTab === 'draw') onTabChange('home');
     if (!state.imageActive && activeTab === 'pictureFormat') onTabChange('home');
     if (!state.inTable && activeTab === 'tableLayout') onTabChange('home');
-  }, [state.imageActive, state.inTable, activeTab, onTabChange]);
+  }, [state.imageActive, state.inTable, state.inkActive, activeTab, onTabChange]);
 
   // Keep the document selection while a ribbon button is pressed.
   const preserveEditorFocus = (event: MouseEvent) => {
@@ -105,35 +135,54 @@ export function Ribbon({
     if (target.closest('button')) event.preventDefault();
   };
 
-  const Panel = PANELS[activeTab];
+  // The File tab never becomes active, so fall back to whatever is showing.
+  const Panel = PANELS[activeTab === 'file' ? 'home' : activeTab];
   const visibleContextual = CONTEXTUAL.filter(
     (tab) =>
+      (tab.id === 'draw' && state.inkActive) ||
       (tab.id === 'pictureFormat' && state.imageActive) ||
       (tab.id === 'tableLayout' && state.inTable),
   );
 
   return (
     <div
-      className={`ribbon office-ribbon${collapsed ? ' is-collapsed' : ''}`}
+      className={`ribbon office-ribbon${collapsed ? ' is-collapsed' : ''}${
+        layout === 'singleLine' ? ' is-single-line' : ''
+      }`}
       data-testid="ribbon"
     >
       <div className="ribbon-tabs office-ribbon-tabs" role="tablist">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            className={`ribbon-tab ${activeTab === tab.id ? 'active' : ''}`}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            onClick={() => {
-              if (collapsed) onToggleCollapsed();
-              onTabChange(tab.id);
-            }}
-            data-tab={tab.id}
-            data-testid={`ribbon-tab-${tab.id}`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {TABS.map((tab) =>
+          tab.id === 'file' ? (
+            <button
+              key={tab.id}
+              ref={setFileMenuAnchor}
+              className={`ribbon-tab ${fileMenuOpen ? 'active' : ''}`}
+              aria-haspopup="menu"
+              aria-expanded={fileMenuOpen}
+              onClick={() => setFileMenuOpen((open) => !open)}
+              data-tab={tab.id}
+              data-testid={`ribbon-tab-${tab.id}`}
+            >
+              {tab.label}
+            </button>
+          ) : (
+            <button
+              key={tab.id}
+              className={`ribbon-tab ${activeTab === tab.id ? 'active' : ''}`}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              onClick={() => {
+                if (collapsed) onToggleCollapsed();
+                onTabChange(tab.id);
+              }}
+              data-tab={tab.id}
+              data-testid={`ribbon-tab-${tab.id}`}
+            >
+              {tab.label}
+            </button>
+          ),
+        )}
         {visibleContextual.map((tab) => (
           <button
             key={tab.id}
@@ -147,15 +196,17 @@ export function Ribbon({
             {tab.label}
           </button>
         ))}
-        <button
-          className="ribbon-collapse"
-          onClick={onToggleCollapsed}
-          title={collapsed ? 'Pin the ribbon (Ctrl+F1)' : 'Collapse the ribbon (Ctrl+F1)'}
-          aria-label={collapsed ? 'Pin the ribbon' : 'Collapse the ribbon'}
-          data-testid="ribbon-collapse"
-        >
-          {collapsed ? '⌃' : '⌄'}
-        </button>
+        <RibbonStripActions
+          unresolvedComments={flags.unresolvedComments}
+          commentsOpen={flags.commentsOpen}
+          onToggleComments={onToggleComments}
+          editingMode={editingMode}
+          onSetEditingMode={onSetEditingMode}
+          layout={layout}
+          onSetLayout={onSetLayout}
+          visibility={visibility}
+          onSetVisibility={onSetVisibility}
+        />
       </div>
       {!collapsed && (
         <div
@@ -166,6 +217,13 @@ export function Ribbon({
           <Panel editor={editor} state={state} actions={actions} flags={flags} />
         </div>
       )}
+      <FileMenu
+        anchor={fileMenuAnchor}
+        open={fileMenuOpen}
+        onClose={() => setFileMenuOpen(false)}
+        actions={actions}
+        hasFile={hasFile}
+      />
     </div>
   );
 }

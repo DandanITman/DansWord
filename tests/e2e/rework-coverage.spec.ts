@@ -32,7 +32,7 @@ test.describe('Reworked features', () => {
     await typeInEditor(page, 'one two three four five');
 
     // The View tab previously had no word count command at all.
-    await clickRibbon(page, 'view', 'ribbon-word-count');
+    await clickRibbon(page, 'view', 'view-word-count');
 
     const dialog = page.getByTestId('word-count-dialog');
     await expect(dialog).toBeVisible();
@@ -168,6 +168,8 @@ test.describe('Reworked features', () => {
 
   test('TC-REV-008: tracked deletions are kept and reject restores them', async ({ page }) => {
     await openBlankDocument(page);
+    // AutoCorrect capitalises the first word of a sentence as you type, so the
+    // assertions below expect what the user actually sees.
     await typeInEditor(page, 'keep this sentence');
 
     await clickRibbon(page, 'review', 'ribbon-track-changes');
@@ -182,7 +184,7 @@ test.describe('Reworked features', () => {
     await expect(page.locator('.track-delete')).toHaveCount(1);
 
     await resolveAllChanges(page, 'reject');
-    await expect(page.getByTestId('word-editor')).toContainText('keep this sentence');
+    await expect(page.getByTestId('word-editor')).toContainText('Keep this sentence');
     await expect(page.locator('.track-delete')).toHaveCount(0);
   });
 

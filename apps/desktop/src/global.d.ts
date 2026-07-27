@@ -39,6 +39,7 @@ export interface DansWordTestHarness {
   emitSaveAndClose: () => void;
   getExportPdfCallCount: () => number;
   getPrintCallCount: () => number;
+  getOpenedExternalUrls: () => string[];
 }
 
 declare global {

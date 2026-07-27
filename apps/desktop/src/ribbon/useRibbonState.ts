@@ -21,6 +21,8 @@ export interface RibbonState {
   linkHref: string;
 
   align: 'left' | 'center' | 'right' | 'justify' | null;
+  /** Home > Paragraph: the block's text direction, 'ltr' unless set. */
+  textDirection: 'ltr' | 'rtl';
   headingLevel: number | null;
   /** The Styles gallery entry applied to the current block, if any. */
   styleId: string;
@@ -86,6 +88,7 @@ const EMPTY: RibbonState = {
   link: false,
   linkHref: '',
   align: null,
+  textDirection: 'ltr',
   headingLevel: null,
   styleId: '',
   fontFamily: 'Calibri',
@@ -185,6 +188,7 @@ export function useRibbonState(editor: Editor | null): RibbonState {
         linkHref: String(instance.getAttributes('link').href ?? ''),
 
         align: align ?? null,
+        textDirection: block.textDirection === 'rtl' ? 'rtl' : 'ltr',
         headingLevel,
         styleId: String(block.styleId ?? ''),
 

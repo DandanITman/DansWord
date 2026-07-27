@@ -2,6 +2,8 @@ import { Extension } from '@tiptap/core';
 
 type ParagraphFormattingAttrs = {
   textAlign?: string | null;
+  /** Home > Paragraph: left-to-right or right-to-left text direction. */
+  textDirection?: 'ltr' | 'rtl' | null;
   indentLevel?: number | null;
   indentRight?: number | null;
   firstLineIndent?: number | null;
@@ -135,6 +137,13 @@ export const ParagraphFormatting = Extension.create({
             parseHTML: (element) => element.getAttribute('data-caption'),
             renderHTML: () => ({}),
           },
+          textDirection: {
+            default: null,
+            parseHTML: (element) => (element.getAttribute('dir') === 'rtl' ? 'rtl' : null),
+            // Emitted as the real dir attribute, so the browser does the
+            // bidirectional layout rather than us faking it with text-align.
+            renderHTML: (attrs) => (attrs.textDirection === 'rtl' ? { dir: 'rtl' } : {}),
+          },
         },
       },
     ];
@@ -176,6 +185,13 @@ export const ParagraphFormatting = Extension.create({
             indentLevel: Math.max(0, current - 1),
           });
         },
+      /** Home > Paragraph: Left-to-Right / Right-to-Left. */
+      setTextDirection:
+        (direction: 'ltr' | 'rtl') =>
+        ({ editor, commands }) =>
+          commands.updateAttributes(blockType(editor), {
+            textDirection: direction === 'rtl' ? 'rtl' : null,
+          }),
       setRightIndent:
         (px: number) =>
         ({ editor, commands }) =>
@@ -267,6 +283,7 @@ declare module '@tiptap/core' {
     paragraphFormatting: {
       increaseParagraphIndent: () => ReturnType;
       decreaseParagraphIndent: () => ReturnType;
+      setTextDirection: (direction: 'ltr' | 'rtl') => ReturnType;
       setRightIndent: (px: number) => ReturnType;
       setFirstLineIndent: (px: number) => ReturnType;
       setLineSpacing: (lineHeight: string) => ReturnType;

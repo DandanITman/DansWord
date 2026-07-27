@@ -136,9 +136,14 @@ export async function openRibbonDialog(page: Page, tab: string, launcherTitle: s
   await page.getByTitle(launcherTitle).click();
 }
 
+/**
+ * File is a dropdown now, not a ribbon panel, so the Backstage is reached
+ * through File > Export rather than a "Save As / Export" button.
+ */
 export async function openBackstage(page: Page, section?: string) {
-  await switchRibbonTab(page, 'file');
-  await page.getByRole('button', { name: /Save As \/ Export/i }).click();
+  await page.getByTestId('ribbon-tab-file').click();
+  await page.getByTestId('file-menu').waitFor({ state: 'visible' });
+  await page.getByTestId('file-menu-export').click();
   await page.getByTestId('backstage').waitFor({ state: 'visible' });
   if (section) {
     await page.getByTestId(`backstage-nav-${section}`).click();
@@ -166,6 +171,30 @@ export async function answerPrompt(page: Page, value: string) {
   await page.getByTestId('ui-prompt-input').fill(value);
   await page.getByTestId('ui-prompt-ok').click();
   await dialog.waitFor({ state: 'hidden' });
+}
+
+/** Answer the in-app confirm dialog. */
+export async function answerConfirm(page: Page, accept: boolean) {
+  const dialog = page.getByTestId('ui-confirm');
+  await dialog.waitFor({ state: 'visible' });
+  await page.getByTestId(accept ? 'ui-confirm-ok' : 'ui-confirm-cancel').click();
+  await dialog.waitFor({ state: 'hidden' });
+}
+
+/** Open the File dropdown and click one of its items. */
+export async function fileMenu(page: Page, item: string) {
+  await page.getByTestId('ribbon-tab-file').click();
+  await page.getByTestId('file-menu').waitFor({ state: 'visible' });
+  await page.getByTestId(`file-menu-${item}`).click();
+}
+
+/** Open the Alt+Q search box, type a query and run the top result. */
+export async function runCommand(page: Page, query: string) {
+  await page.keyboard.press('Alt+q');
+  await page.getByTestId('command-palette').waitFor({ state: 'visible' });
+  await page.getByTestId('command-input').fill(query);
+  await page.getByTestId('command-input').press('Enter');
+  await page.getByTestId('command-palette').waitFor({ state: 'hidden' });
 }
 
 /** Dismiss the in-app alert, asserting its message when given. */
@@ -251,7 +280,6 @@ export async function loadHeadingFixture(page: Page) {
 export const visualMaskSelectors = [
   '[data-testid="status-bar"]',
   '[data-testid="editor-filename"]',
-  '.editor-user-badge',
   '.home-user-chip',
 ];
 

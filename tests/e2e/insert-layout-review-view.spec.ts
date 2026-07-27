@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   resetTestState,
   openBlankDocument,
+  openBackstage,
   typeInEditor,
   focusEditor,
   switchRibbonTab,
@@ -139,8 +140,8 @@ test.describe('Layout, review, and view', () => {
 
   test('TC-LAY-003: enables watermark text on document', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'design');
-    await page.getByTestId('design-watermark').click();
+    await switchRibbonTab(page, 'pageLayout');
+    await page.getByTestId('layout-watermark').click();
     await page.getByLabel('Show watermark').check();
     await page.getByLabel('Watermark text').fill('DRAFT');
     await page.getByRole('button', { name: 'Done' }).click();
@@ -149,8 +150,8 @@ test.describe('Layout, review, and view', () => {
 
   test('opens watermark dialog', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'design');
-    await page.getByTestId('design-watermark').click();
+    await switchRibbonTab(page, 'pageLayout');
+    await page.getByTestId('layout-watermark').click();
     await expect(page.getByRole('heading', { name: /Watermark/i })).toBeVisible();
   });
 
@@ -182,7 +183,7 @@ test.describe('Layout, review, and view', () => {
   test('TC-VIEW-003: toggles focus mode from view tab', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'view');
-    await page.getByTestId('view-focus-mode').click();
+    await page.getByTestId('view-immersive-reader').click();
     await expect(page.locator('.editor-scroll')).toHaveClass(/focus-mode/);
   });
 
@@ -201,7 +202,8 @@ test.describe('Layout, review, and view', () => {
   test('switches status bar view modes', async ({ page }) => {
     await openBlankDocument(page);
     await page.getByTitle('Web Layout').click();
-    await page.getByTitle('Focus Mode').click();
+    await switchRibbonTab(page, 'view');
+    await page.getByTestId('view-immersive-reader').click();
     await expect(page.locator('.editor-scroll.focus-mode')).toBeVisible();
   });
 
@@ -233,9 +235,7 @@ test.describe('Settings and options', () => {
   });
 
   test('disabling spell check stores setting', async ({ page }) => {
-    await switchRibbonTab(page, 'file');
-    await page.getByRole('button', { name: /Save As \/ Export/i }).click();
-    await page.getByTestId('backstage-nav-options').click();
+    await openBackstage(page, 'options');
     await page.getByLabel(/Enable spell check/i).uncheck();
     const enabled = await page.evaluate(async () => (await window.dansword.getSettings())?.spellCheckEnabled);
     expect(enabled).toBe(false);

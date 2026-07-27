@@ -10,7 +10,6 @@ import {
 } from './pageSetup';
 import { BUILTIN_STYLES, DEFAULT_WATERMARK, type DocumentStyle, type Watermark } from './styles';
 import type { CitationSource, CitationStyle } from './references';
-import { EMPTY_MAIL_MERGE, type MailMergeData } from './mailMerge';
 
 export interface DocumentEnvelope {
   metadata: DocumentMetadata;
@@ -27,7 +26,6 @@ export interface DocumentEnvelope {
   /** Bibliography sources, as Manage Sources lists them. */
   sources: CitationSource[];
   citationStyle: CitationStyle;
-  mailMerge: MailMergeData;
   /** Review > Restrict Editing: the document opens read-only. */
   restrictEditing: boolean;
   /** Which Design style set produced the current formatting. */
@@ -57,7 +55,6 @@ export function createDocumentEnvelope(
     endnotes: partial?.endnotes ?? [],
     sources: partial?.sources ?? [],
     citationStyle: partial?.citationStyle ?? 'apa',
-    mailMerge: partial?.mailMerge ?? { ...EMPTY_MAIL_MERGE },
     restrictEditing: partial?.restrictEditing ?? false,
     styleSetId: partial?.styleSetId ?? 'default',
   };
@@ -82,7 +79,6 @@ export function parseDansWordFile(raw: unknown): DocumentEnvelope {
     endnotes: file.endnotes,
     sources: file.sources,
     citationStyle: file.citationStyle,
-    mailMerge: file.mailMerge,
     restrictEditing: file.restrictEditing,
     styleSetId: file.styleSetId,
   });
@@ -103,7 +99,6 @@ export function serializeDansWordFile(envelope: DocumentEnvelope): DansWordDocum
     endnotes: envelope.endnotes,
     sources: envelope.sources,
     citationStyle: envelope.citationStyle,
-    mailMerge: envelope.mailMerge,
     restrictEditing: envelope.restrictEditing,
     styleSetId: envelope.styleSetId,
   };

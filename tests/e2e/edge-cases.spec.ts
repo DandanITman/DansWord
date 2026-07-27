@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   resetTestState,
   openBlankDocument,
+  openBackstage,
   typeInEditor,
   focusEditor,
   switchRibbonTab,
@@ -111,8 +112,7 @@ test.describe('Edge cases and failure modes', () => {
 
   test('backstage modal overlay blocks editor interaction', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'file');
-    await page.getByRole('button', { name: /Save As \/ Export/i }).click();
+    await openBackstage(page);
     await expect(page.getByTestId('backstage')).toBeVisible();
     await expect(page.getByTestId('word-editor')).not.toBeFocused();
   });

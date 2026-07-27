@@ -1,4 +1,4 @@
-import { Eraser, Highlighter, MousePointer2, PenTool, Square, Trash2 } from 'lucide-react';
+import { Eraser, Highlighter, MousePointer2, PenTool, Trash2 } from 'lucide-react';
 import { INK_COLORS, INK_WIDTHS, type InkTool } from '../../extensions/InkDrawing';
 import { RibbonButton, RibbonGroup, RibbonLine, RibbonStack } from '../RibbonKit';
 import type { RibbonTabProps } from '../types';
@@ -66,15 +66,8 @@ export function DrawTab({ editor, state, actions, flags }: RibbonTabProps) {
         </RibbonStack>
       </RibbonGroup>
 
-      <RibbonGroup label="Insert">
+      <RibbonGroup label="Canvas">
         <RibbonStack>
-          <RibbonButton
-            icon={<Square size={14} />}
-            label="Drawing Canvas"
-            title="Insert a drawing canvas to write or sketch on"
-            onClick={actions.onInsertDrawingCanvas}
-            testId="draw-insert-canvas"
-          />
           <RibbonButton
             icon={<Trash2 size={14} />}
             label="Delete Drawing"

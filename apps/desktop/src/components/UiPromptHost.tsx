@@ -130,16 +130,27 @@ export function UiPromptHost() {
         <div
           className="dialog panel-card ui-prompt-dialog"
           role="alertdialog"
+          data-testid="ui-confirm"
           aria-modal="true"
           aria-label={confirmRequest.message}
           onClick={(e) => e.stopPropagation()}
         >
           <p className="ui-prompt-message">{confirmRequest.message}</p>
           <div className="dialog-actions">
-            <button type="button" className="icon-btn" onClick={() => closeConfirm(false)}>
+            <button
+              type="button"
+              className="icon-btn"
+              data-testid="ui-confirm-cancel"
+              onClick={() => closeConfirm(false)}
+            >
               Cancel
             </button>
-            <button type="button" className="icon-btn primary" onClick={() => closeConfirm(true)}>
+            <button
+              type="button"
+              className="icon-btn primary"
+              data-testid="ui-confirm-ok"
+              onClick={() => closeConfirm(true)}
+            >
               OK
             </button>
           </div>

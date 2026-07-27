@@ -1,4 +1,5 @@
 import {
+  Accessibility,
   BookOpenCheck,
   Check,
   CheckCheck,
@@ -7,7 +8,6 @@ import {
   GitCompare,
   Hash,
   Languages,
-  Lock,
   MessageSquare,
   MessageSquarePlus,
   PanelRight,
@@ -34,14 +34,7 @@ import {
   RibbonStack,
 } from '../RibbonKit';
 import type { MarkupView, RibbonTabProps } from '../types';
-
-const LANGUAGES = [
-  { id: 'en-US', label: 'English (United States)' },
-  { id: 'en-GB', label: 'English (United Kingdom)' },
-  { id: 'de-DE', label: 'German (Germany)' },
-  { id: 'es-ES', label: 'Spanish (Spain)' },
-  { id: 'fr-FR', label: 'French (France)' },
-];
+import { PROOFING_LANGUAGES } from '../../constants/languages';
 
 const MARKUP_VIEWS: Array<{ id: MarkupView; label: string; hint: string }> = [
   { id: 'simple', label: 'Simple Markup', hint: 'Show the result, with a bar where changes are' },
@@ -90,6 +83,18 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
         </RibbonStack>
       </RibbonGroup>
 
+      <RibbonGroup label="Accessibility">
+        <RibbonButton
+          icon={<Accessibility size={20} />}
+          label="Check Accessibility"
+          title="Find problems that make the document hard to read with assistive technology"
+          size="large"
+          active={flags.accessibilityOpen}
+          onClick={actions.onCheckAccessibility}
+          testId="review-check-accessibility"
+        />
+      </RibbonGroup>
+
       <RibbonGroup label="Language">
         <RibbonMenuButton
           icon={<Languages size={20} />}
@@ -100,7 +105,7 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
           menuWidth={250}
         >
           <RibbonMenuHeader label="Set proofing language" />
-          {LANGUAGES.map((language) => (
+          {PROOFING_LANGUAGES.map((language) => (
             <RibbonMenuItem
               key={language.id}
               label={language.label}
@@ -250,7 +255,7 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
       </RibbonGroup>
 
       <RibbonGroup label="Changes">
-        <RibbonStack>
+        <RibbonLine>
           <RibbonSplitButton
             icon={<Check size={20} />}
             label="Accept"
@@ -293,7 +298,7 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
               testId="ribbon-reject-all"
             />
           </RibbonSplitButton>
-        </RibbonStack>
+        </RibbonLine>
         <RibbonStack>
           <RibbonButton
             icon={<ChevronLeft size={14} />}
@@ -343,17 +348,10 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
         </RibbonMenuButton>
       </RibbonGroup>
 
-      <RibbonGroup label="Protect">
-        <RibbonButton
-          icon={<Lock size={20} />}
-          label="Restrict Editing"
-          title="Make the document read-only"
-          size="large"
-          active={flags.restrictEditing}
-          onClick={actions.onToggleRestrictEditing}
-          testId="ribbon-restrict-editing"
-        />
-      </RibbonGroup>
+      {/* Restrict Editing used to have its own Protect group here. The tab
+          strip's Editing / Reviewing / Viewing picker sets exactly the same
+          flag and is far easier to find, so keeping both was duplication —
+          and the eighth group pushed the tab past the window at 1280px. */}
     </>
   );
 }

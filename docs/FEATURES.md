@@ -4,16 +4,24 @@ What the app does today. Anything not listed here is not built — this file is
 maintained by hand against the actual code, and nothing generates a coverage
 percentage from it.
 
-The ribbon follows Word's tab set: **File, Home, Insert, Draw, Design, Layout,
-References, Mailings, Review, View**, plus the contextual **Picture Format** and
-**Table Layout** tabs that appear when a picture or a table is selected. Groups
-are labelled and open their dialogs from a corner launcher, as Word's do.
+The ribbon has eight tabs: **File, Home, Insert, Layout, References, Review,
+View, Help**, plus three contextual tabs — **Draw**, **Picture Format** and
+**Table Layout** — that appear when a drawing, a picture or a table is selected.
+Groups are labelled and open their dialogs from a corner launcher, as Word's do.
+File is a dropdown menu rather than a panel.
+
+The header carries the document name, which opens Rename when clicked, and a
+search box (Alt+Q) that finds and runs any ribbon command. The right-hand end of
+the tab strip holds Comments, an Editing / Reviewing / Viewing mode picker, and
+the ribbon layout menu.
 
 ## File
 
 - New document from a blank page or the letter, report and resume templates
 - Open `.dansword`, `.docx`, `.doc`, `.rtf`, `.html`, `.txt`
 - Save and Save As; the format follows the file extension
+- Rename the open document, and Create a Copy alongside it
+- Delete, which sends the file to the recycle bin rather than erasing it
 - Export a copy as DOCX, `.dansword`, RTF, HTML, PDF or TXT without changing
   which document is open
 - Print via the system dialog
@@ -28,19 +36,22 @@ are labelled and open their dialogs from a corner launcher, as Word's do.
 
 - **Clipboard** — Paste as a split button with Keep Source Formatting, Merge
   Formatting and Keep Text Only; Cut, Copy, Format Painter
+- **Undo** — undo and redo
 - **Font** — family and size combo boxes, Grow/Shrink Font, Change Case
   (five modes), Clear All Formatting, bold, italic, underline with six underline
   styles, strikethrough, sub- and superscript, text effects (shadow, outline,
   glow, reflection), small caps and all caps, highlight colour, font colour, and
   a Font dialog with a live preview
-- **Paragraph** — bullet library, numbering library, multilevel list schemes,
-  increase and decrease indent (which demote and promote list items), Sort,
-  Show/Hide formatting marks, the four alignments, line and paragraph spacing,
-  shading, borders on any side, border colour, and a Paragraph dialog
+- **Paragraph** — bullet library, numbering library, checklists, multilevel list
+  schemes, increase and decrease indent (which demote and promote list items),
+  left-to-right and right-to-left text direction, Sort, Show/Hide formatting
+  marks, the four alignments, line and paragraph spacing, shading, borders on
+  any side, border colour, and a Paragraph dialog
 - **Styles** — Word's gallery (Normal, No Spacing, the headings, Title,
   Subtitle, Quote, Intense Quote, List Paragraph and the character styles
-  Emphasis, Strong, Subtle/Intense Emphasis, references and Book Title), plus a
-  style editor for custom styles
+  Emphasis, Strong, Subtle/Intense Emphasis, references and Book Title), a style
+  editor for custom styles, and the eight style sets, which restyle the
+  paragraphs already in the document rather than only the gallery
 - **Editing** — Find, Replace and Select
 
 Everything above tracks the caret: the ribbon shows the formatting at the
@@ -52,30 +63,27 @@ the dialogs, comments and synonyms.
 
 - **Pages** — four cover pages, Blank Page, Page Break
 - **Tables** — the hover-to-size grid picker, a quick 3 × 3, and Delete Table
-- **Illustrations** — Pictures, and Shapes (rectangle, oval, triangle, line,
-  arrow)
-- **Links** — hyperlinks, bookmarks, cross-references
+- **Illustrations** — Pictures, Shapes (rectangle, oval, triangle, line, arrow)
+  and Drawing, which inserts an ink canvas and opens the Draw tab
+- **Links** — hyperlinks and cross-references
+- **Table of Contents** — an automatic table built from the headings
+- **Bookmarks** — name a place in the document to refer back to
 - **Comments** — New Comment
 - **Header & Footer** — header, footer, page numbers
 - **Text** — text boxes (simple, sidebar, pull quote), Drop Cap, Date & Time in
   three formats
 - **Symbols** — inline equation runs, a symbol gallery with a full picker of
   eight Unicode subsets, horizontal lines
+- **Emojis** — around six hundred emoji in seven groups, searchable by name,
+  with a recently-used row that survives a restart
 
-## Draw
+## Draw (contextual)
 
-- Pen, highlighter and stroke eraser on an ink canvas, with eight pen colours
-  and five widths
+Appears while a drawing canvas is selected, and closes when it is not.
+
+- Pen, highlighter and stroke eraser, with eight pen colours and five widths
 - Ink is stored as vectors, so it scales with zoom and survives a save; drawings
   export to HTML and print as SVG
-
-## Design
-
-- **Document Formatting** — eight style sets (Default, No Spacing, Compact,
-  Casual, Elegant, Formal, Lines, Shaded), eight theme font pairings, six theme
-  colour sets, six paragraph spacing presets, and Set as Default. Picking one
-  restyles the paragraphs already in the document, not just the gallery.
-- **Page Background** — watermark, page colour, page borders
 
 ## Layout
 
@@ -84,8 +92,7 @@ the dialogs, comments and synonyms.
   columns with an optional line between, breaks, line numbers (continuous or
   restarting each page), automatic hyphenation
 - **Paragraph** — left and right indent, space before and after
-- **Arrange** — nine-position placement, seven text-wrapping modes, alignment
-  and rotation for the selected object
+- **Page Background** — watermark, page colour, page borders
 - Draggable margin markers on the ruler
 
 ## References
@@ -100,24 +107,19 @@ the dialogs, comments and synonyms.
 - **Captions** — numbered Figure, Table and Equation captions, tables of figures
 - **Index** — Mark Entry and a generated, alphabetised index
 
-## Mailings
-
-- Start Mail Merge for letters, envelopes, labels, a directory or email
-- Recipients from a CSV or tab-separated file, with quoted fields handled and a
-  tick-list for including or excluding people
-- Address Block, Greeting Line and individual merge fields
-- Preview Results, stepping recipient by recipient, and Highlight Merge Fields
-- Finish & Merge writes one `.docx` per recipient
-
 ## Review
 
 - **Proofing** — Hunspell spell check in English, German, Spanish and French; a
   grammar checker covering repeated words, article agreement, spacing,
-  sentence capitalisation and common wrong phrases; the F7 Editor pane with
-  Change, Change All, Ignore Once, Ignore All and Add to Dictionary; an offline
-  thesaurus (Shift+F7); word count with readability
+  sentence capitalisation and common wrong phrases; the F7 Spelling & Grammar
+  pane with Change, Change All, Ignore Once, Ignore All and Add to Dictionary;
+  an offline thesaurus (Shift+F7); word count with readability
 - AutoCorrect as you type: the replacement table, TWo INitial CApitals, a lone
   "i", sentence capitals, curly quotes, and the `--`, `...`, `(c)` shortcuts
+- **Accessibility** — Check Accessibility reports pictures and drawings with no
+  text alternative, tables with no header row or with merged cells, skipped
+  heading levels, link text that names no destination, and text whose contrast
+  falls below the WCAG AA ratio. Clicking an issue takes the caret to it.
 - **Language** — proofing language per document, and switches for
   check-as-you-type spelling and grammar
 - **Comments** — new, delete (one, all resolved, or all), previous, next, and the
@@ -129,19 +131,32 @@ the dialogs, comments and synonyms.
   Previous and Next, and a live count of what is pending
 - **Compare** — compare against another document; the differences arrive as
   tracked changes
-- **Protect** — Restrict Editing makes the document read-only
+
+Restrict Editing has no Protect group of its own: the tab strip's Editing /
+Reviewing / Viewing picker sets the same flag, and Viewing is where people look
+for it.
 
 ## View
 
-- Five views: Read Mode, Print Layout, Web Layout, Outline and Draft, plus
-  Focus Mode
-- Ruler, gridlines and navigation pane toggles
+- Five views: Read Mode, Print Layout, Web Layout, Outline and Draft
+- **Immersive Reader** — reading without the editing chrome, with three column
+  widths, three text spacings, a white, sepia or grey page, and line focus
+- **Show** — ruler, gridlines, navigation pane, header and footer, footnotes and
+  endnotes
+- **Dark Mode** — the light and dark theme switch, also on the home screen
 - Zoom from 10% to 500%, with 100%, One Page, Page Width and a Zoom dialog
-- Collapsible ribbon (Ctrl+F1)
-- Light and dark theme, configurable accent colour
-- Status bar: word count, language, a proofing indicator that opens the Editor
-  pane, tracked-change state, read-only state, the caret's page, the five view
-  buttons and the zoom slider
+- Ribbon layout: Classic or Single Line, and Always show ribbon, Show tabs only
+  or Adjust automatically. The choice is remembered.
+- Status bar: the caret's page, word count, proofing language, a spelling
+  indicator that opens the Spelling & Grammar pane, tracked-change state,
+  read-only state, the five view buttons, the zoom slider and Fit
+
+## Help
+
+- Help, Contact Support and Feedback open this project on GitHub in your own
+  browser
+- Keyboard Shortcuts lists every binding
+- What's New shows the changelog that ships with the app
 
 ## Keyboard
 
@@ -151,8 +166,11 @@ Ctrl+Shift+M (indent), Ctrl+[ and Ctrl+] (font size), Ctrl+Shift+D (double
 underline), Ctrl+Shift+K (small caps), Ctrl+K (hyperlink), Ctrl+F, Ctrl+H,
 Ctrl+Enter (page break), Ctrl+Shift+8 (formatting marks), Ctrl+F1 (collapse the
 ribbon), Ctrl+Shift+E (track changes), Ctrl+Alt+M (comment), Ctrl+Alt+F
-(footnote), Ctrl+Alt+D (endnote), Alt+Shift+X (index entry), F7 (spelling),
-Shift+F7 (thesaurus).
+(footnote), Ctrl+Alt+D (endnote), Alt+Shift+X (index entry), Alt+Q (search for a
+command), F7 (spelling), Shift+F7 (thesaurus).
+
+The same list is in `apps/desktop/src/constants/shortcuts.ts`, which is what
+Help > Keyboard Shortcuts renders.
 
 ## Pictures
 
@@ -167,7 +185,6 @@ Shift+F7 (thesaurus).
 - Picture styles (frames, rounded, oval, shadow), border colour, brightness,
   contrast and saturation, Reset Picture, a size and position dialog, and Alt
   Text
-- Pictures can be dropped in from Explorer or pasted from the clipboard
 
 ## Document formats
 
@@ -188,16 +205,22 @@ marks, links, tables, lists and images.
   output rather than being reflowed live on screen
 - `.doc` (the pre-2007 binary format) is imported by shelling out to
   LibreOffice when it is installed, with a plain-text fallback when it is not
-- Ink drawings, text boxes, endnotes, bookmarks, index entries and the generated
-  bibliography/index blocks round-trip through `.dansword` and HTML, but DOCX
-  export writes them as ordinary paragraphs
+- Ink drawings, text boxes, endnotes, bookmarks, index entries, checklists and
+  the generated bibliography/index blocks round-trip through `.dansword` and
+  HTML, but DOCX export writes them as ordinary paragraphs
+- Shapes and text boxes have no contextual tab, so they cannot be wrapped or
+  repositioned from the ribbon the way pictures can
 - Compare works at paragraph level, not word level
 - The thesaurus is a built-in offline word list, not a licensed data set
 - Equations are typed as inline runs in Word's linear format rather than being
   laid out as a formula
+- The accessibility checker reads the document, not the rendered page: it cannot
+  judge whether alt text is *useful*, only whether it is there
 - Section breaks, macros and password protection are not built
 
 ## Not in scope
 
-DansWord is local-first and makes no network requests. There are no accounts,
-no cloud sync, no collaboration, no AI features and no telemetry.
+DansWord is local-first. It has no accounts, no cloud sync, no collaboration, no
+AI features and no telemetry, and it makes no network requests of its own — the
+Help tab hands a GitHub URL to your browser, and the main process refuses any
+address outside this project's repository.

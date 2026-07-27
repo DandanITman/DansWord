@@ -8,12 +8,15 @@ import {
   Hash,
   Image as ImageIcon,
   Link as LinkIcon,
+  ListOrdered,
   MessageSquarePlus,
   Minus,
   Omega,
   PanelBottom,
   PanelTop,
+  PenTool,
   SeparatorHorizontal,
+  Smile,
   Shapes,
   Sigma,
   Square,
@@ -217,6 +220,14 @@ export function InsertTab({ editor, state, actions, flags }: RibbonTabProps) {
                 testId="shape-arrow"
               />
             </RibbonMenuButton>
+            <RibbonButton
+              icon={<PenTool size={22} />}
+              label="Drawing"
+              title="Insert a drawing canvas to write or sketch on"
+              size="large"
+              onClick={actions.onInsertDrawingCanvas}
+              testId="ribbon-drawing"
+            />
           </RibbonLine>
         </RibbonStack>
       </RibbonGroup>
@@ -232,13 +243,6 @@ export function InsertTab({ editor, state, actions, flags }: RibbonTabProps) {
             testId="ribbon-link"
           />
           <RibbonButton
-            icon={<BookmarkIcon size={14} />}
-            label="Bookmark"
-            title="Add a bookmark to this place in the document"
-            onClick={actions.onInsertBookmark}
-            testId="ribbon-bookmark"
-          />
-          <RibbonButton
             icon={<ArrowRight size={14} />}
             label="Cross-reference"
             title="Refer to a heading, bookmark, figure or footnote"
@@ -246,6 +250,28 @@ export function InsertTab({ editor, state, actions, flags }: RibbonTabProps) {
             testId="ribbon-cross-reference"
           />
         </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Table of Contents">
+        <RibbonButton
+          icon={<ListOrdered size={22} className="icon-toc" />}
+          label="Table of Contents"
+          title="Insert a table of contents built from the headings"
+          size="large"
+          onClick={actions.onInsertToc}
+          testId="ribbon-insert-toc"
+        />
+      </RibbonGroup>
+
+      <RibbonGroup label="Bookmarks">
+        <RibbonButton
+          icon={<BookmarkIcon size={22} />}
+          label="Bookmarks"
+          title="Add a bookmark to this place in the document"
+          size="large"
+          onClick={actions.onInsertBookmark}
+          testId="ribbon-bookmark"
+        />
       </RibbonGroup>
 
       <RibbonGroup label="Comments">
@@ -402,6 +428,17 @@ export function InsertTab({ editor, state, actions, flags }: RibbonTabProps) {
             testId="ribbon-horizontal-rule"
           />
         </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Emojis">
+        <RibbonButton
+          icon={<Smile size={22} />}
+          label="Emoji"
+          title="Insert an emoji"
+          size="large"
+          onClick={actions.onOpenEmojiPicker}
+          testId="ribbon-emoji"
+        />
       </RibbonGroup>
     </>
   );

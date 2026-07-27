@@ -6,6 +6,7 @@ import {
   loadHeadingFixture,
   openFindReplace,
   switchRibbonTab,
+  openBackstage,
   visualMaskLocators,
 } from '../helpers/playwright';
 
@@ -14,17 +15,15 @@ test.describe('Extended visual regression', () => {
     await resetTestState(page);
   });
 
+  // 'file' is a dropdown, not a panel, so it has no ribbon screenshot.
   for (const tab of [
-    'file',
     'home',
     'insert',
-    'draw',
-    'design',
     'pageLayout',
     'references',
-    'mailings',
     'review',
     'view',
+    'help',
   ] as const) {
     test(`TC-VIS-004: ribbon ${tab} tab`, async ({ page }) => {
       await openBlankDocument(page);
@@ -45,17 +44,20 @@ test.describe('Extended visual regression', () => {
 
   test('editor dark theme', async ({ page }) => {
     await openBlankDocument(page);
-    await page.getByTestId('editor-titlebar').getByTitle('Toggle theme').click();
+    // The theme toggle moved off the header into View > Dark Mode.
+    await switchRibbonTab(page, 'view');
+    await page.getByTestId('view-dark-mode').click();
+    await switchRibbonTab(page, 'home');
     await expect(page.getByTestId('app-shell')).toHaveScreenshot('editor-dark.png', {
       mask: visualMaskLocators(page),
     });
   });
 
-  test('TC-VIEW-003: focus mode layout', async ({ page }) => {
+  test('TC-VIEW-003: Immersive Reader layout', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'view');
-    await page.getByTestId('view-focus-mode').click();
-    await expect(page.getByTestId('app-shell')).toHaveScreenshot('focus-mode.png', {
+    await page.getByTestId('view-immersive-reader').click();
+    await expect(page.getByTestId('app-shell')).toHaveScreenshot('immersive-reader.png', {
       mask: visualMaskLocators(page),
     });
   });
@@ -89,9 +91,7 @@ test.describe('Extended visual regression', () => {
 
   test('backstage export section', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'file');
-    await page.getByRole('button', { name: /Save As \/ Export/i }).click();
-    await page.getByTestId('backstage-nav-export').click();
+    await openBackstage(page, 'export');
     await expect(page.getByTestId('backstage')).toHaveScreenshot('backstage-export.png', {
       mask: visualMaskLocators(page),
     });

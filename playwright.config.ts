@@ -1,6 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 5173;
+/**
+ * The dev server port.
+ *
+ * Overridable because `reuseExistingServer` will happily adopt whatever is
+ * already listening on the default — including an unrelated project's dev
+ * server, in which case every test runs against the wrong app and fails in a
+ * way that looks nothing like a port clash. Set DANSWORD_TEST_PORT to move.
+ */
+const PORT = Number(process.env.DANSWORD_TEST_PORT ?? 5173);
 const BASE_URL = `http://localhost:${PORT}/test.html`;
 
 /**
@@ -39,7 +47,7 @@ export default defineConfig({
   },
   snapshotPathTemplate: '{testDir}/{testFileDir}/{testFileName}-snapshots/{arg}-{projectName}{ext}',
   webServer: {
-    command: 'npm run dev:test',
+    command: `npm run dev:test -- --port ${PORT}`,
     cwd: './apps/desktop',
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,

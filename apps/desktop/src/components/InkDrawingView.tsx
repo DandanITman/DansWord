@@ -31,7 +31,7 @@ function distanceToStroke(stroke: InkStroke, x: number, y: number): number {
  * property of the tool, not of each drawing, so switching pen colour must not
  * rewrite every canvas in the document.
  */
-export function InkDrawingView({ node, updateAttributes, selected }: NodeViewProps) {
+export function InkDrawingView({ node, updateAttributes, selected, editor, getPos }: NodeViewProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [liveStroke, setLiveStroke] = useState<InkStroke | null>(null);
   const { width = 560, height = 240, strokes = [] } = node.attrs as {
@@ -53,7 +53,14 @@ export function InkDrawingView({ node, updateAttributes, selected }: NodeViewPro
 
   const onPointerDown = (event: React.PointerEvent) => {
     const { tool, color, width: penWidth } = settings();
-    if (tool === 'select') return;
+    if (tool === 'select') {
+      // Select the canvas explicitly so the contextual Draw tab reopens. Only
+      // on the select tool — doing it for pen or eraser would fight the stroke
+      // handler below for the pointer.
+      const pos = typeof getPos === 'function' ? getPos() : null;
+      if (pos != null) editor.commands.setNodeSelection(pos);
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
 

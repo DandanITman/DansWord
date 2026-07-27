@@ -1,15 +1,14 @@
 import {
-  AlignCenterHorizontal,
   Columns3,
-  FlipVertical,
   Hash,
   LayoutTemplate,
   Minus,
-  MoveHorizontal,
+  Palette,
   RectangleHorizontal,
   RectangleVertical,
-  RotateCw,
   SeparatorHorizontal,
+  Square,
+  Stamp,
 } from 'lucide-react';
 import {
   MARGIN_PRESETS,
@@ -17,10 +16,12 @@ import {
   PAGE_SIZE_LABELS,
   type PageSizePreset,
 } from '@dansword/core';
-import { IMAGE_WRAPS } from '../../extensions/ResizableImage';
+import { ColorPickerButton } from '../../components/ColorPickerButton';
+import { SHADING_COLORS } from '../../constants/colorSwatches';
 import {
   RibbonButton,
   RibbonGroup,
+  RibbonLine,
   RibbonMenuButton,
   RibbonMenuHeader,
   RibbonMenuItem,
@@ -35,12 +36,11 @@ const PPI = 96;
 
 export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
   const { pageSetup } = flags;
-  const objectSelected = state.imageActive || state.shapeActive || state.textBoxActive;
 
   return (
     <>
       <RibbonGroup label="Page Setup" onLaunch={actions.onOpenPageSetup} launchTitle="Page Setup dialog">
-        <RibbonStack>
+        <RibbonLine>
           <RibbonMenuButton
             icon={<LayoutTemplate size={20} />}
             label="Margins"
@@ -116,7 +116,7 @@ export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
             <RibbonMenuSeparator />
             <RibbonMenuItem label="More Columns…" onClick={actions.onOpenColumnsDialog} />
           </RibbonMenuButton>
-        </RibbonStack>
+        </RibbonLine>
         <RibbonStack>
           <RibbonMenuButton
             icon={<SeparatorHorizontal size={14} />}
@@ -231,90 +231,37 @@ export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
         </RibbonStack>
       </RibbonGroup>
 
-      <RibbonGroup label="Arrange">
+      <RibbonGroup label="Page Background">
         <RibbonStack>
-          <RibbonMenuButton
-            icon={<MoveHorizontal size={14} />}
-            label="Position"
-            title="Position the selected object on the page"
-            disabled={!objectSelected}
-            testId="layout-position"
+          <RibbonButton
+            icon={<Stamp size={20} />}
+            label="Watermark"
+            title="Watermark"
+            size="large"
+            active={flags.watermarkEnabled}
+            onClick={actions.onOpenWatermark}
+            testId="layout-watermark"
+          />
+        </RibbonStack>
+        <RibbonStack>
+          <ColorPickerButton
+            title="Page Color"
+            colors={SHADING_COLORS}
+            value={flags.pageSetup.pageColor}
+            className="rb-btn rb-btn--small"
+            onSelect={actions.onSetPageColor}
           >
-            <RibbonMenuHeader label="With text wrapping" />
-            {(
-              [
-                ['topLeft', 'Top Left'],
-                ['topCenter', 'Top Centre'],
-                ['topRight', 'Top Right'],
-                ['middleLeft', 'Middle Left'],
-                ['middleCenter', 'Middle Centre'],
-                ['middleRight', 'Middle Right'],
-                ['bottomLeft', 'Bottom Left'],
-                ['bottomCenter', 'Bottom Centre'],
-                ['bottomRight', 'Bottom Right'],
-              ] as const
-            ).map(([position, label]) => (
-              <RibbonMenuItem
-                key={position}
-                label={label}
-                onClick={() => editor?.chain().focus().setImagePosition(position).run()}
-              />
-            ))}
-          </RibbonMenuButton>
-          <RibbonMenuButton
-            icon={<AlignCenterHorizontal size={14} />}
-            label="Wrap Text"
-            title="Wrap text around the selected object"
-            disabled={!objectSelected}
-            testId="layout-wrap-text"
-            menuWidth={250}
-          >
-            {IMAGE_WRAPS.map((wrap) => (
-              <RibbonMenuItem
-                key={wrap.id}
-                label={wrap.label}
-                hint={wrap.hint}
-                checked={state.imageWrap === wrap.id}
-                onClick={() => editor?.chain().focus().setImageWrap(wrap.id).run()}
-              />
-            ))}
-          </RibbonMenuButton>
-          <RibbonMenuButton
-            icon={<FlipVertical size={14} />}
-            label="Align"
-            title="Align the selected object"
-            disabled={!objectSelected}
-            testId="layout-align-object"
-          >
-            <RibbonMenuItem
-              label="Align Left"
-              checked={state.imageAlign === 'left'}
-              onClick={() => editor?.chain().focus().setImageAlign('left').run()}
-            />
-            <RibbonMenuItem
-              label="Align Centre"
-              checked={state.imageAlign === 'center'}
-              onClick={() => editor?.chain().focus().setImageAlign('center').run()}
-            />
-            <RibbonMenuItem
-              label="Align Right"
-              checked={state.imageAlign === 'right'}
-              onClick={() => editor?.chain().focus().setImageAlign('right').run()}
-            />
-          </RibbonMenuButton>
-          <RibbonMenuButton
-            icon={<RotateCw size={14} />}
-            label="Rotate"
-            title="Rotate the selected object"
-            disabled={!state.imageActive}
-            testId="layout-rotate"
-          >
-            <RibbonMenuItem label="Rotate Right 90°" onClick={() => editor?.chain().focus().rotateImage(90).run()} />
-            <RibbonMenuItem label="Rotate Left 90°" onClick={() => editor?.chain().focus().rotateImage(-90).run()} />
-            <RibbonMenuItem label="Flip Upside Down" onClick={() => editor?.chain().focus().rotateImage(180).run()} />
-            <RibbonMenuSeparator />
-            <RibbonMenuItem label="Reset Rotation" onClick={() => editor?.chain().focus().rotateImage(-state.imageRotation).run()} />
-          </RibbonMenuButton>
+            <Palette size={14} />
+            <span className="rb-btn-label">Page Color</span>
+          </ColorPickerButton>
+          <RibbonButton
+            icon={<Square size={14} />}
+            label="Page Borders"
+            title="Page borders"
+            active={flags.pageSetup.border.style !== 'none'}
+            onClick={actions.onOpenPageBorders}
+            testId="layout-page-borders"
+          />
         </RibbonStack>
       </RibbonGroup>
     </>

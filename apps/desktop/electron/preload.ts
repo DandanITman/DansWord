@@ -27,6 +27,10 @@ contextBridge.exposeInMainWorld('dansword', {
     ipcRenderer.invoke('fs:readTextFile', filePath) as Promise<string>,
   writeFile: (filePath: string, data: Uint8Array | string) =>
     ipcRenderer.invoke('fs:writeFile', filePath, data) as Promise<boolean>,
+  renameFile: (filePath: string, newName: string) =>
+    ipcRenderer.invoke('fs:renameFile', filePath, newName) as Promise<string | null>,
+  copyFile: (filePath: string) => ipcRenderer.invoke('fs:copyFile', filePath) as Promise<string | null>,
+  trashFile: (filePath: string) => ipcRenderer.invoke('fs:trashFile', filePath) as Promise<boolean>,
   listDocuments: (folderPath: string) =>
     ipcRenderer.invoke('fs:listDocuments', folderPath) as Promise<
       Array<{ path: string; name: string; modified: number; size: number }>
@@ -57,6 +61,9 @@ contextBridge.exposeInMainWorld('dansword', {
   getUserDictionary: () => ipcRenderer.invoke('spell:getUserDictionary') as Promise<string[]>,
   addWordToDictionary: (word: string) =>
     ipcRenderer.invoke('spell:addWord', word) as Promise<string[]>,
+
+  // Help tab: the main process re-checks the URL against its allowlist.
+  openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url) as Promise<boolean>,
 
   // Unsaved-changes guard: the renderer mirrors its dirty flag to the main
   // process, which prompts on close and asks the renderer to save.

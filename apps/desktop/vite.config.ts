@@ -27,6 +27,13 @@ export default defineConfig(({ mode }) => ({
           }),
         ]),
   ],
+  server: {
+    fs: {
+      // Help > What's New imports the repo-root CHANGELOG.md with ?raw, which
+      // sits above the Vite root (apps/desktop).
+      allow: [path.resolve(__dirname, '../..')],
+    },
+  },
   resolve: {
     alias: {
       '@dansword/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),

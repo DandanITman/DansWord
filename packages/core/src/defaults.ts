@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   autoCorrectEnabled: true,
   showFormattingMarks: false,
   showRuler: true,
+  recentEmoji: [],
 };
 
 export const TEMPLATES = [

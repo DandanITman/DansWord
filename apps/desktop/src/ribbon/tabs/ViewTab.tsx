@@ -1,16 +1,21 @@
 import {
   BookOpen,
+  BookOpenCheck,
+  FileStack,
   FileText,
   Globe,
   Grid3x3,
   Hash,
   ListTree,
-  Maximize2,
+  MoonStar,
   PanelLeft,
+  PanelTop,
   Printer,
   Ruler,
   ScrollText,
   Search,
+  Sun,
+  Superscript,
   ZoomIn,
 } from 'lucide-react';
 import {
@@ -57,13 +62,13 @@ export function ViewTab({ actions, flags }: RibbonTabProps) {
 
       <RibbonGroup label="Immersive">
         <RibbonButton
-          icon={<Maximize2 size={20} />}
-          label="Focus Mode"
-          title="Hide everything but the page"
+          icon={<BookOpenCheck size={20} />}
+          label="Immersive Reader"
+          title="Read without the editing chrome, with reading comfort settings"
           size="large"
           active={flags.focusMode}
           onClick={actions.onToggleFocusMode}
-          testId="view-focus-mode"
+          testId="view-immersive-reader"
         />
       </RibbonGroup>
 
@@ -94,6 +99,44 @@ export function ViewTab({ actions, flags }: RibbonTabProps) {
             testId="view-navigation"
           />
         </RibbonStack>
+        <RibbonStack>
+          <RibbonButton
+            icon={<PanelTop size={14} />}
+            label="Header & Footer"
+            title="Show the header and footer on the page"
+            active={flags.showHeaderFooter}
+            onClick={actions.onToggleShowHeaderFooter}
+            testId="view-header-footer"
+          />
+          <RibbonButton
+            icon={<Superscript size={14} />}
+            label="Footnotes"
+            title="Show the footnotes area"
+            active={flags.showFootnotes}
+            onClick={actions.onToggleShowFootnotes}
+            testId="view-footnotes"
+          />
+          <RibbonButton
+            icon={<FileStack size={14} />}
+            label="Endnotes"
+            title="Show the endnotes area"
+            active={flags.showEndnotes}
+            onClick={actions.onToggleShowEndnotes}
+            testId="view-endnotes"
+          />
+        </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Dark Mode">
+        <RibbonButton
+          icon={flags.theme === 'dark' ? <Sun size={20} /> : <MoonStar size={20} />}
+          label="Dark Mode"
+          title={flags.theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'}
+          size="large"
+          active={flags.theme === 'dark'}
+          onClick={actions.onToggleTheme}
+          testId="view-dark-mode"
+        />
       </RibbonGroup>
 
       <RibbonGroup label="Zoom">

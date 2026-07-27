@@ -70,21 +70,24 @@ test.describe('UI layout guards', () => {
     await expectNoClippedControls(page.getByTestId('home-screen'), 'home screen');
 
     await openBlankDocument(page);
+    // 'file' is absent: it opens a dropdown rather than a ribbon panel, and is
+    // checked separately below.
     for (const tab of [
-      'file',
       'home',
       'insert',
-      'draw',
-      'design',
       'pageLayout',
       'references',
-      'mailings',
       'review',
       'view',
+      'help',
     ] as const) {
       await switchRibbonTab(page, tab);
       await expectNoClippedControls(page.getByTestId('ribbon'), `ribbon ${tab} tab`);
     }
+
+    await page.getByTestId('ribbon-tab-file').click();
+    await expectNoClippedControls(page.getByTestId('file-menu'), 'file menu');
+    await page.keyboard.press('Escape');
 
     await openBackstage(page, 'export');
     await expectNoClippedControls(page.getByTestId('backstage'), 'backstage export');

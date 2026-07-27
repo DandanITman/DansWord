@@ -12,10 +12,13 @@ import {
   Highlighter,
   Italic,
   List,
+  ListChecks,
   ListOrdered,
   ListTree,
   Paintbrush,
   Pilcrow,
+  PilcrowLeft,
+  PilcrowRight,
   Redo2,
   Scissors,
   Search,
@@ -27,7 +30,7 @@ import {
   Underline,
   Undo2,
 } from 'lucide-react';
-import { BUILTIN_STYLES } from '@dansword/core';
+import { BUILTIN_STYLES, STYLE_SETS } from '@dansword/core';
 import { ColorPickerButton } from '../../components/ColorPickerButton';
 import {
   BORDER_COLORS,
@@ -84,6 +87,7 @@ const LINE_SPACINGS = [
 export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
   const styleGallery = flags.customStyles.length ? flags.customStyles : BUILTIN_STYLES;
   const quickStyles = styleGallery.filter((style) => style.kind !== 'character').slice(0, 5);
+  const currentStyle = styleGallery.find((style) => style.id === (state.styleId || 'normal'));
 
   const changeCase = (mode: 'sentence' | 'lower' | 'upper' | 'capitalise' | 'toggle') => {
     if (!editor) return;
@@ -260,20 +264,19 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
               onClick={() => editor?.chain().focus().toggleItalic().run()}
               testId="ribbon-italic"
             />
-            <RibbonMenuButton
+            {/* A split button, as Word has it: clicking the U toggles the
+                underline, and only the chevron opens the style list. As a plain
+                menu button there was no way to underline in one click. */}
+            <RibbonSplitButton
               icon={<Underline size={14} className="icon-underline" />}
+              label=""
               title="Underline (Ctrl+U)"
-              size="icon"
+              size="small"
               active={state.underline}
-              testId="ribbon-underline-menu"
+              onClick={() => editor?.chain().focus().toggleUnderline().run()}
+              testId="ribbon-underline"
+              menuLabel="Underline style"
             >
-              <RibbonMenuItem
-                label="Underline"
-                hint="Ctrl+U"
-                onClick={() => editor?.chain().focus().toggleUnderline().run()}
-                testId="ribbon-underline"
-              />
-              <RibbonMenuSeparator />
               <RibbonMenuHeader label="Underline style" />
               {UNDERLINE_STYLES.map((style) => (
                 <RibbonMenuItem
@@ -288,7 +291,7 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
                 label="No Underline"
                 onClick={() => editor?.chain().focus().unsetUnderline().run()}
               />
-            </RibbonMenuButton>
+            </RibbonSplitButton>
             <RibbonButton
               icon={<Strikethrough size={14} />}
               title="Strikethrough"
@@ -428,6 +431,14 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
                 />
               ))}
             </RibbonSplitButton>
+            <RibbonButton
+              icon={<ListChecks size={14} />}
+              title="Checklist"
+              size="icon"
+              active={editor?.isActive('taskList') ?? false}
+              onClick={() => editor?.chain().focus().toggleTaskList().run()}
+              testId="ribbon-checklist"
+            />
             <RibbonMenuButton
               icon={<ListTree size={14} />}
               title="Multilevel List"
@@ -478,6 +489,22 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
               <RibbonMenuItem label="Sort Ascending (A to Z)" onClick={() => actions.onSortParagraphs('asc')} />
               <RibbonMenuItem label="Sort Descending (Z to A)" onClick={() => actions.onSortParagraphs('desc')} />
             </RibbonMenuButton>
+            <RibbonButton
+              icon={<PilcrowLeft size={14} />}
+              title="Left-to-Right Text Direction"
+              size="icon"
+              active={state.textDirection !== 'rtl'}
+              onClick={() => editor?.chain().focus().setTextDirection('ltr').run()}
+              testId="ribbon-direction-ltr"
+            />
+            <RibbonButton
+              icon={<PilcrowRight size={14} />}
+              title="Right-to-Left Text Direction"
+              size="icon"
+              active={state.textDirection === 'rtl'}
+              onClick={() => editor?.chain().focus().setTextDirection('rtl').run()}
+              testId="ribbon-direction-rtl"
+            />
             <RibbonButton
               icon={<Pilcrow size={14} />}
               title="Show/Hide Formatting Marks (Ctrl+*)"
@@ -587,37 +614,44 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
 
       <RibbonGroup label="Styles" onLaunch={actions.onOpenStyleEditor} launchTitle="Styles pane">
         <div className="rb-style-gallery">
-          {quickStyles.map((style) => (
-            <button
-              key={style.id}
-              type="button"
-              className={`rb-style-tile${state.styleId === style.id ? ' is-active' : ''}`}
-              title={`Apply ${style.name}`}
-              data-testid={`edit-style-${style.id}`}
-              onClick={() => editor && applyDocumentStyle(editor, style)}
+          {/* Word for the web shows the style at the caret in one box rather
+              than a tile gallery. The whole gallery is one click away in the
+              menu, and the five tiles it replaces cost 250px the eight-tab
+              ribbon does not have. */}
+          <div className="rb-style-current" data-testid="ribbon-current-style">
+            <span
+              className="rb-style-current-name"
+              style={{
+                fontFamily: currentStyle?.fontFamily,
+                fontWeight: currentStyle?.bold ? 700 : 500,
+                fontStyle: currentStyle?.italic ? 'italic' : 'normal',
+                color: currentStyle?.color,
+              }}
             >
-              <span
-                className="rb-style-preview"
-                style={{
-                  fontFamily: style.fontFamily,
-                  fontWeight: style.bold ? 700 : 400,
-                  fontStyle: style.italic ? 'italic' : 'normal',
-                  color: style.color,
-                }}
-              >
-                AaBb
-              </span>
-              <span className="rb-style-name">{style.name}</span>
-            </button>
-          ))}
+              {currentStyle?.name ?? 'Normal'}
+            </span>
+            <span className="rb-style-current-font">
+              {(currentStyle?.fontFamily ?? state.fontFamily)}, {state.fontSize}
+            </span>
+          </div>
           <RibbonMenuButton
             icon={<Type size={14} />}
-            label="More Styles"
-            title="More Styles"
+            title="Styles"
             testId="ribbon-more-styles"
             menuWidth={260}
           >
             <RibbonMenuHeader label="Styles" />
+            {quickStyles.map((style) => (
+              <RibbonMenuItem
+                key={`quick-${style.id}`}
+                label={style.name}
+                checked={state.styleId === style.id}
+                onClick={() => editor && applyDocumentStyle(editor, style)}
+                testId={`edit-style-${style.id}`}
+              />
+            ))}
+            <RibbonMenuSeparator />
+            <RibbonMenuHeader label="All styles" />
             {styleGallery.map((style) => (
               <RibbonMenuItem
                 key={style.id}
@@ -630,6 +664,20 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
             ))}
             <RibbonMenuSeparator />
             <RibbonMenuItem label="Manage Styles…" onClick={actions.onOpenStyleEditor} />
+            <RibbonMenuSeparator />
+            {/* Rescued from the removed Design tab: the only control that
+                restyles the paragraphs already in the document, not just the
+                gallery. */}
+            <RibbonMenuHeader label="Style set" />
+            {STYLE_SETS.map((set) => (
+              <RibbonMenuItem
+                key={set.id}
+                label={set.name}
+                checked={flags.styleSetId === set.id}
+                onClick={() => actions.onApplyStyleSet(set.id)}
+                testId={`style-set-${set.id}`}
+              />
+            ))}
           </RibbonMenuButton>
         </div>
       </RibbonGroup>
