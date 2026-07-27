@@ -33,8 +33,15 @@ export function applyPrintPageSetup(pageSetup: PageSetup, headerFooter?: HeaderF
   const pageHeightIn = (pageSetup.orientation === 'portrait' ? dims.height : dims.width) / 96;
   const m = pageSetup.margins;
 
-  const sizeRule =
-    pageSetup.size === 'a4' ? 'A4' : pageSetup.size === 'legal' ? 'legal' : 'letter';
+  // Named CSS page sizes where one exists, explicit dimensions otherwise, so
+  // A5, Executive and Tabloid print at their real size rather than as Letter.
+  const NAMED_SIZES: Partial<Record<PageSetup['size'], string>> = {
+    letter: 'letter',
+    legal: 'legal',
+    a4: 'A4',
+    a5: 'A5',
+  };
+  const sizeRule = NAMED_SIZES[pageSetup.size] ?? `${pageWidthIn}in ${pageHeightIn}in`;
   const orientation = pageSetup.orientation === 'landscape' ? ' landscape' : '';
 
   const header = headerFooter?.header?.trim();
@@ -83,6 +90,38 @@ export function applyPrintPageSetup(pageSetup: PageSetup, headerFooter?: HeaderF
       }
       .doc-body h1, .doc-body h2 {
         column-span: all;
+      }
+      ${
+        pageSetup.columns.line
+          ? '.doc-body { column-rule: 1px solid #999 !important; }'
+          : ''
+      }
+      ${
+        pageSetup.hyphenation ? '.doc-body { hyphens: auto !important; }' : ''
+      }
+      ${
+        pageSetup.pageColor
+          ? `.doc-page { background: ${pageSetup.pageColor} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }`
+          : ''
+      }
+      ${
+        pageSetup.border.style !== 'none'
+          ? `.doc-page { outline: ${pageSetup.border.width}px ${pageSetup.border.style} ${pageSetup.border.color} !important; outline-offset: -12px; }`
+          : ''
+      }
+      /* Editing chrome never prints. */
+      .image-resize-handle,
+      .image-rotate-handle,
+      .image-size-badge,
+      .image-guides,
+      .mini-toolbar,
+      .editor-context-menu,
+      .doc-line-numbers,
+      .text-box-drag-handle,
+      .text-box-resize-handle,
+      .ink-resize-handle,
+      .fmt-mark {
+        display: none !important;
       }
       /* Repeated per page by the @page boxes above; the in-flow copies would
          otherwise print a second time at the very top and bottom. */

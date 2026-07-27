@@ -42,6 +42,19 @@ export const TableOfContents = Node.create({
   atom: true,
   selectable: true,
   draggable: true,
+  addAttributes() {
+    return {
+      /**
+       * Bumped by References > Update Table.
+       *
+       * The node view already re-renders on every document change, so the table
+       * is always current; changing an attribute is what gives the explicit
+       * Update command a transaction to dispatch, and the user visible feedback
+       * that it did something.
+       */
+      generation: { default: 0 },
+    };
+  },
   parseHTML() {
     return [{ tag: 'div[data-table-of-contents]' }];
   },

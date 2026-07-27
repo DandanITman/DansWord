@@ -7,6 +7,8 @@ export const FootnoteRef = Mark.create({
     return {
       id: { default: null },
       number: { default: 1 },
+      /** Footnotes collect per page; endnotes collect at the end of the document. */
+      kind: { default: 'footnote' },
     };
   },
 
@@ -20,6 +22,7 @@ export const FootnoteRef = Mark.create({
           return {
             id: element.dataset.footnoteId,
             number: Number.isFinite(parsed) && parsed > 0 ? parsed : 1,
+            kind: element.dataset.noteKind ?? 'footnote',
           };
         },
       },
@@ -27,14 +30,18 @@ export const FootnoteRef = Mark.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    const { number: _number, id, ...rest } = HTMLAttributes;
+    const { number: _number, id, kind, ...rest } = HTMLAttributes;
     // The third element must be ProseMirror's content hole (0), not the number.
     // A mark spec without a hole has its marked text appended to the rendered
     // element instead — and since the marked text *is* the number, footnote
     // markers rendered as "11", "22", "33".
     return [
       'sup',
-      mergeAttributes(rest, { class: 'footnote-ref', 'data-footnote-id': id }),
+      mergeAttributes(rest, {
+        class: `footnote-ref${kind === 'endnote' ? ' endnote-ref' : ''}`,
+        'data-footnote-id': id,
+        'data-note-kind': kind ?? 'footnote',
+      }),
       0,
     ];
   },
@@ -42,7 +49,7 @@ export const FootnoteRef = Mark.create({
   addCommands() {
     return {
       setFootnoteRef:
-        (attrs: { id: string; number: number }) =>
+        (attrs: { id: string; number: number; kind?: 'footnote' | 'endnote' }) =>
         ({ commands }) =>
           commands.setMark(this.name, attrs),
       unsetFootnoteRef:
@@ -56,7 +63,7 @@ export const FootnoteRef = Mark.create({
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     footnoteRef: {
-      setFootnoteRef: (attrs: { id: string; number: number }) => ReturnType;
+      setFootnoteRef: (attrs: { id: string; number: number; kind?: 'footnote' | 'endnote' }) => ReturnType;
       unsetFootnoteRef: () => ReturnType;
     };
   }

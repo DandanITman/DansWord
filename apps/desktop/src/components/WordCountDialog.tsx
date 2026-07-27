@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/react';
+import { readabilityStats } from '@dansword/core';
 
 interface WordCountDialogProps {
   open: boolean;
@@ -19,6 +20,11 @@ export function WordCountDialog({ open, editor, pages, onClose }: WordCountDialo
         .length
     : 0;
 
+  const lines = editor
+    ? editor.state.doc.content.content.filter((node) => node.textContent.trim()).length
+    : 0;
+  const readability = readabilityStats(text);
+
   // Explicit keys: deriving them from the label collided the two character
   // rows onto one id.
   const rows: Array<{ key: string; label: string; value: number }> = [
@@ -27,6 +33,8 @@ export function WordCountDialog({ open, editor, pages, onClose }: WordCountDialo
     { key: 'characters', label: 'Characters (with spaces)', value: text.length },
     { key: 'characters-no-spaces', label: 'Characters (no spaces)', value: charactersNoSpaces },
     { key: 'paragraphs', label: 'Paragraphs', value: paragraphs },
+    { key: 'lines', label: 'Lines', value: lines },
+    { key: 'sentences', label: 'Sentences', value: readability.sentences },
   ];
 
   return (
@@ -41,6 +49,20 @@ export function WordCountDialog({ open, editor, pages, onClose }: WordCountDialo
                 <td data-testid={`word-count-${row.key}`}>{row.value.toLocaleString()}</td>
               </tr>
             ))}
+          </tbody>
+        </table>
+        {/* Word shows readability alongside the counts; the same statistics. */}
+        <h3>Readability</h3>
+        <table className="word-count-table">
+          <tbody>
+            <tr>
+              <th scope="row">Flesch Reading Ease</th>
+              <td data-testid="word-count-reading-ease">{readability.readingEase}</td>
+            </tr>
+            <tr>
+              <th scope="row">Flesch–Kincaid Grade Level</th>
+              <td data-testid="word-count-grade-level">{readability.gradeLevel}</td>
+            </tr>
           </tbody>
         </table>
         <div className="dialog-actions">

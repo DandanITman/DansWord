@@ -32,7 +32,7 @@ test.describe('Ribbon tracks the caret', () => {
   test('TC-RIB-001: bold state follows the caret in and out of bold text', async ({ page }) => {
     // "plainbold" in one paragraph, the last four characters bold.
     await typeInEditor(page, 'plain');
-    await clickRibbon(page, 'edit', 'ribbon-bold');
+    await clickRibbon(page, 'home', 'ribbon-bold');
     await typeInEditor(page, 'bold');
     await expectRibbonActive(page, 'ribbon-bold', true);
 
@@ -55,8 +55,8 @@ test.describe('Ribbon tracks the caret', () => {
 
   test('TC-RIB-002: italic and underline states follow the caret', async ({ page }) => {
     await typeInEditor(page, 'normal ');
-    await clickRibbon(page, 'edit', 'ribbon-italic');
-    await clickRibbon(page, 'edit', 'ribbon-underline');
+    await clickRibbon(page, 'home', 'ribbon-italic');
+    await clickRibbon(page, 'home', 'ribbon-underline');
     await typeInEditor(page, 'fancy');
 
     await expectRibbonActive(page, 'ribbon-italic', true);
@@ -72,7 +72,7 @@ test.describe('Ribbon tracks the caret', () => {
     await typeInEditor(page, 'left aligned');
     await page.keyboard.press('Enter');
     await page.keyboard.type('centred');
-    await clickRibbon(page, 'edit', 'ribbon-align-center');
+    await clickRibbon(page, 'home', 'ribbon-align-center');
     await expectRibbonActive(page, 'ribbon-align-center', true);
 
     // Up into the first paragraph — selection only.
@@ -88,7 +88,7 @@ test.describe('Ribbon tracks the caret', () => {
     await typeInEditor(page, 'plain line');
     await page.keyboard.press('Enter');
     await page.keyboard.type('bulleted line');
-    await clickRibbon(page, 'edit', 'ribbon-bullet-list');
+    await clickRibbon(page, 'home', 'ribbon-bullet-list');
     await expectRibbonActive(page, 'ribbon-bullet-list', true);
 
     // The bulleted line is now a list item, so it is no longer a top-level
@@ -107,8 +107,9 @@ test.describe('Ribbon tracks the caret', () => {
     await editorParagraph(page, 1).click();
     await page.keyboard.press('End');
     await page.keyboard.press('Shift+Home');
-    await switchRibbonTab(page, 'edit');
-    await page.getByTestId('ribbon-font-size').selectOption('24');
+    await switchRibbonTab(page, 'home');
+    await page.getByTestId('ribbon-font-size').fill('24');
+    await page.getByTestId('ribbon-font-size').press('Enter');
 
     await expect(page.getByTestId('ribbon-font-size')).toHaveValue('24');
 
@@ -128,29 +129,30 @@ test.describe('Ribbon tracks the caret', () => {
     });
 
     await switchRibbonTab(page, 'insert');
-    await expect(page.getByTestId('ribbon-picture-tools')).toHaveCount(0);
+    await expect(page.getByTestId('ribbon-tab-pictureFormat')).toHaveCount(0);
 
-    await page.getByRole('button', { name: /^Picture$/ }).click();
+    await page.getByTestId('ribbon-pictures').click();
     await page.getByTestId('word-editor').locator('img').waitFor({ state: 'visible' });
 
     // Selecting an image changes no content, so this group never appeared
     // before ribbon state tracked every transaction.
     await page.locator('.image-block').click({ force: true });
-    await switchRibbonTab(page, 'insert');
-    await expect(page.getByTestId('ribbon-picture-tools')).toBeVisible();
+    await expect(page.getByTestId('ribbon-tab-pictureFormat')).toBeVisible();
+    await switchRibbonTab(page, 'pictureFormat');
+    await expect(page.getByTestId('picture-align-center')).toBeVisible();
   });
 
   test('TC-RIB-007: undo and redo enablement follows the history', async ({ page }) => {
-    await switchRibbonTab(page, 'edit');
+    await switchRibbonTab(page, 'home');
     await expect(page.getByTestId('ribbon-undo')).toBeDisabled();
     await expect(page.getByTestId('ribbon-redo')).toBeDisabled();
 
     await typeInEditor(page, 'something');
-    await switchRibbonTab(page, 'edit');
+    await switchRibbonTab(page, 'home');
     await expect(page.getByTestId('ribbon-undo')).toBeEnabled();
 
     await page.getByTestId('ribbon-undo').click();
-    await switchRibbonTab(page, 'edit');
+    await switchRibbonTab(page, 'home');
     await expect(page.getByTestId('ribbon-redo')).toBeEnabled();
 
     await page.getByTestId('ribbon-redo').click();

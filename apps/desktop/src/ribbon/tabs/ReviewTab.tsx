@@ -1,11 +1,54 @@
-import { GitCompare, MessageSquare, Check, X, CheckCheck, XCircle } from 'lucide-react';
+import {
+  BookOpenCheck,
+  Check,
+  CheckCheck,
+  ChevronLeft,
+  ChevronRight,
+  GitCompare,
+  Hash,
+  Languages,
+  Lock,
+  MessageSquare,
+  MessageSquarePlus,
+  PanelRight,
+  SpellCheck,
+  Trash2,
+  X,
+  XCircle,
+} from 'lucide-react';
 import {
   acceptAllTrackChanges,
   acceptTrackChangeInSelection,
   rejectAllTrackChanges,
   rejectTrackChangeInSelection,
 } from '../../utils/trackChanges';
-import type { RibbonTabProps } from '../types';
+import {
+  RibbonButton,
+  RibbonGroup,
+  RibbonLine,
+  RibbonMenuButton,
+  RibbonMenuHeader,
+  RibbonMenuItem,
+  RibbonMenuSeparator,
+  RibbonSplitButton,
+  RibbonStack,
+} from '../RibbonKit';
+import type { MarkupView, RibbonTabProps } from '../types';
+
+const LANGUAGES = [
+  { id: 'en-US', label: 'English (United States)' },
+  { id: 'en-GB', label: 'English (United Kingdom)' },
+  { id: 'de-DE', label: 'German (Germany)' },
+  { id: 'es-ES', label: 'Spanish (Spain)' },
+  { id: 'fr-FR', label: 'French (France)' },
+];
+
+const MARKUP_VIEWS: Array<{ id: MarkupView; label: string; hint: string }> = [
+  { id: 'simple', label: 'Simple Markup', hint: 'Show the result, with a bar where changes are' },
+  { id: 'all', label: 'All Markup', hint: 'Show every insertion and deletion' },
+  { id: 'none', label: 'No Markup', hint: 'Show the document as if every change were accepted' },
+  { id: 'original', label: 'Original', hint: 'Show the document before the changes' },
+];
 
 export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
   const { pendingInsertions, pendingDeletions } = flags;
@@ -13,81 +56,304 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
 
   return (
     <>
-      <div className="ribbon-group">
-        <div className="ribbon-group-content">
-          <div className="ribbon-column">
-            <div className="ribbon-row">
-              <button
-                className={`ribbon-btn-horizontal-compact ${flags.trackChangesEnabled ? 'active' : ''}`}
-                onClick={actions.onToggleTrackChanges}
-                title="Track Changes"
-                data-testid="ribbon-track-changes"
-              >
-                <GitCompare size={14} /> <span>Track Changes</span>
-              </button>
-              <button
-                className="ribbon-btn-horizontal-compact"
-                onClick={actions.onToggleComments}
-                title="Document Comments"
-                data-testid="ribbon-comments"
-              >
-                <MessageSquare size={14} /> <span>Comments</span>
-              </button>
-            </div>
-            <div className="ribbon-row" style={{ marginTop: '2px' }}>
-              <button
-                className="ribbon-btn-sm-compact"
-                onClick={() => editor && void acceptTrackChangeInSelection(editor)}
-                title="Accept Selected Change"
-                data-testid="ribbon-accept"
-              >
-                <Check size={14} /> <span>Accept</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
-                onClick={() => editor && void rejectTrackChangeInSelection(editor)}
-                title="Reject Selected Change"
-                data-testid="ribbon-reject"
-              >
-                <X size={14} /> <span>Reject</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
-                onClick={() => editor && acceptAllTrackChanges(editor)}
-                title="Accept All Changes"
-                data-testid="ribbon-accept-all"
-              >
-                <CheckCheck size={14} /> <span>Accept All</span>
-              </button>
-              <button
-                className="ribbon-btn-sm-compact"
-                onClick={() => editor && rejectAllTrackChanges(editor)}
-                title="Reject All Changes"
-                data-testid="ribbon-reject-all"
-              >
-                <XCircle size={14} /> <span>Reject All</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <RibbonGroup label="Proofing">
+        <RibbonStack>
+          <RibbonButton
+            icon={<SpellCheck size={20} />}
+            label="Spelling &amp; Grammar"
+            title="Check spelling and grammar (F7)"
+            size="large"
+            onClick={actions.onOpenProofing}
+            testId="ribbon-spelling"
+          />
+        </RibbonStack>
+        <RibbonStack>
+          <RibbonButton
+            icon={<BookOpenCheck size={14} />}
+            label="Thesaurus"
+            title="Find synonyms for the selected word (Shift+F7)"
+            onClick={actions.onOpenThesaurus}
+            testId="ribbon-thesaurus"
+          />
+          <RibbonButton
+            icon={<Hash size={14} />}
+            label="Word Count"
+            title="Word count and readability"
+            onClick={actions.onOpenWordCount}
+            testId="ribbon-word-count"
+          />
+          <span className="rb-status-note" data-testid="ribbon-proofing-status">
+            {flags.proofingIssues === 0
+              ? 'No proofing errors'
+              : `${flags.proofingIssues} proofing ${flags.proofingIssues === 1 ? 'issue' : 'issues'}`}
+          </span>
+        </RibbonStack>
+      </RibbonGroup>
 
-      {/* Accept and Reject act on changes that nothing in the UI could count:
-          countTrackChanges existed but was only ever called by tests. */}
-      <div className="ribbon-group">
-        <div className="ribbon-group-content">
-          <div className="ribbon-column ribbon-change-summary" data-testid="ribbon-change-summary">
+      <RibbonGroup label="Language">
+        <RibbonMenuButton
+          icon={<Languages size={20} />}
+          label="Language"
+          title="Set the proofing language"
+          size="large"
+          testId="ribbon-language"
+          menuWidth={250}
+        >
+          <RibbonMenuHeader label="Set proofing language" />
+          {LANGUAGES.map((language) => (
+            <RibbonMenuItem
+              key={language.id}
+              label={language.label}
+              checked={flags.language === language.id}
+              onClick={() => actions.onSetLanguage(language.id)}
+              testId={`language-${language.id}`}
+            />
+          ))}
+          <RibbonMenuSeparator />
+          <RibbonMenuItem
+            label="Check spelling as you type"
+            checked={flags.spellCheckEnabled}
+            keepOpen
+            onClick={actions.onToggleSpellCheck}
+          />
+          <RibbonMenuItem
+            label="Mark grammar errors as you type"
+            checked={flags.grammarCheckEnabled}
+            keepOpen
+            onClick={actions.onToggleGrammarCheck}
+          />
+        </RibbonMenuButton>
+      </RibbonGroup>
+
+      <RibbonGroup label="Comments">
+        <RibbonStack>
+          <RibbonButton
+            icon={<MessageSquarePlus size={20} />}
+            label="New Comment"
+            title="New Comment (Ctrl+Alt+M)"
+            size="large"
+            onClick={actions.onNewComment}
+            testId="ribbon-new-comment"
+          />
+        </RibbonStack>
+        <RibbonStack>
+          <RibbonLine>
+            <RibbonMenuButton
+              icon={<Trash2 size={14} />}
+              label="Delete"
+              title="Delete comments"
+              disabled={flags.commentCount === 0}
+              testId="ribbon-delete-comment"
+            >
+              <RibbonMenuItem label="Delete Comment" onClick={() => actions.onDeleteComment('current')} />
+              <RibbonMenuItem label="Delete All Resolved Comments" onClick={() => actions.onDeleteComment('resolved')} />
+              <RibbonMenuItem label="Delete All Comments in Document" onClick={() => actions.onDeleteComment('all')} />
+            </RibbonMenuButton>
+            <RibbonButton
+              icon={<ChevronLeft size={14} />}
+              label="Previous"
+              title="Previous comment"
+              disabled={flags.commentCount === 0}
+              onClick={() => actions.onGoToComment(-1)}
+              testId="ribbon-previous-comment"
+            />
+            <RibbonButton
+              icon={<ChevronRight size={14} />}
+              label="Next"
+              title="Next comment"
+              disabled={flags.commentCount === 0}
+              onClick={() => actions.onGoToComment(1)}
+              testId="ribbon-next-comment"
+            />
+          </RibbonLine>
+          <RibbonButton
+            icon={<MessageSquare size={14} />}
+            label="Comments"
+            title="Show the comments pane"
+            active={flags.commentsOpen}
+            onClick={actions.onToggleComments}
+            testId="ribbon-comments"
+          />
+        </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Tracking">
+        <RibbonStack>
+          <RibbonSplitButton
+            icon={<GitCompare size={20} />}
+            label="Track Changes"
+            title="Track Changes (Ctrl+Shift+E)"
+            active={flags.trackChangesEnabled}
+            onClick={actions.onToggleTrackChanges}
+            testId="ribbon-track-changes"
+          >
+            <RibbonMenuItem
+              label="Track Changes"
+              checked={flags.trackChangesEnabled}
+              onClick={actions.onToggleTrackChanges}
+            />
+          </RibbonSplitButton>
+        </RibbonStack>
+        <RibbonStack>
+          <RibbonMenuButton
+            icon={<span className="rb-glyph">◧</span>}
+            label="Display for Review"
+            title="Choose how the changes are shown"
+            testId="ribbon-markup-view"
+            menuWidth={280}
+          >
+            {MARKUP_VIEWS.map((view) => (
+              <RibbonMenuItem
+                key={view.id}
+                label={view.label}
+                hint={view.hint}
+                checked={flags.markupView === view.id}
+                onClick={() => actions.onSetMarkupView(view.id)}
+                testId={`markup-view-${view.id}`}
+              />
+            ))}
+          </RibbonMenuButton>
+          <RibbonMenuButton
+            icon={<span className="rb-glyph">☰</span>}
+            label="Show Markup"
+            title="Choose which markup is shown"
+            testId="ribbon-show-markup"
+          >
+            <RibbonMenuItem
+              label="Insertions and Deletions"
+              checked={flags.markupOptions.insertionsAndDeletions}
+              keepOpen
+              onClick={() => actions.onToggleMarkupOption('insertionsAndDeletions')}
+            />
+            <RibbonMenuItem
+              label="Formatting"
+              checked={flags.markupOptions.formatting}
+              keepOpen
+              onClick={() => actions.onToggleMarkupOption('formatting')}
+            />
+            <RibbonMenuItem
+              label="Comments"
+              checked={flags.markupOptions.comments}
+              keepOpen
+              onClick={() => actions.onToggleMarkupOption('comments')}
+            />
+          </RibbonMenuButton>
+          <RibbonButton
+            icon={<PanelRight size={14} />}
+            label="Reviewing Pane"
+            title="List every revision and comment"
+            active={flags.reviewingPaneOpen}
+            onClick={actions.onToggleReviewingPane}
+            testId="ribbon-reviewing-pane"
+          />
+        </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Changes">
+        <RibbonStack>
+          <RibbonSplitButton
+            icon={<Check size={20} />}
+            label="Accept"
+            title="Accept the change at the caret"
+            onClick={() => editor && void acceptTrackChangeInSelection(editor)}
+            testId="ribbon-accept"
+          >
+            <RibbonMenuItem
+              label="Accept and Move to Next"
+              onClick={() => {
+                if (!editor) return;
+                void acceptTrackChangeInSelection(editor).then(() => actions.onGoToChange(1));
+              }}
+            />
+            <RibbonMenuItem
+              label="Accept All Changes"
+              icon={<CheckCheck size={13} />}
+              onClick={() => editor && acceptAllTrackChanges(editor)}
+              testId="ribbon-accept-all"
+            />
+          </RibbonSplitButton>
+          <RibbonSplitButton
+            icon={<X size={20} />}
+            label="Reject"
+            title="Reject the change at the caret"
+            onClick={() => editor && void rejectTrackChangeInSelection(editor)}
+            testId="ribbon-reject"
+          >
+            <RibbonMenuItem
+              label="Reject and Move to Next"
+              onClick={() => {
+                if (!editor) return;
+                void rejectTrackChangeInSelection(editor).then(() => actions.onGoToChange(1));
+              }}
+            />
+            <RibbonMenuItem
+              label="Reject All Changes"
+              icon={<XCircle size={13} />}
+              onClick={() => editor && rejectAllTrackChanges(editor)}
+              testId="ribbon-reject-all"
+            />
+          </RibbonSplitButton>
+        </RibbonStack>
+        <RibbonStack>
+          <RibbonButton
+            icon={<ChevronLeft size={14} />}
+            label="Previous"
+            title="Previous change"
+            disabled={pending === 0}
+            onClick={() => actions.onGoToChange(-1)}
+            testId="ribbon-previous-change"
+          />
+          <RibbonButton
+            icon={<ChevronRight size={14} />}
+            label="Next"
+            title="Next change"
+            disabled={pending === 0}
+            onClick={() => actions.onGoToChange(1)}
+            testId="ribbon-next-change"
+          />
+          {/* Accept and Reject act on changes that nothing in the UI could count:
+              countTrackChanges existed but was only ever called by tests. */}
+          <span className="rb-status-note" data-testid="ribbon-change-summary">
             {pending === 0 ? (
               <span className="ribbon-change-none">No pending changes</span>
             ) : (
               <>
                 <span data-testid="ribbon-pending-insertions">{pendingInsertions} inserted</span>
+                {', '}
                 <span data-testid="ribbon-pending-deletions">{pendingDeletions} deleted</span>
               </>
             )}
-          </div>
-        </div>
-      </div>
+          </span>
+        </RibbonStack>
+      </RibbonGroup>
+
+      <RibbonGroup label="Compare">
+        <RibbonMenuButton
+          icon={<GitCompare size={20} />}
+          label="Compare"
+          title="Compare this document with another"
+          size="large"
+          testId="ribbon-compare"
+        >
+          <RibbonMenuItem
+            label="Compare Two Documents…"
+            hint="Marks the differences as tracked changes"
+            onClick={actions.onCompareDocuments}
+          />
+        </RibbonMenuButton>
+      </RibbonGroup>
+
+      <RibbonGroup label="Protect">
+        <RibbonButton
+          icon={<Lock size={20} />}
+          label="Restrict Editing"
+          title="Make the document read-only"
+          size="large"
+          active={flags.restrictEditing}
+          onClick={actions.onToggleRestrictEditing}
+          testId="ribbon-restrict-editing"
+        />
+      </RibbonGroup>
     </>
   );
 }

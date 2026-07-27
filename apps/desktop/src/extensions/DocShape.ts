@@ -2,7 +2,7 @@ import { Node, mergeAttributes } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { ShapeBlockView } from '../components/ShapeBlockView';
 
-export type ShapeType = 'rect' | 'circle' | 'line' | 'arrow';
+export type ShapeType = 'rect' | 'circle' | 'triangle' | 'line' | 'arrow';
 
 export const DocShape = Node.create({
   name: 'docShape',

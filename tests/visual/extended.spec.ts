@@ -14,7 +14,18 @@ test.describe('Extended visual regression', () => {
     await resetTestState(page);
   });
 
-  for (const tab of ['file', 'insert', 'design', 'pageLayout', 'review', 'view'] as const) {
+  for (const tab of [
+    'file',
+    'home',
+    'insert',
+    'draw',
+    'design',
+    'pageLayout',
+    'references',
+    'mailings',
+    'review',
+    'view',
+  ] as const) {
     test(`TC-VIS-004: ribbon ${tab} tab`, async ({ page }) => {
       await openBlankDocument(page);
       await page.getByTestId(`ribbon-tab-${tab}`).click();
@@ -43,7 +54,7 @@ test.describe('Extended visual regression', () => {
   test('TC-VIEW-003: focus mode layout', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'view');
-    await page.getByTestId('ribbon').getByRole('button', { name: /Focus Mode/i }).click();
+    await page.getByTestId('view-focus-mode').click();
     await expect(page.getByTestId('app-shell')).toHaveScreenshot('focus-mode.png', {
       mask: visualMaskLocators(page),
     });
@@ -52,7 +63,7 @@ test.describe('Extended visual regression', () => {
   test('navigation pane with headings', async ({ page }) => {
     await loadHeadingFixture(page);
     await switchRibbonTab(page, 'view');
-    await page.getByRole('button', { name: /Navigation/i }).click();
+    await page.getByTestId('view-navigation').click();
     await expect(page.getByTestId('app-shell')).toHaveScreenshot('navigation-pane.png', {
       mask: visualMaskLocators(page),
     });
@@ -61,7 +72,7 @@ test.describe('Extended visual regression', () => {
   test('comments pane open', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'review');
-    await page.getByRole('button', { name: /Comments/i }).click();
+    await page.getByTestId('ribbon-comments').click();
     await expect(page.getByTestId('app-shell')).toHaveScreenshot('comments-pane.png', {
       mask: visualMaskLocators(page),
     });

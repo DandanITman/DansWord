@@ -4,21 +4,28 @@ import {
   openBlankDocument,
   switchRibbonTab,
   acceptAppDialogs,
+  insertDefaultTable,
 } from '../helpers/playwright';
 
 const editor = (page: Page) => page.getByTestId('word-editor');
 
 /** Insert the default 3x3 table and put the caret in its first body cell. */
 async function insertTable(page: Page) {
-  await switchRibbonTab(page, 'insert');
-  await page.getByTestId('ribbon-table').click();
+  await insertDefaultTable(page);
   await editor(page).locator('table').waitFor({ state: 'visible' });
   await editor(page).locator('td').first().click();
 }
 
-/** Click a table tool, re-selecting the Insert tab first. */
+/**
+ * Click a table tool on the contextual Table Layout tab.
+ *
+ * Word puts the table commands on a contextual tab that appears only while the
+ * caret is inside a table, and Delete Row/Column/Table sit in a menu there.
+ */
 async function tableTool(page: Page, testId: string) {
-  await switchRibbonTab(page, 'insert');
+  await switchRibbonTab(page, 'tableLayout');
+  const inDeleteMenu = ['table-delete-row', 'table-delete-col', 'table-delete'].includes(testId);
+  if (inDeleteMenu) await page.getByTestId('table-delete-menu').click();
   await page.getByTestId(testId).click();
 }
 
@@ -38,11 +45,13 @@ test.describe('Table tools', () => {
 
   test('TC-TBL-001: the table tools appear only when the caret is in a table', async ({ page }) => {
     await switchRibbonTab(page, 'insert');
-    await expect(page.getByTestId('ribbon-table-tools')).toHaveCount(0);
+    await expect(page.getByTestId('ribbon-tab-tableLayout')).toHaveCount(0);
 
     await insertTable(page);
-    await switchRibbonTab(page, 'insert');
-    await expect(page.getByTestId('ribbon-table-tools')).toBeVisible();
+    // Word activates the contextual tab on entering the table.
+    await expect(page.getByTestId('ribbon-tab-tableLayout')).toBeVisible();
+    await switchRibbonTab(page, 'tableLayout');
+    await expect(page.getByTestId('table-add-row-after')).toBeVisible();
   });
 
   test('TC-TBL-002: inserts a row above and below', async ({ page }) => {

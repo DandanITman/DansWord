@@ -24,7 +24,7 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Strike text');
     await selectAllInEditor(page);
-    await clickRibbon(page, 'edit', 'ribbon-strike');
+    await clickRibbon(page, 'home', 'ribbon-strike');
     await expect(page.getByTestId('word-editor').locator('s')).toContainText('Strike text');
   });
 
@@ -33,7 +33,7 @@ test.describe('Edit ribbon and text operations', () => {
     await typeInEditor(page, 'E=mc2');
     await focusEditor(page);
     await page.keyboard.press('Control+A');
-    await clickRibbon(page, 'edit', 'ribbon-superscript');
+    await clickRibbon(page, 'home', 'ribbon-superscript');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('superscript');
   });
@@ -42,7 +42,7 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Georgia text');
     await selectAllInEditor(page);
-    await switchRibbonTab(page, 'edit');
+    await switchRibbonTab(page, 'home');
     await page.locator('.font-family-select').selectOption('Georgia');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('Georgia');
@@ -51,7 +51,7 @@ test.describe('Edit ribbon and text operations', () => {
   test('TC-EDIT-010: applies justify alignment', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Justified paragraph');
-    await clickRibbon(page, 'edit', 'ribbon-align-justify');
+    await clickRibbon(page, 'home', 'ribbon-align-justify');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('"textAlign":"justify"');
   });
@@ -60,8 +60,8 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Bold text');
     await selectAllInEditor(page);
-    await clickRibbon(page, 'edit', 'ribbon-bold');
-    await clickRibbon(page, 'edit', 'ribbon-clear-formatting');
+    await clickRibbon(page, 'home', 'ribbon-bold');
+    await clickRibbon(page, 'home', 'ribbon-clear-formatting');
     await expect(page.getByTestId('word-editor').locator('strong')).toHaveCount(0);
   });
 
@@ -69,7 +69,7 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Heading text');
     await selectAllInEditor(page);
-    await clickRibbon(page, 'edit', 'edit-style-heading1');
+    await clickRibbon(page, 'home', 'edit-style-heading1');
     await expect(page.getByTestId('word-editor').locator('h1')).toContainText('Heading text');
   });
 
@@ -87,10 +87,10 @@ test.describe('Edit ribbon and text operations', () => {
         ],
       }),
     );
-    await switchRibbonTab(page, 'edit');
-    await page.getByTitle('Format Painter').click();
+    await switchRibbonTab(page, 'home');
+    await page.getByTestId('ribbon-format-painter').click();
     await page.getByTestId('word-editor').getByText('Plain').click();
-    await page.getByTitle('Format Painter').click();
+    await page.getByTestId('ribbon-format-painter').click();
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('"type":"bold"');
   });
@@ -98,8 +98,9 @@ test.describe('Edit ribbon and text operations', () => {
   test('select all selects entire document', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Select all me');
-    await switchRibbonTab(page, 'edit');
-    await page.getByRole('button', { name: 'Select All' }).click();
+    await switchRibbonTab(page, 'home');
+    await page.getByRole('button', { name: 'Select' }).click();
+    await page.getByTestId('ribbon-select-all').click();
     const text = await page.evaluate(() => window.__DANSWORD_TEST__?.getEditorText());
     expect(text).toBe('Select all me');
   });
@@ -137,8 +138,9 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Spaced lines');
     await selectAllInEditor(page);
-    await switchRibbonTab(page, 'edit');
-    await page.getByTitle('Line spacing').selectOption('2');
+    await switchRibbonTab(page, 'home');
+    await page.getByTestId('ribbon-line-spacing').click();
+    await page.getByRole('menuitem', { name: '2.0' }).click();
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('lineHeight');
   });
@@ -147,8 +149,8 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Indented');
     await selectAllInEditor(page);
-    await switchRibbonTab(page, 'edit');
-    await page.getByTitle('Increase Indent').click();
+    await switchRibbonTab(page, 'home');
+    await page.getByTestId('ribbon-increase-indent').click();
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toMatch(/indent|margin/i);
   });
@@ -157,7 +159,7 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Colored');
     await selectAllInEditor(page);
-    await switchRibbonTab(page, 'edit');
+    await switchRibbonTab(page, 'home');
     await page.getByTitle('Font Color').click();
     await pickColorSwatch(page, '#ff0000');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
@@ -190,7 +192,7 @@ test.describe('Navigation and headings', () => {
   test('TC-VIEW-002: navigation pane lists headings and jumps on click', async ({ page }) => {
     await loadHeadingFixture(page);
     await switchRibbonTab(page, 'view');
-    await page.getByTestId('ribbon').getByRole('button', { name: /Navigation/i }).click();
+    await page.getByTestId('view-navigation').click();
     await expect(page.locator('.side-pane').getByText('Chapter One')).toBeVisible();
     await page.locator('.side-pane').getByRole('button', { name: 'Section Alpha' }).click();
     await expect(page.getByTestId('word-editor')).toContainText('Section Alpha');

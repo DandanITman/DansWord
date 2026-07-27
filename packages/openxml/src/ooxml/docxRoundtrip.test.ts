@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_PAGE_SETUP } from '@dansword/core';
 import { exportToDocx } from '../docxExport';
 import { importDocx, type TipTapNode } from './docxImport';
 
@@ -210,10 +211,11 @@ describe('DOCX round trip', () => {
   // always reopened as US Letter portrait.
   it('preserves page size, orientation and margins', async () => {
     const pageSetup = {
+      ...DEFAULT_PAGE_SETUP,
       size: 'a4' as const,
       orientation: 'landscape' as const,
       margins: { top: 48, bottom: 48, left: 144, right: 144 },
-      columns: { count: 2, gap: 48 },
+      columns: { count: 2, gap: 48, line: false },
     };
 
     const result = await roundTrip(

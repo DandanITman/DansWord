@@ -5,6 +5,9 @@ import {
   typeInEditor,
   focusEditor,
   switchRibbonTab,
+  insertDefaultTable,
+  insertShape,
+  openRibbonDialog,
   selectAllInEditor,
   acceptAppDialogs,
   answerPrompt,
@@ -22,8 +25,7 @@ test.describe('Insert tab', () => {
 
   test('TC-INS-001: inserts 3x3 table with header row', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /^Table$/ }).click();
+    await insertDefaultTable(page);
     await expect(page.getByTestId('word-editor').locator('table')).toBeVisible();
     await expect(page.getByTestId('word-editor').locator('th')).toHaveCount(3);
   });
@@ -31,7 +33,7 @@ test.describe('Insert tab', () => {
   test('TC-INS-003: inserts page break', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /Page Break/i }).click();
+    await page.getByTestId('ribbon-page-break').click();
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('pageBreak');
   });
@@ -39,8 +41,8 @@ test.describe('Insert tab', () => {
   test('TC-INS-005: inserts footnote and editable note area', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Text with note');
-    await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /Footnote/i }).click();
+    await switchRibbonTab(page, 'references');
+    await page.getByTestId('ribbon-footnote').click();
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('footnoteRef');
     const footnoteText = page.getByTestId('doc-footnotes').locator('.doc-footnote-text');
@@ -53,8 +55,7 @@ test.describe('Insert tab', () => {
 
   test('TC-INS-004: inserts rectangle shape', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /^Rect$/ }).click();
+    await insertShape(page, 'rect');
     await expect(page.getByTestId('word-editor').locator('.shape-block')).toBeVisible();
   });
 
@@ -67,21 +68,23 @@ test.describe('Insert tab', () => {
       window.__DANSWORD_TEST__?.setOpenImageFileResult('C:\\DansWordTest\\photo.png'),
     );
     await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /^Picture$/ }).click();
+    await page.getByTestId('ribbon-pictures').click();
     await expect(page.getByTestId('word-editor').locator('img')).toBeVisible();
   });
 
   test('TC-INS-007: inserts table of contents from headings', async ({ page }) => {
     await loadHeadingFixture(page);
-    await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /^TOC$/ }).click();
+    await switchRibbonTab(page, 'references');
+    await page.getByTestId('ribbon-toc').click();
+    await page.getByTestId('ribbon-insert-toc').click();
     await expect(page.getByTestId('word-editor')).toContainText('Chapter One');
   });
 
   test('inserts current date', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'insert');
-    await page.getByRole('button', { name: /^Date$/ }).click();
+    await page.getByTestId('ribbon-date').click();
+    await page.getByRole('menuitem').first().click();
     const text = await page.evaluate(() => window.__DANSWORD_TEST__?.getEditorText() ?? '');
     expect(text.length).toBeGreaterThan(5);
   });
@@ -95,15 +98,13 @@ test.describe('Layout, review, and view', () => {
 
   test('opens page setup dialog', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'pageLayout');
-    await page.getByRole('button', { name: /Page Setup/i }).click();
+    await openRibbonDialog(page, 'pageLayout', 'Page Setup dialog');
     await expect(page.getByRole('heading', { name: /Page Setup/i })).toBeVisible();
   });
 
   test('TC-LAY-001: changes page size from letter to A4', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'pageLayout');
-    await page.getByRole('button', { name: /Page Setup/i }).click();
+    await openRibbonDialog(page, 'pageLayout', 'Page Setup dialog');
     await page.getByLabel('Page size').selectOption('a4');
     await page.getByRole('button', { name: 'Done' }).click();
     await expect(page.locator('.doc-page-shell').first()).toHaveCSS('width', '794px');
@@ -111,8 +112,7 @@ test.describe('Layout, review, and view', () => {
 
   test('TC-LAY-004: applies multi-column layout from page setup', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'pageLayout');
-    await page.getByRole('button', { name: /Page Setup/i }).click();
+    await openRibbonDialog(page, 'pageLayout', 'Page Setup dialog');
     await page.getByLabel('Columns').selectOption('2');
     await page.getByRole('button', { name: 'Done' }).click();
     await expect(page.locator('.doc-body-columns')).toBeVisible();
@@ -121,8 +121,8 @@ test.describe('Layout, review, and view', () => {
 
   test('TC-LAY-002: sets header and footer text', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'pageLayout');
-    await page.getByRole('button', { name: /Header\/Footer/i }).click();
+    await switchRibbonTab(page, 'insert');
+    await page.getByTestId('ribbon-header').click();
     await page.getByPlaceholder('Header appears at top of each page').fill('Confidential');
     await page.getByPlaceholder('Footer appears at bottom of each page').fill('Draft copy');
     await page.getByRole('button', { name: 'Done' }).click();
@@ -132,15 +132,15 @@ test.describe('Layout, review, and view', () => {
 
   test('opens header and footer dialog', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'pageLayout');
-    await page.getByRole('button', { name: /Header\/Footer/i }).click();
+    await switchRibbonTab(page, 'insert');
+    await page.getByTestId('ribbon-footer').click();
     await expect(page.getByText(/Header text/i)).toBeVisible();
   });
 
   test('TC-LAY-003: enables watermark text on document', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'design');
-    await page.getByRole('button', { name: /Watermark/i }).click();
+    await page.getByTestId('design-watermark').click();
     await page.getByLabel('Show watermark').check();
     await page.getByLabel('Watermark text').fill('DRAFT');
     await page.getByRole('button', { name: 'Done' }).click();
@@ -150,14 +150,14 @@ test.describe('Layout, review, and view', () => {
   test('opens watermark dialog', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'design');
-    await page.getByRole('button', { name: /Watermark/i }).click();
+    await page.getByTestId('design-watermark').click();
     await expect(page.getByRole('heading', { name: /Watermark/i })).toBeVisible();
   });
 
   test('TC-REV-001: toggles track changes from review tab', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'review');
-    await page.getByRole('button', { name: /Track Changes/i }).click();
+    await page.getByTestId('ribbon-track-changes').click();
     await expect(page.getByTestId('status-bar').locator('.status-track')).toBeVisible();
     await typeInEditor(page, 'Tracked edit');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
@@ -169,7 +169,7 @@ test.describe('Layout, review, and view', () => {
     await typeInEditor(page, 'Comment target text');
     await selectAllInEditor(page);
     await switchRibbonTab(page, 'review');
-    await page.getByRole('button', { name: /Comments/i }).click();
+    await page.getByTestId('ribbon-comments').click();
     await page.getByRole('button', { name: '+ Selection' }).click();
     await answerPrompt(page, 'Needs review');
     await expect(page.getByText('Needs review')).toBeVisible();
@@ -182,7 +182,7 @@ test.describe('Layout, review, and view', () => {
   test('TC-VIEW-003: toggles focus mode from view tab', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'view');
-    await page.getByTestId('ribbon').getByRole('button', { name: /Focus Mode/i }).click();
+    await page.getByTestId('view-focus-mode').click();
     await expect(page.locator('.editor-scroll')).toHaveClass(/focus-mode/);
   });
 

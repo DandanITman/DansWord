@@ -49,7 +49,7 @@ describe('docxExport', () => {
   it('TC-UNIT-002: writes footnotes, images, shapes and page breaks into the package', async () => {
     const blob = await exportToDocx(sampleWithRichContent, {
       title: 'Rich',
-      pageSetup: { ...DEFAULT_PAGE_SETUP, columns: { count: 2, gap: 48 } },
+      pageSetup: { ...DEFAULT_PAGE_SETUP, columns: { count: 2, gap: 48, line: false } },
       footnotes: [{ id: 'fn-1', text: 'Footnote body' }],
     });
 
@@ -70,7 +70,7 @@ describe('docxExport', () => {
 
   it('writes the requested column layout into the section properties', async () => {
     const blob = await exportToDocx(sampleWithRichContent, {
-      pageSetup: { ...DEFAULT_PAGE_SETUP, columns: { count: 3, gap: 24 } },
+      pageSetup: { ...DEFAULT_PAGE_SETUP, columns: { count: 3, gap: 24, line: false } },
     });
 
     const document = await partOf(blob, 'word/document.xml');

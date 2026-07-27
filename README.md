@@ -23,13 +23,24 @@ DansWord is built so students, teachers, families, and anyone who needs to write
 ## Features
 
 - Home screen with recent files, pinned documents, and templates
-- Ribbon UI: File, Edit, Insert, Design, Page Layout, Review, View
-- Rich text: fonts, colors, lists, tables (with full row/column editing),
-  images, links, styles
+- Word's ribbon, tab for tab: File, Home, Insert, Draw, Design, Layout,
+  References, Mailings, Review, View — plus the contextual Picture Format and
+  Table Layout tabs
+- Rich text: fonts, colors, text effects, lists (bullets, numbering,
+  multilevel), tables with full structure and style editing, styles and style
+  sets, themes
+- Pictures with Word-style handles, rotation, seven wrap modes and drag
+  positioning with alignment guides; text boxes; shapes; freehand ink
+- References: table of contents, footnotes and endnotes, citations and
+  bibliography (APA, MLA, Chicago, IEEE), captions, cross-references, index
+- Mail merge from a CSV recipient list, with preview and one file per recipient
 - Open and save `.docx`, `.rtf`, `.html`, `.txt` and the native `.dansword`
-- Hunspell spell check in English, German, Spanish and French
-- Track changes with insertions *and* deletions, anchored comments
-- Find and replace, word count, zoom, light/dark theme
+- Hunspell spell check in English, German, Spanish and French, plus a grammar
+  checker, AutoCorrect and an offline thesaurus
+- Track changes with insertions *and* deletions, Display for Review, a reviewing
+  pane, document compare, anchored comments, Restrict Editing
+- Five views, find and replace, word count with readability, zoom, light/dark
+  theme
 - Auto-save, version history, print, PDF export
 - Windows installer (NSIS) with `.docx` / `.dansword` file associations
 
