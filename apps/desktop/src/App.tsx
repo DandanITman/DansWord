@@ -4,30 +4,23 @@ import {
   DEFAULT_SETTINGS,
   TEMPLATES,
   MARGIN_PRESETS,
-  PARAGRAPH_SPACING_PRESETS,
   applyStyleSet,
   createDocumentEnvelope,
   builtinStylesWithDefaults,
   formatBibliography,
   formatCitation,
-  addressBlock,
-  greetingLine,
-  includedRecords,
-  mergeFieldPlaceholder,
-  applyMergeToDocument,
-  parseRecipientList,
   type AppSettings,
   type AppView,
   type CaptionLabel,
   type CitationStyle,
-  type MailMergeData,
-  type MergeDocumentType,
   type RecentFile,
   type RibbonTab,
   type PageSetup,
   type DocumentComment,
   type DocumentRevision,
   type DocumentEnvelope,
+  type AccessibilityIssue,
+  checkAccessibility,
 } from '@dansword/core';
 import {
   exportToDocx,
@@ -41,13 +34,25 @@ import {
   unwrapDansWordFile,
   type DocxExportOptions,
 } from '@dansword/openxml';
+import { PanelLeft } from 'lucide-react';
 import { applyPrintPageSetup } from './utils/printStyles';
 import { StyleEditorDialog } from './components/StyleEditorDialog';
 import { WatermarkDialog } from './components/WatermarkDialog';
 import { WordCountDialog } from './components/WordCountDialog';
 import { HomeScreen } from './components/HomeScreen';
 import { Ribbon } from './ribbon/Ribbon';
-import type { MarkupOptions, MarkupView, RibbonActions, ViewMode } from './ribbon/types';
+import { CommandPalette } from './components/CommandPalette';
+import {
+  DEFAULT_IMMERSIVE,
+  ImmersiveReaderBar,
+  type ImmersiveSettings,
+} from './components/ImmersiveReaderBar';
+import type {
+  EditingMode,
+  RibbonLayout,
+  RibbonVisibility,
+} from './components/RibbonStripActions';
+import type { MarkupOptions, MarkupView, RibbonActions, RibbonFlags, ViewMode } from './ribbon/types';
 import { StatusBar } from './components/StatusBar';
 import { Backstage, type BackstageSection } from './components/Backstage';
 import { WordEditor, insertNote } from './components/WordEditor';
@@ -61,6 +66,7 @@ import { UiPromptHost } from './components/UiPromptHost';
 import { ProofingPane } from './components/ProofingPane';
 import { ThesaurusPane } from './components/ThesaurusPane';
 import { ReviewingPane } from './components/ReviewingPane';
+import { AccessibilityPane } from './components/AccessibilityPane';
 import { MiniToolbar } from './components/MiniToolbar';
 import { EditorContextMenu, type ContextMenuState } from './components/EditorContextMenu';
 import {
@@ -75,10 +81,12 @@ import {
 import {
   AltTextDialog,
   CrossReferenceDialog,
+  EmojiDialog,
   PictureLayoutDialog,
   SymbolDialog,
 } from './components/dialogs/InsertDialogs';
-import { RecipientsDialog, SourcesDialog } from './components/dialogs/ReferenceDialogs';
+import { SourcesDialog } from './components/dialogs/ReferenceDialogs';
+import { KeyboardShortcutsDialog, WhatsNewDialog } from './components/dialogs/HelpDialogs';
 import { useFormatPainter } from './hooks/useFormatPainter';
 import { useDocumentStats } from './hooks/useDocumentStats';
 import { useRibbonState } from './ribbon/useRibbonState';
@@ -99,12 +107,38 @@ import {
 } from './utils/documentIndex';
 import { compareDocuments } from './utils/compareDocuments';
 import { COVER_PAGE_TEMPLATES } from './constants/coverPages';
+import { MAX_RECENT_EMOJI } from './constants/emoji';
 import type { DocumentProofingIssue } from './extensions/ProofingCheck';
 import type { InkTool } from './extensions/InkDrawing';
-import { getPlatform, joinPath, baseName as getFileName, extensionOf as extOf } from './platform';
+import {
+  getPlatform,
+  isPlatformAvailable,
+  joinPath,
+  baseName as getFileName,
+  extensionOf as extOf,
+} from './platform';
 
 /** How long after the last keystroke the React copy of the document catches up. */
 const CONTENT_MIRROR_DELAY_MS = 300;
+
+/** The only site the Help tab links to; the host re-checks this allowlist. */
+const REPO_URL = 'https://github.com/DandanITman/DansWord';
+
+/**
+ * Hand a project URL to the user's browser.
+ *
+ * The app itself still makes no network requests — this opens the OS browser
+ * and nothing is loaded in a DansWord window. A refusal means the main-process
+ * allowlist rejected the URL, which is worth surfacing rather than swallowing.
+ */
+async function openProjectUrl(url: string) {
+  if (!isPlatformAvailable()) {
+    await uiAlert(`Open ${url} in your browser.`);
+    return;
+  }
+  const opened = await getPlatform().openExternal(url);
+  if (!opened) await uiAlert(`DansWord would not open ${url}.`);
+}
 
 function suggestedSavePath(defaultDir: string, name: string, ext = 'docx') {
   const base = name.replace(/\.[^.]+$/, '') || 'Untitled';
@@ -158,6 +192,9 @@ export default function App() {
   const [isDirty, setIsDirty] = useState(false);
   const [ribbonTab, setRibbonTab] = useState<RibbonTab>('home');
   const [ribbonCollapsed, setRibbonCollapsed] = useState(false);
+  const [ribbonLayout, setRibbonLayout] = useState<RibbonLayout>('classic');
+  const [ribbonVisibility, setRibbonVisibility] = useState<RibbonVisibility>('alwaysShow');
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [editor, setEditor] = useState<Editor | null>(null);
   const [zoom, setZoom] = useState(100);
   const [backstageOpen, setBackstageOpen] = useState(false);
@@ -168,7 +205,14 @@ export default function App() {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('print');
   const focusMode = viewMode === 'focus';
+  const [immersive, setImmersive] = useState<ImmersiveSettings>(DEFAULT_IMMERSIVE);
   const [showGridlines, setShowGridlines] = useState(false);
+  // View > Show. Header/footer and the notes areas are on by default, as Word has them.
+  const [showHeaderFooter, setShowHeaderFooter] = useState(true);
+  const [showFootnotes, setShowFootnotes] = useState(true);
+  const [showEndnotes, setShowEndnotes] = useState(true);
+  const [accessibilityOpen, setAccessibilityOpen] = useState(false);
+  const [accessibilityIssues, setAccessibilityIssues] = useState<AccessibilityIssue[]>([]);
   const [markupView, setMarkupView] = useState<MarkupView>('all');
   const [markupOptions, setMarkupOptions] = useState<MarkupOptions>(DEFAULT_MARKUP_OPTIONS);
   const [pageSetupOpen, setPageSetupOpen] = useState(false);
@@ -190,7 +234,9 @@ export default function App() {
     | 'pictureLayout'
     | 'tableProperties'
     | 'sources'
-    | 'recipients'
+    | 'emoji'
+    | 'shortcuts'
+    | 'whatsNew'
   >(null);
   const [editorSyncKey, setEditorSyncKey] = useState(0);
   const [pageCount, setPageCount] = useState(1);
@@ -203,16 +249,11 @@ export default function App() {
   const [thesaurusOpen, setThesaurusOpen] = useState(false);
   const [reviewingPaneOpen, setReviewingPaneOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
-  const [themeFontId, setThemeFontId] = useState('office');
-  const [themeColorId, setThemeColorId] = useState('office');
   const [ink, setInk] = useState<{ tool: InkTool; color: string; width: number }>({
     tool: 'pen',
     color: '#000000',
     width: 2,
   });
-  const [mergeDocumentType, setMergeDocumentType] = useState<MergeDocumentType>('letters');
-  const [mergePreview, setMergePreview] = useState({ active: false, index: 0, highlight: false });
-  const mergeSource = useRef<unknown>(null);
   const autoSaveTimer = useRef<number | null>(null);
   const contentMirrorTimer = useRef<number | null>(null);
   const { active: formatPainterActive, copyFormat, applyFormat } = useFormatPainter(editor);
@@ -342,7 +383,6 @@ export default function App() {
       setProofingOpen(false);
       setThesaurusOpen(false);
       setReviewingPaneOpen(false);
-      setMergePreview({ active: false, index: 0, highlight: false });
       setView('editor');
       setEditorSyncKey((k) => k + 1);
     },
@@ -372,7 +412,9 @@ export default function App() {
     if (ext === 'doc') {
       const res = await getPlatform().importDoc(path);
       if (res.format === 'docx') return importDocxEnvelope(res.data);
-      await uiAlert(res.warning);
+      // Not awaited: this reports how the file was converted, and awaiting it
+      // held the document closed behind a modal until the user clicked OK.
+      void uiAlert(res.warning);
       return createDocumentEnvelope(importFromDocText(res.data));
     }
     if (ext === 'rtf') {
@@ -650,7 +692,7 @@ export default function App() {
     const snapshot = (await getPlatform().loadRevision(filePath, id)) as Partial<DocumentEnvelope>;
     // Normalise through createDocumentEnvelope: a snapshot written by an older
     // build has none of the fields added since, and the ribbon reads them
-    // directly (mailMerge.fields, sources, endnotes…).
+    // directly (sources, endnotes…).
     const { content, ...rest } = snapshot;
     setEnvelope(createDocumentEnvelope(content, rest));
     setEditorSyncKey((k) => k + 1);
@@ -658,11 +700,11 @@ export default function App() {
     setBackstageOpen(false);
   };
 
-  /** Design: restyle the document when a style set or theme is picked. */
+  /** Home > Styles > Style set: restyle the paragraphs already in the document. */
   const applyDesign = useCallback(
-    (styleSetId: string, fontId: string, colorId: string) => {
+    (styleSetId: string) => {
       const base = builtinStylesWithDefaults(settings.defaultFontFamily, settings.defaultFontSize);
-      const styles = applyStyleSet(base, styleSetId, fontId, colorId);
+      const styles = applyStyleSet(base, styleSetId);
       setEnvelope((prev) => ({ ...prev, customStyles: styles, styleSetId }));
       setIsDirty(true);
       if (editor) restyleDocument(editor, styles);
@@ -682,71 +724,6 @@ export default function App() {
     [editor],
   );
 
-  const insertMergeField = useCallback(
-    (field: string) => {
-      editor?.chain().focus().insertContent(mergeFieldPlaceholder(field)).run();
-    },
-    [editor],
-  );
-
-  /** Mailings > Preview Results: swap the fields for a recipient's details. */
-  const setMergePreviewIndex = useCallback(
-    (index: number) => {
-      if (!editor) return;
-      const records = includedRecords(envelope.mailMerge);
-      if (!records.length) return;
-      const bounded = Math.max(0, Math.min(records.length - 1, index));
-      if (!mergeSource.current) mergeSource.current = editor.getJSON();
-      const merged = applyMergeToDocument(mergeSource.current, records[bounded]);
-      editor.commands.setContent(merged as never);
-      setMergePreview((prev) => ({ ...prev, active: true, index: bounded }));
-    },
-    [editor, envelope.mailMerge],
-  );
-
-  const stopMergePreview = useCallback(() => {
-    if (editor && mergeSource.current) {
-      editor.commands.setContent(mergeSource.current as never);
-    }
-    mergeSource.current = null;
-    setMergePreview((prev) => ({ ...prev, active: false, index: 0 }));
-  }, [editor]);
-
-  const finishMerge = useCallback(
-    async (mode: 'documents' | 'print') => {
-      if (!editor) return;
-      const records = includedRecords(envelope.mailMerge);
-      if (!records.length) {
-        await uiAlert('Attach a recipient list first: Mailings > Select Recipients.');
-        return;
-      }
-      if (mode === 'print') {
-        await uiAlert(
-          `Printing merges one page set per recipient. DansWord will print the previewed recipient; step through them with the arrows to print the rest.`,
-        );
-        await getPlatform().printDocument();
-        return;
-      }
-
-      const template = mergeSource.current ?? editor.getJSON();
-      const defaultDir = await getPlatform().getDefaultSaveDir();
-      const base = fileName.replace(/\.[^.]+$/, '') || 'Merged';
-      let written = 0;
-
-      for (const [index, record] of records.entries()) {
-        const merged = applyMergeToDocument(template, record);
-        const doc: DocumentEnvelope = { ...envelope, content: merged };
-        const target = joinPath(defaultDir, `${base}-${index + 1}.docx`);
-        const blob = await exportToDocx(doc.content, docxExportOpts(doc, `${base} ${index + 1}`));
-        const buffer = await blob.arrayBuffer();
-        await getPlatform().writeFile(target, new Uint8Array(buffer));
-        written += 1;
-      }
-
-      await uiAlert(`Wrote ${written} merged ${written === 1 ? 'document' : 'documents'} to ${defaultDir}.`);
-    },
-    [editor, envelope, fileName],
-  );
 
   const addComment = useCallback(
     async () => {
@@ -771,6 +748,97 @@ export default function App() {
     [editor, settings.authorName],
   );
 
+  /** File > Rename: rename on disk, keeping the extension the document has. */
+  const renameCurrentFile = useCallback(async () => {
+    if (!filePath) return;
+    const ext = extOf(filePath);
+    const current = fileName.replace(/\.[^.]+$/, '');
+    const entered = await uiPrompt('Rename document', current);
+    const stem = entered?.trim().replace(/\.[^.]+$/, '');
+    if (!stem || stem === current) return;
+
+    const nextName = ext ? `${stem}.${ext}` : stem;
+    const nextPath = await getPlatform().renameFile(filePath, nextName);
+    if (!nextPath) {
+      await uiAlert(`There is already a file called ${nextName} in that folder.`);
+      return;
+    }
+    setFilePath(nextPath);
+    setFileName(getFileName(nextPath));
+    // The recents list still points at the old path, which no longer exists.
+    void persistRecents(
+      recents.map((entry) =>
+        entry.path === filePath ? { ...entry, path: nextPath, name: getFileName(nextPath) } : entry,
+      ),
+    );
+  }, [fileName, filePath, persistRecents, recents]);
+
+  /** File > Create a Copy: duplicate on disk, leaving this document open. */
+  const copyCurrentFile = useCallback(async () => {
+    if (!filePath) return;
+    // Save first, or the copy is of whatever was last written rather than of
+    // what is on screen.
+    if (isDirty) await saveDocument();
+    const copyPath = await getPlatform().copyFile(filePath);
+    if (!copyPath) {
+      await uiAlert('DansWord could not create a copy.');
+      return;
+    }
+    await uiAlert(`Copied to ${getFileName(copyPath)}.`);
+  }, [filePath, isDirty, saveDocument]);
+
+  /** File > Delete: to the recycle bin, then back to the home screen. */
+  const deleteCurrentFile = useCallback(async () => {
+    if (!filePath) return;
+    const confirmed = await uiConfirm(
+      `Move ${fileName} to the recycle bin? The document will close.`,
+    );
+    if (!confirmed) return;
+
+    await getPlatform().trashFile(filePath);
+    void persistRecents(recents.filter((entry) => entry.path !== filePath));
+    setIsDirty(false);
+    setBackstageOpen(false);
+    setView('home');
+  }, [fileName, filePath, persistRecents, recents]);
+
+  /** Review > Check Accessibility, run against the live document. */
+  const runAccessibilityCheck = useCallback(
+    () => (editor ? checkAccessibility(editor.getJSON(), envelope.pageSetup.pageColor) : []),
+    [editor, envelope.pageSetup.pageColor],
+  );
+
+  /** Insert > Emojis keeps a most-recently-used row, persisted like settings. */
+  const rememberEmoji = useCallback((emoji: string) => {
+    setSettings((prev) => ({
+      ...prev,
+      recentEmoji: [emoji, ...(prev.recentEmoji ?? []).filter((entry) => entry !== emoji)].slice(
+        0,
+        MAX_RECENT_EMOJI,
+      ),
+    }));
+  }, []);
+
+  /**
+   * The tab strip's Editing / Reviewing / Viewing picker.
+   *
+   * Derived rather than stored: read-only and track-changes are already real
+   * document state that Review can change directly, so keeping a second copy
+   * would let the two disagree.
+   */
+  const editingMode: EditingMode = envelope.restrictEditing
+    ? 'viewing'
+    : envelope.trackChangesEnabled
+      ? 'reviewing'
+      : 'editing';
+
+  const applyEditingMode = useCallback((mode: EditingMode) => {
+    updateEnvelope({
+      restrictEditing: mode === 'viewing',
+      trackChangesEnabled: mode === 'reviewing',
+    });
+  }, [updateEnvelope]);
+
   const ribbonActions: RibbonActions = useMemo(
     () => ({
       onNew: () => newFromTemplate('blank'),
@@ -782,8 +850,27 @@ export default function App() {
       onSaveAs: () => void saveDocument(null, true),
       onOpenBackstage: () => {
         setBackstageOpen(true);
-        setBackstageSection('save');
+        setBackstageSection('export');
       },
+      onOpenNewBackstage: () => {
+        setBackstageOpen(true);
+        setBackstageSection('new');
+      },
+      onOpenBackstageOpen: () => {
+        setBackstageOpen(true);
+        setBackstageSection('open');
+      },
+      onOpenInfo: () => {
+        setBackstageOpen(true);
+        setBackstageSection('info');
+      },
+      onOpenVersionHistory: () => {
+        setBackstageOpen(true);
+        setBackstageSection('history');
+      },
+      onRenameFile: () => void renameCurrentFile(),
+      onCreateCopy: () => void copyCurrentFile(),
+      onDeleteFile: () => void deleteCurrentFile(),
       onPrint: () => void getPlatform().printDocument(),
       onExportPdf: () => void exportPdf(),
 
@@ -820,6 +907,7 @@ export default function App() {
       onInsertPageNumbers: (show) =>
         updateEnvelope({ headerFooter: { ...envelope.headerFooter, showPageNumbers: show } }),
       onOpenSymbolPicker: () => setDialog('symbol'),
+      onOpenEmojiPicker: () => setDialog('emoji'),
       onInsertBookmark: () => {
         if (!editor) return;
         void (async () => {
@@ -842,36 +930,7 @@ export default function App() {
       onSetInkColor: (color) => setInk((prev) => ({ ...prev, color, tool: prev.tool === 'eraser' ? 'pen' : prev.tool })),
       onSetInkWidth: (width) => setInk((prev) => ({ ...prev, width })),
 
-      onApplyStyleSet: (id) => applyDesign(id, themeFontId, themeColorId),
-      onApplyThemeFonts: (id) => {
-        setThemeFontId(id);
-        applyDesign(envelope.styleSetId, id, themeColorId);
-      },
-      onApplyThemeColors: (id) => {
-        setThemeColorId(id);
-        applyDesign(envelope.styleSetId, themeFontId, id);
-      },
-      onApplyParagraphSpacing: (id) => {
-        const preset = PARAGRAPH_SPACING_PRESETS.find((entry) => entry.id === id);
-        if (!preset || !editor) return;
-        editor
-          .chain()
-          .focus()
-          .selectAll()
-          .setParagraphSpacing(preset.before, preset.after)
-          .setLineSpacing(preset.lineHeight)
-          .run();
-      },
-      onSetAsDefaultFormatting: () => {
-        const normal = envelope.customStyles.find((style) => style.id === 'normal');
-        if (!normal) return;
-        setSettings((prev) => ({
-          ...prev,
-          defaultFontFamily: normal.fontFamily ?? prev.defaultFontFamily,
-          defaultFontSize: Number(String(normal.fontSize ?? '').replace('pt', '')) || prev.defaultFontSize,
-        }));
-        void uiAlert('New documents will use this formatting.');
-      },
+      onApplyStyleSet: (id) => applyDesign(id),
       onOpenWatermark: () => setWatermarkOpen(true),
       onSetPageColor: (color) => updatePageSetup({ pageColor: color }),
       onOpenPageBorders: () => setDialog('pageBorders'),
@@ -979,60 +1038,6 @@ export default function App() {
           .run();
       },
 
-      onStartMailMerge: (type) => setMergeDocumentType(type),
-      onSelectRecipients: () => {
-        void (async () => {
-          const path = await getPlatform().openFile();
-          if (!path) return;
-          const ext = extOf(path);
-          if (!['csv', 'txt', 'tsv'].includes(ext)) {
-            await uiAlert('Choose a .csv, .tsv or .txt recipient list.');
-            return;
-          }
-          const raw = await getPlatform().readTextFile(path);
-          const data = parseRecipientList(raw, getFileName(path));
-          if (!data.records.length) {
-            await uiAlert('That file has a header row but no recipients.');
-            return;
-          }
-          updateEnvelope({ mailMerge: data });
-          setDialog('recipients');
-        })();
-      },
-      onEditRecipients: () => setDialog('recipients'),
-      onInsertMergeField: insertMergeField,
-      onInsertAddressBlock: () => {
-        const records = includedRecords(envelope.mailMerge);
-        if (!records.length || !editor) return;
-        // Insert the field placeholders, not one recipient's details: the block
-        // has to merge for every recipient, exactly as Word's «AddressBlock» does.
-        const sample = addressBlock(records[0]);
-        const fields = envelope.mailMerge.fields;
-        const lines = sample.split('\n').map((line) => {
-          const field = fields.find((name) => records[0][name] && line.includes(records[0][name]));
-          return field ? mergeFieldPlaceholder(field) : line;
-        });
-        editor.chain().focus().insertContent(lines.join('\n')).run();
-      },
-      onInsertGreetingLine: () => {
-        const records = includedRecords(envelope.mailMerge);
-        if (!records.length || !editor) return;
-        const field =
-          envelope.mailMerge.fields.find((name) => /last\s*name|surname/i.test(name)) ??
-          envelope.mailMerge.fields.find((name) => /first\s*name|name/i.test(name));
-        const greeting = field
-          ? `Dear ${mergeFieldPlaceholder(field)},`
-          : greetingLine(records[0]);
-        editor.chain().focus().insertContent(greeting).run();
-      },
-      onToggleHighlightMergeFields: () =>
-        setMergePreview((prev) => ({ ...prev, highlight: !prev.highlight })),
-      onTogglePreviewResults: () => {
-        if (mergePreview.active) stopMergePreview();
-        else setMergePreviewIndex(0);
-      },
-      onGoToMergeRecord: (index) => setMergePreviewIndex(index),
-      onFinishMerge: (mode) => void finishMerge(mode),
 
       onOpenProofing: () => {
         setProofingOpen(true);
@@ -1118,6 +1123,16 @@ export default function App() {
       onToggleNavigation: () => setNavOpen((open) => !open),
       onSetZoom: setZoom,
       onOpenZoomDialog: () => setDialog('zoom'),
+      onToggleShowHeaderFooter: () => setShowHeaderFooter((show) => !show),
+      onToggleShowFootnotes: () => setShowFootnotes((show) => !show),
+      onToggleShowEndnotes: () => setShowEndnotes((show) => !show),
+      onToggleTheme: () =>
+        setSettings((prev) => ({ ...prev, theme: prev.theme === 'light' ? 'dark' : 'light' })),
+      onToggleRibbonCollapsed: () => setRibbonCollapsed((collapsed) => !collapsed),
+      onCheckAccessibility: () => {
+        setAccessibilityIssues(runAccessibilityCheck());
+        setAccessibilityOpen(true);
+      },
       onZoomToFit: (fit) => {
         const workspace = document.querySelector('.editor-main');
         const available = (workspace?.clientWidth ?? 900) - 80;
@@ -1127,6 +1142,12 @@ export default function App() {
         else if (fit === 'onePage') setZoom(70);
         else setZoom(45);
       },
+
+      onOpenHelp: () => void openProjectUrl(REPO_URL),
+      onContactSupport: () => void openProjectUrl(`${REPO_URL}/issues`),
+      onSendFeedback: () => void openProjectUrl(`${REPO_URL}/issues/new`),
+      onOpenShortcuts: () => setDialog('shortcuts'),
+      onOpenWhatsNew: () => setDialog('whatsNew'),
 
       onOpenAltText: () => setDialog('altText'),
       onOpenPictureLayout: () => setDialog('pictureLayout'),
@@ -1141,21 +1162,14 @@ export default function App() {
       editor,
       envelope,
       exportPdf,
-      finishMerge,
       goToNextIn,
       handleInsertImage,
       handleInsertNote,
-      insertMergeField,
-      mergePreview.active,
       newFromTemplate,
       openDocumentAtPath,
       readDocumentAt,
       ribbonState.selectionText,
       saveDocument,
-      setMergePreviewIndex,
-      stopMergePreview,
-      themeColorId,
-      themeFontId,
       updateEnvelope,
       updatePageSetup,
     ],
@@ -1167,6 +1181,13 @@ export default function App() {
       // Ctrl+O and Ctrl+N make sense anywhere; the rest act on an open document.
       const editorOnly = view === 'editor';
       const key = e.key.toLowerCase();
+
+      // Alt+Q is Word's "Tell me what you want to do" search box.
+      if (editorOnly && e.altKey && key === 'q') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+        return;
+      }
 
       if (editorOnly && e.ctrlKey && key === 's') {
         e.preventDefault();
@@ -1270,24 +1291,65 @@ export default function App() {
   const readOnly = envelope.restrictEditing;
   const showRulers = settings.showRuler && viewMode !== 'read' && viewMode !== 'focus';
 
+  const ribbonFlags: RibbonFlags = {
+          trackChangesEnabled: envelope.trackChangesEnabled,
+          formatPainterActive,
+          focusMode,
+          customStyles: envelope.customStyles,
+          pendingInsertions: wordStats.insertions,
+          pendingDeletions: wordStats.deletions,
+          viewMode,
+          zoom,
+          showFormattingMarks: settings.showFormattingMarks,
+          showRuler: settings.showRuler,
+          showGridlines,
+          showHeaderFooter,
+          showFootnotes,
+          showEndnotes,
+          theme: settings.theme,
+          ribbonCollapsed,
+          accessibilityOpen,
+          accessibilityIssues: accessibilityIssues.length,
+          navigationOpen: navOpen,
+          commentsOpen,
+          reviewingPaneOpen,
+          markupView,
+          markupOptions,
+          restrictEditing: envelope.restrictEditing,
+          language: settings.language,
+          spellCheckEnabled: settings.spellCheckEnabled,
+          grammarCheckEnabled: settings.grammarCheckEnabled,
+          pageSetup: envelope.pageSetup,
+          watermarkEnabled: envelope.watermark.enabled,
+          showPageNumbers: envelope.headerFooter.showPageNumbers,
+          styleSetId: envelope.styleSetId,
+          citationStyle: envelope.citationStyle,
+          sources: envelope.sources,
+          commentCount: envelope.comments.length,
+          unresolvedComments: envelope.comments.filter((comment) => !comment.resolved).length,
+          ink,
+          proofingIssues: proofingIssues.length,
+  };
+
   return (
     <div className="app-shell" data-testid="app-shell">
       {view === 'editor' && !focusMode && viewMode !== 'read' && (
         <EditorTitleBar
           fileName={fileName}
           isDirty={isDirty}
-          theme={settings.theme}
           onSave={() => void saveDocument()}
-          onNew={() => newFromTemplate('blank')}
-          onPrint={() => void getPlatform().printDocument()}
           onUndo={() => editor?.chain().focus().undo().run()}
           onRedo={() => editor?.chain().focus().redo().run()}
           canUndo={!!editor?.can().undo()}
           canRedo={!!editor?.can().redo()}
           onHome={() => setView('home')}
-          onToggleTheme={() =>
-            setSettings((s) => ({ ...s, theme: s.theme === 'light' ? 'dark' : 'light' }))
-          }
+          onRename={() => void renameCurrentFile()}
+          canRename={Boolean(filePath)}
+          onOpenSearch={() => setCommandPaletteOpen(true)}
+          onOpenSettings={() => {
+            setBackstageOpen(true);
+            setBackstageSection('options');
+          }}
         />
       )}
 
@@ -1298,44 +1360,19 @@ export default function App() {
           editor={editor}
           collapsed={ribbonCollapsed}
           onToggleCollapsed={() => setRibbonCollapsed((collapsed) => !collapsed)}
-          actions={ribbonActions}
-          flags={{
-            trackChangesEnabled: envelope.trackChangesEnabled,
-            formatPainterActive,
-            focusMode,
-            customStyles: envelope.customStyles,
-            pendingInsertions: wordStats.insertions,
-            pendingDeletions: wordStats.deletions,
-            viewMode,
-            zoom,
-            showFormattingMarks: settings.showFormattingMarks,
-            showRuler: settings.showRuler,
-            showGridlines,
-            navigationOpen: navOpen,
-            commentsOpen,
-            reviewingPaneOpen,
-            markupView,
-            markupOptions,
-            restrictEditing: envelope.restrictEditing,
-            language: settings.language,
-            spellCheckEnabled: settings.spellCheckEnabled,
-            grammarCheckEnabled: settings.grammarCheckEnabled,
-            pageSetup: envelope.pageSetup,
-            watermarkEnabled: envelope.watermark.enabled,
-            showPageNumbers: envelope.headerFooter.showPageNumbers,
-            styleSetId: envelope.styleSetId,
-            themeFontId,
-            themeColorId,
-            citationStyle: envelope.citationStyle,
-            sources: envelope.sources,
-            mailMerge: envelope.mailMerge,
-            mergeDocumentType,
-            mergePreview,
-            commentCount: envelope.comments.length,
-            unresolvedComments: envelope.comments.filter((comment) => !comment.resolved).length,
-            ink,
-            proofingIssues: proofingIssues.length,
+          hasFile={Boolean(filePath)}
+          layout={ribbonLayout}
+          onSetLayout={setRibbonLayout}
+          visibility={ribbonVisibility}
+          onSetVisibility={(next) => {
+            setRibbonVisibility(next);
+            setRibbonCollapsed(next === 'tabsOnly');
           }}
+          editingMode={editingMode}
+          onSetEditingMode={applyEditingMode}
+          onToggleComments={() => setCommentsOpen((open) => !open)}
+          actions={ribbonActions}
+          flags={ribbonFlags}
         />
       )}
 
@@ -1385,12 +1422,37 @@ export default function App() {
             </div>
           )}
           <div className="editor-workspace">
+            {/* The thin rail Word for the web shows down the left edge; its one
+                button opens the navigation pane. */}
+            <div className="pane-rail">
+              <button
+                className={`pane-rail-btn${navOpen ? ' is-active' : ''}`}
+                onClick={() => setNavOpen((open) => !open)}
+                title="Navigation pane"
+                aria-label="Navigation pane"
+                aria-pressed={navOpen}
+                data-testid="pane-rail-navigation"
+              >
+                <PanelLeft size={17} />
+              </button>
+            </div>
             <NavigationPane editor={editor} open={navOpen} onClose={() => setNavOpen(false)} />
             <div className="editor-main">
+              {focusMode && (
+                <ImmersiveReaderBar
+                  settings={immersive}
+                  onChange={setImmersive}
+                  onExit={() => setViewMode('print')}
+                />
+              )}
               <div
                 className={`editor-scroll view-${viewMode}${focusMode ? ' focus-mode' : ''}${
                   viewMode === 'web' ? ' web-layout' : ''
                 }`}
+                data-immersive-width={focusMode ? immersive.width : undefined}
+                data-immersive-spacing={focusMode ? immersive.spacing : undefined}
+                data-immersive-page={focusMode ? immersive.page : undefined}
+                data-immersive-line-focus={focusMode && immersive.lineFocus ? 'true' : undefined}
                 style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
               >
                 <DocumentRulers
@@ -1411,9 +1473,11 @@ export default function App() {
                     autoCorrectEnabled={settings.autoCorrectEnabled}
                     showFormattingMarks={settings.showFormattingMarks}
                     showGridlines={showGridlines}
+                    showHeaderFooter={showHeaderFooter}
+                    showFootnotes={showFootnotes}
+                    showEndnotes={showEndnotes}
                     markupView={markupOptions.insertionsAndDeletions ? markupView : 'none'}
                     readOnly={readOnly}
-                    highlightMergeFields={mergePreview.highlight}
                     language={settings.language}
                     ignoredWords={ignoredWords}
                     trackChangesEnabled={envelope.trackChangesEnabled}
@@ -1454,6 +1518,13 @@ export default function App() {
               editor={editor}
               comments={markupOptions.comments ? envelope.comments : []}
               onClose={() => setReviewingPaneOpen(false)}
+            />
+            <AccessibilityPane
+              open={accessibilityOpen}
+              editor={editor}
+              issues={accessibilityIssues}
+              onClose={() => setAccessibilityOpen(false)}
+              onRecheck={() => setAccessibilityIssues(runAccessibilityCheck())}
             />
             <CommentsPane
               open={commentsOpen}
@@ -1498,7 +1569,10 @@ export default function App() {
           <MiniToolbar
             editor={editor}
             state={ribbonState}
-            enabled={!readOnly && viewMode !== 'read'}
+            // Suppressed while Find & Replace is open: every match is a
+            // selection, so the toolbar popped up over the find bar and
+            // swallowed clicks on Next and Previous.
+            enabled={!readOnly && viewMode !== 'read' && !findOpen}
             onFormatPainter={() => (formatPainterActive ? applyFormat() : copyFormat())}
           />
           <EditorContextMenu
@@ -1547,6 +1621,8 @@ export default function App() {
         onChange={(watermark) => updateEnvelope({ watermark })}
         onClose={() => setWatermarkOpen(false)}
       />
+      <KeyboardShortcutsDialog open={dialog === 'shortcuts'} onClose={() => setDialog(null)} />
+      <WhatsNewDialog open={dialog === 'whatsNew'} onClose={() => setDialog(null)} />
       <WordCountDialog
         open={wordCountOpen}
         editor={editor}
@@ -1604,6 +1680,13 @@ export default function App() {
         onClose={() => setDialog(null)}
       />
       <SymbolDialog open={dialog === 'symbol'} editor={editor} onClose={() => setDialog(null)} />
+      <EmojiDialog
+        open={dialog === 'emoji'}
+        editor={editor}
+        recent={settings.recentEmoji ?? []}
+        onUseEmoji={rememberEmoji}
+        onClose={() => setDialog(null)}
+      />
       <CrossReferenceDialog
         open={dialog === 'crossReference'}
         editor={editor}
@@ -1626,12 +1709,6 @@ export default function App() {
         sources={envelope.sources}
         citationStyle={envelope.citationStyle}
         onChange={(sources) => updateEnvelope({ sources })}
-        onClose={() => setDialog(null)}
-      />
-      <RecipientsDialog
-        open={dialog === 'recipients'}
-        data={envelope.mailMerge}
-        onChange={(mailMerge: MailMergeData) => updateEnvelope({ mailMerge })}
         onClose={() => setDialog(null)}
       />
 
@@ -1692,6 +1769,17 @@ export default function App() {
         />
       )}
 
+      <CommandPalette
+        open={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        context={{
+          editor,
+          actions: ribbonActions,
+          flags: ribbonFlags,
+          state: ribbonState,
+          goToTab: setRibbonTab,
+        }}
+      />
       <UiPromptHost />
     </div>
   );

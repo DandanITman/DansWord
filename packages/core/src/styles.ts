@@ -93,91 +93,11 @@ export function builtinStylesWithDefaults(
   }));
 }
 
-/** Design > Fonts: a heading/body pairing, as Word's theme fonts work. */
-export interface ThemeFontSet {
-  id: string;
-  name: string;
-  heading: string;
-  body: string;
-}
-
-export const THEME_FONTS: ThemeFontSet[] = [
-  { id: 'office', name: 'Office', heading: 'Calibri Light', body: 'Calibri' },
-  { id: 'officeClassic', name: 'Office Classic', heading: 'Arial', body: 'Times New Roman' },
-  { id: 'garamond', name: 'Garamond', heading: 'Garamond', body: 'Garamond' },
-  { id: 'georgia', name: 'Georgia', heading: 'Georgia', body: 'Georgia' },
-  { id: 'trebuchet', name: 'Trebuchet MS', heading: 'Trebuchet MS', body: 'Trebuchet MS' },
-  { id: 'candara', name: 'Candara', heading: 'Candara', body: 'Candara' },
-  { id: 'timesGeorgia', name: 'Times New Roman', heading: 'Times New Roman', body: 'Times New Roman' },
-  { id: 'verdana', name: 'Verdana', heading: 'Verdana', body: 'Verdana' },
-];
-
-/** Design > Colors: the accent used by heading styles. */
-export interface ThemeColorSet {
-  id: string;
-  name: string;
-  heading1: string;
-  heading2: string;
-  heading3: string;
-  accents: string[];
-}
-
-export const THEME_COLORS: ThemeColorSet[] = [
-  {
-    id: 'office',
-    name: 'Office',
-    heading1: '#2f5496',
-    heading2: '#2f5496',
-    heading3: '#1f3763',
-    accents: ['#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#5b9bd5', '#70ad47'],
-  },
-  {
-    id: 'grayscale',
-    name: 'Grayscale',
-    heading1: '#3b3b3b',
-    heading2: '#3b3b3b',
-    heading3: '#1f1f1f',
-    accents: ['#8a8a8a', '#6f6f6f', '#575757', '#3f3f3f', '#282828', '#111111'],
-  },
-  {
-    id: 'blueGreen',
-    name: 'Blue Green',
-    heading1: '#0f6b63',
-    heading2: '#0f6b63',
-    heading3: '#08423d',
-    accents: ['#0f9e93', '#2e9bd6', '#7fb800', '#f2a900', '#e8582e', '#8e6bbf'],
-  },
-  {
-    id: 'redOrange',
-    name: 'Red Orange',
-    heading1: '#a13d1c',
-    heading2: '#a13d1c',
-    heading3: '#6d2810',
-    accents: ['#e04c1f', '#f08c00', '#d6b800', '#8bb400', '#0f8fa8', '#8a4fbd'],
-  },
-  {
-    id: 'violet',
-    name: 'Violet',
-    heading1: '#5c2d91',
-    heading2: '#5c2d91',
-    heading3: '#3d1e63',
-    accents: ['#7a3fbf', '#b14fd8', '#e05fa8', '#f0894f', '#4f9bd8', '#5fbf8f'],
-  },
-  {
-    id: 'green',
-    name: 'Green',
-    heading1: '#2d6a2d',
-    heading2: '#2d6a2d',
-    heading3: '#1c451c',
-    accents: ['#4f9e4f', '#8bbf3f', '#d8c73f', '#e08f3f', '#3f9bbf', '#7a5fbf'],
-  },
-];
-
 /**
- * Design > Style Set: the gallery that restyles the whole document.
+ * Home > Styles > Style set: the gallery that restyles the whole document.
  *
- * Each set only overrides the pieces Word's sets change — heading fonts, sizes,
- * colour and paragraph spacing — so the user's default body font survives.
+ * Each set only overrides the pieces Word's sets change â€” heading fonts, sizes,
+ * colour and paragraph spacing â€” so the user's default body font survives.
  */
 export interface StyleSet {
   id: string;
@@ -264,50 +184,8 @@ export const STYLE_SETS: StyleSet[] = [
   },
 ];
 
-/** Design > Paragraph Spacing, with Word's names and measurements. */
-export interface ParagraphSpacingPreset {
-  id: string;
-  name: string;
-  before: number;
-  after: number;
-  lineHeight: string;
-}
-
-export const PARAGRAPH_SPACING_PRESETS: ParagraphSpacingPreset[] = [
-  { id: 'noSpacing', name: 'No Paragraph Space', before: 0, after: 0, lineHeight: '1' },
-  { id: 'compact', name: 'Compact', before: 0, after: 5, lineHeight: '1' },
-  { id: 'tight', name: 'Tight', before: 0, after: 8, lineHeight: '1.15' },
-  { id: 'open', name: 'Open', before: 0, after: 13, lineHeight: '1.15' },
-  { id: 'relaxed', name: 'Relaxed', before: 0, after: 8, lineHeight: '1.5' },
-  { id: 'double', name: 'Double', before: 0, after: 11, lineHeight: '2' },
-];
-
-/** Apply a style set and theme to a style list, the way Design does. */
-export function applyStyleSet(
-  styles: DocumentStyle[],
-  styleSetId: string,
-  themeFontId?: string,
-  themeColorId?: string,
-): DocumentStyle[] {
+/** Apply a style set to a style list, restyling the whole document. */
+export function applyStyleSet(styles: DocumentStyle[], styleSetId: string): DocumentStyle[] {
   const set = STYLE_SETS.find((s) => s.id === styleSetId) ?? STYLE_SETS[0];
-  const fonts = THEME_FONTS.find((f) => f.id === themeFontId);
-  const colors = THEME_COLORS.find((c) => c.id === themeColorId);
-
-  return styles.map((style) => {
-    const next: DocumentStyle = { ...style, ...(set.overrides[style.id] ?? {}) };
-
-    if (fonts && next.fontFamily) {
-      const isHeading = style.headingLevel !== undefined || style.id === 'title' || style.id === 'subtitle';
-      next.fontFamily = isHeading ? fonts.heading : fonts.body;
-    }
-    if (colors) {
-      if (style.id === 'heading1') next.color = colors.heading1;
-      if (style.id === 'heading2') next.color = colors.heading2;
-      if (style.id === 'heading3') next.color = colors.heading3;
-      if (style.id === 'intenseQuote' || style.id === 'intenseEmphasis' || style.id === 'intenseReference') {
-        next.color = colors.heading1;
-      }
-    }
-    return next;
-  });
+  return styles.map((style) => ({ ...style, ...(set.overrides[style.id] ?? {}) }));
 }

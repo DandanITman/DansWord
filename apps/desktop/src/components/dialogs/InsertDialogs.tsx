@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import { CROSS_REFERENCE_LABELS, type CrossReferenceKind } from '@dansword/core';
 import { SYMBOL_SUBSETS } from '../../constants/symbols';
+import { ALL_EMOJI, EMOJI_GROUPS } from '../../constants/emoji';
 import { collectBookmarks, collectCaptions } from '../../utils/documentIndex';
 import { extractHeadings } from '../../utils/headings';
 import type { RibbonState } from '../../ribbon/useRibbonState';
@@ -279,6 +280,118 @@ export function PictureLayoutDialog({
           />
           Lock aspect ratio
         </label>
+        <div className="dialog-actions">
+          <button className="icon-btn primary" onClick={onClose}>
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Insert > Emojis.
+ *
+ * Search runs over the emoji names, so "smile" finds the smiling faces without
+ * the user needing to know which group they are in. Recently used sits on top,
+ * as Word's symbol picker does, and persists through the settings store.
+ */
+export function EmojiDialog({
+  open,
+  editor,
+  recent,
+  onUseEmoji,
+  onClose,
+}: {
+  open: boolean;
+  editor: Editor | null;
+  recent: string[];
+  onUseEmoji: (emoji: string) => void;
+  onClose: () => void;
+}) {
+  const [query, setQuery] = useState('');
+
+  const matches = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return null;
+    return ALL_EMOJI.filter(
+      (entry) => entry.name.includes(needle) || entry.group.toLowerCase().includes(needle),
+    );
+  }, [query]);
+
+  if (!open) return null;
+
+  const insert = (emoji: string) => {
+    editor?.chain().focus().insertContent(emoji).run();
+    onUseEmoji(emoji);
+  };
+
+  const cell = (char: string, name: string, key: string) => (
+    <button
+      key={key}
+      type="button"
+      className="symbol-picker-cell emoji-cell"
+      title={name}
+      aria-label={name}
+      data-testid={`emoji-${char}`}
+      onClick={() => insert(char)}
+    >
+      {char}
+    </button>
+  );
+
+  return (
+    <div className="backdrop" onClick={onClose}>
+      <div
+        className="dialog panel-card dialog-wide"
+        data-testid="emoji-dialog"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h2>Emoji</h2>
+        <label>
+          Search
+          <input
+            type="search"
+            value={query}
+            autoFocus
+            placeholder="Search by name, e.g. smile"
+            data-testid="emoji-search"
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+
+        <div className="emoji-scroll">
+          {matches ? (
+            matches.length ? (
+              <div className="symbol-picker-grid">
+                {matches.map((entry) => cell(entry.char, entry.name, entry.char))}
+              </div>
+            ) : (
+              <p className="emoji-empty">No emoji match “{query}”.</p>
+            )
+          ) : (
+            <>
+              {recent.length > 0 && (
+                <section data-testid="emoji-recent">
+                  <h3>Recently used</h3>
+                  <div className="symbol-picker-grid">
+                    {recent.map((char) => cell(char, char, `recent-${char}`))}
+                  </div>
+                </section>
+              )}
+              {EMOJI_GROUPS.map((group) => (
+                <section key={group.name}>
+                  <h3>{group.name}</h3>
+                  <div className="symbol-picker-grid">
+                    {group.emoji.map((entry) => cell(entry.char, entry.name, entry.char))}
+                  </div>
+                </section>
+              ))}
+            </>
+          )}
+        </div>
+
         <div className="dialog-actions">
           <button className="icon-btn primary" onClick={onClose}>
             Done

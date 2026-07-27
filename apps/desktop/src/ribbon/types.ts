@@ -3,8 +3,6 @@ import type {
   CitationSource,
   CitationStyle,
   DocumentStyle,
-  MailMergeData,
-  MergeDocumentType,
   PageSetup,
   PageSizePreset,
   PageOrientation,
@@ -37,7 +35,17 @@ export interface RibbonActions {
   onOpenFile: () => void;
   onSave: () => void;
   onSaveAs: () => void;
+  /** Backstage on the Export section — File > Export. */
   onOpenBackstage: () => void;
+  /** Backstage on the New section, for the templates. */
+  onOpenNewBackstage: () => void;
+  /** Backstage on the Open section, for recents and Browse. */
+  onOpenBackstageOpen: () => void;
+  onOpenInfo: () => void;
+  onOpenVersionHistory: () => void;
+  onRenameFile: () => void;
+  onCreateCopy: () => void;
+  onDeleteFile: () => void;
   onPrint: () => void;
   onExportPdf: () => void;
 
@@ -62,6 +70,7 @@ export interface RibbonActions {
   onOpenHeaderFooter: () => void;
   onInsertPageNumbers: (show: boolean) => void;
   onOpenSymbolPicker: () => void;
+  onOpenEmojiPicker: () => void;
   onInsertBookmark: () => void;
   onOpenCrossReference: () => void;
 
@@ -73,10 +82,6 @@ export interface RibbonActions {
 
   // Design
   onApplyStyleSet: (id: string) => void;
-  onApplyThemeFonts: (id: string) => void;
-  onApplyThemeColors: (id: string) => void;
-  onApplyParagraphSpacing: (id: string) => void;
-  onSetAsDefaultFormatting: () => void;
   onOpenWatermark: () => void;
   onSetPageColor: (color: string | null) => void;
   onOpenPageBorders: () => void;
@@ -106,18 +111,6 @@ export interface RibbonActions {
   onMarkIndexEntry: () => void;
   onInsertIndex: () => void;
 
-  // Mailings
-  onStartMailMerge: (type: MergeDocumentType) => void;
-  onSelectRecipients: () => void;
-  onEditRecipients: () => void;
-  onInsertMergeField: (field: string) => void;
-  onInsertAddressBlock: () => void;
-  onInsertGreetingLine: () => void;
-  onToggleHighlightMergeFields: () => void;
-  onTogglePreviewResults: () => void;
-  onGoToMergeRecord: (index: number) => void;
-  onFinishMerge: (mode: 'documents' | 'print') => void;
-
   // Review
   onOpenProofing: () => void;
   onOpenThesaurus: () => void;
@@ -135,6 +128,7 @@ export interface RibbonActions {
   onToggleReviewingPane: () => void;
   onGoToChange: (delta: number) => void;
   onCompareDocuments: () => void;
+  onCheckAccessibility: () => void;
   onToggleRestrictEditing: () => void;
 
   // View
@@ -146,6 +140,18 @@ export interface RibbonActions {
   onSetZoom: (zoom: number) => void;
   onOpenZoomDialog: () => void;
   onZoomToFit: (fit: 'pageWidth' | 'onePage' | 'multiplePages') => void;
+  onToggleShowHeaderFooter: () => void;
+  onToggleShowFootnotes: () => void;
+  onToggleShowEndnotes: () => void;
+  onToggleTheme: () => void;
+  onToggleRibbonCollapsed: () => void;
+
+  // Help
+  onOpenHelp: () => void;
+  onContactSupport: () => void;
+  onSendFeedback: () => void;
+  onOpenShortcuts: () => void;
+  onOpenWhatsNew: () => void;
 
   // Picture and table tools
   onOpenAltText: () => void;
@@ -167,6 +173,13 @@ export interface RibbonFlags {
   showFormattingMarks: boolean;
   showRuler: boolean;
   showGridlines: boolean;
+  showHeaderFooter: boolean;
+  showFootnotes: boolean;
+  showEndnotes: boolean;
+  theme: 'light' | 'dark';
+  ribbonCollapsed: boolean;
+  accessibilityOpen: boolean;
+  accessibilityIssues: number;
   navigationOpen: boolean;
   commentsOpen: boolean;
   reviewingPaneOpen: boolean;
@@ -180,13 +193,8 @@ export interface RibbonFlags {
   watermarkEnabled: boolean;
   showPageNumbers: boolean;
   styleSetId: string;
-  themeFontId: string;
-  themeColorId: string;
   citationStyle: CitationStyle;
   sources: CitationSource[];
-  mailMerge: MailMergeData;
-  mergeDocumentType: MergeDocumentType;
-  mergePreview: { active: boolean; index: number; highlight: boolean };
   commentCount: number;
   unresolvedComments: number;
   ink: { tool: InkTool; color: string; width: number };

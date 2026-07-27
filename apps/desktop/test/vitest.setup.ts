@@ -27,6 +27,7 @@ const mockHarness = {
   emitSaveAndClose: () => {},
   getExportPdfCallCount: () => 0,
   getPrintCallCount: () => 0,
+  getOpenedExternalUrls: () => [],
 };
 
 window.dansword = {
@@ -37,6 +38,10 @@ window.dansword = {
   readFile: async () => new Uint8Array(),
   readTextFile: async () => '',
   writeFile: async () => true,
+  renameFile: async (_filePath: string, newName: string) => newName,
+  copyFile: async (filePath: string) => filePath,
+  trashFile: async () => true,
+  openExternal: async () => true,
   listDocuments: async () => [],
   getSettings: async () => null,
   setSettings: async () => true,

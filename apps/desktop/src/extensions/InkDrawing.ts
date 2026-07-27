@@ -1,4 +1,5 @@
 import { Node, mergeAttributes } from '@tiptap/core';
+import { NodeSelection } from '@tiptap/pm/state';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { InkDrawingView } from '../components/InkDrawingView';
 
@@ -121,8 +122,20 @@ export const InkDrawing = Node.create({
     return {
       insertDrawingCanvas:
         () =>
-        ({ commands }) =>
-          commands.insertContent({ type: this.name, attrs: { width: 560, height: 240, strokes: [] } }),
+        ({ chain }) =>
+          chain()
+            .insertContent({ type: this.name, attrs: { width: 560, height: 240, strokes: [] } })
+            // insertContent leaves the caret past the atom, which is not a node
+            // selection — so the contextual Draw tab would never open on insert.
+            // Step back onto the canvas and select it, as Word does.
+            .command(({ tr, dispatch }) => {
+              const pos = tr.selection.from - 1;
+              if (pos < 0) return true;
+              if (tr.doc.nodeAt(pos)?.type.name !== this.name) return true;
+              if (dispatch) tr.setSelection(NodeSelection.create(tr.doc, pos));
+              return true;
+            })
+            .run(),
     };
   },
 });

@@ -39,6 +39,8 @@ export interface DansWordTestHarness {
   emitSaveAndClose: () => void;
   getExportPdfCallCount: () => number;
   getPrintCallCount: () => number;
+  /** URLs Help handed to the host, so tests can assert without a real browser. */
+  getOpenedExternalUrls: () => string[];
 }
 
 function readJson<T>(key: string, fallback: T): T {
@@ -80,6 +82,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
   let spellSuggestions: string[] = ['suggestion'];
   let exportPdfCalls = 0;
   let printCalls = 0;
+  let openedExternalUrls: string[] = [];
   let editorRef: Editor | null = null;
   let dirty = false;
   const userDictionary = new Set<string>();
@@ -149,6 +152,40 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       setFs(fs);
       return true;
     },
+    renameFile: async (filePath: string, newName: string) => {
+      const fs = getFs();
+      const key = normalizePath(filePath);
+      const dir = key.slice(0, key.lastIndexOf('\\') + 1);
+      const target = `${dir}${newName.split(/[\\/]/).pop()}`;
+      if (target === key) return key;
+      if (fs[target] !== undefined) return null;
+      fs[target] = fs[key];
+      delete fs[key];
+      setFs(fs);
+      return target;
+    },
+    copyFile: async (filePath: string) => {
+      const fs = getFs();
+      const key = normalizePath(filePath);
+      const dot = key.lastIndexOf('.');
+      const stem = dot > 0 ? key.slice(0, dot) : key;
+      const ext = dot > 0 ? key.slice(dot) : '';
+      for (let n = 1; n < 100; n += 1) {
+        const target = `${stem} (${n})${ext}`;
+        if (fs[target] === undefined) {
+          fs[target] = fs[key];
+          setFs(fs);
+          return target;
+        }
+      }
+      return null;
+    },
+    trashFile: async (filePath: string) => {
+      const fs = getFs();
+      delete fs[normalizePath(filePath)];
+      setFs(fs);
+      return true;
+    },
     listDocuments: async (folderPath: string) => {
       const prefix = normalizePath(folderPath);
       return Object.keys(getFs())
@@ -178,6 +215,13 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
     getDefaultSaveDir: async () => 'C:\\DansWordTest',
     printDocument: async () => {
       printCalls += 1;
+      return true;
+    },
+    // Mirrors the main process's allowlist so a test cannot pass here and fail
+    // in the real app; the authoritative copy is electron/ipc/external.ts.
+    openExternal: async (url: string) => {
+      if (!/^https:\/\/github\.com\/DandanITman\/DansWord(\/|$)/.test(url)) return false;
+      openedExternalUrls.push(url);
       return true;
     },
     saveRevision: async (docPath: string, snapshot: unknown, label: string) => {
@@ -251,6 +295,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       spellSuggestions = ['suggestion'];
       exportPdfCalls = 0;
       printCalls = 0;
+      openedExternalUrls = [];
       editorRef = null;
       dirty = false;
       userDictionary.clear();
@@ -332,6 +377,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
     },
     getExportPdfCallCount: () => exportPdfCalls,
     getPrintCallCount: () => printCalls,
+    getOpenedExternalUrls: () => [...openedExternalUrls],
   };
 
   target.dansword = api as Window['dansword'];

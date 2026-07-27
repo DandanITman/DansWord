@@ -43,7 +43,9 @@ test.describe('Edit ribbon and text operations', () => {
     await typeInEditor(page, 'Georgia text');
     await selectAllInEditor(page);
     await switchRibbonTab(page, 'home');
-    await page.locator('.font-family-select').selectOption('Georgia');
+    // The font box is an editable combo (input + datalist), not a <select>.
+    await page.getByTestId('ribbon-font-family').fill('Georgia');
+    await page.getByTestId('ribbon-font-family').press('Enter');
     const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
     expect(json).toContain('Georgia');
   });
@@ -69,7 +71,10 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Heading text');
     await selectAllInEditor(page);
-    await clickRibbon(page, 'home', 'edit-style-heading1');
+    // The Styles group shows the current style in one box now, as Word for the
+    // web does; the gallery lives behind it.
+    await clickRibbon(page, 'home', 'ribbon-more-styles');
+    await page.getByTestId('edit-style-heading1').click();
     await expect(page.getByTestId('word-editor').locator('h1')).toContainText('Heading text');
   });
 

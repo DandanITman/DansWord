@@ -7,6 +7,7 @@ import {
   focusEditor,
   switchRibbonTab,
   clickRibbon,
+  fileMenu,
   selectAllInEditor,
 } from '../helpers/playwright';
 
@@ -56,7 +57,8 @@ test.describe('DansWord editor e2e', () => {
     await focusEditor(page);
     await page.keyboard.press('Control+A');
     await switchRibbonTab(page, 'home');
-    await page.getByTestId('ribbon-font-size').selectOption('18');
+    await page.getByTestId('ribbon-font-size').fill('18');
+    await page.getByTestId('ribbon-font-size').press('Enter');
     await clickRibbon(page, 'home', 'ribbon-align-center');
 
     const editorJson = await page.evaluate(() => window.__DANSWORD_TEST__?.getEditorJson());
@@ -105,8 +107,7 @@ test.describe('DansWord editor e2e', () => {
     await page.evaluate((path) => {
       window.__DANSWORD_TEST__?.setSaveFileResult(path);
     }, REGRESSION_SAVE_PATH);
-    await switchRibbonTab(page, 'file');
-    await page.getByTestId('ribbon-save').click();
+    await fileMenu(page, 'save');
     await expect
       .poll(async () =>
         page.evaluate(
@@ -141,7 +142,9 @@ test.describe('DansWord editor e2e', () => {
   test('creates a new document and returns to home', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Document one');
-    await page.getByTestId('titlebar-new').click();
+    // New moved off the quick-access strip into the File dropdown; Ctrl+N is
+    // the same command and does not depend on the menu's layout.
+    await page.keyboard.press('Control+n');
     await typeInEditor(page, 'Document two');
     await expect(page.getByTestId('word-editor')).toContainText('Document two');
 
@@ -149,10 +152,9 @@ test.describe('DansWord editor e2e', () => {
     await expect(page.getByTestId('home-screen')).toBeVisible();
   });
 
-  test('opens save backstage panel from the ribbon', async ({ page }) => {
+  test('opens the export backstage from the File menu', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'file');
-    await page.getByRole('button', { name: /Save As \/ Export/i }).click();
+    await fileMenu(page, 'export');
     await expect(page.getByTestId('backstage')).toBeVisible();
   });
 });

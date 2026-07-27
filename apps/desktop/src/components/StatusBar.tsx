@@ -8,6 +8,7 @@ import {
   SpellCheck,
 } from 'lucide-react';
 import type { ViewMode } from '../ribbon/types';
+import { languageShortLabel } from '../constants/languages';
 
 interface StatusBarProps {
   words: number;
@@ -56,11 +57,14 @@ export function StatusBar({
   onOpenWordCount,
   onZoomToFit,
 }: StatusBarProps) {
-  const langLabel = language.replace('-', ' - ');
 
   return (
     <div className="status-bar office-status" data-testid="status-bar">
       <div className="status-bar-left">
+        <span className="status-page-indicator" data-testid="status-page-indicator">
+          Page {currentPage} of {pages}
+        </span>
+        <span className="status-divider" />
         <button
           className="status-flat-btn"
           onClick={onOpenWordCount}
@@ -70,10 +74,10 @@ export function StatusBar({
           {words.toLocaleString()} words
         </button>
         <span className="status-divider" />
-        <span>{langLabel}</span>
+        <span data-testid="status-language">{languageShortLabel(language)}</span>
         <span className="status-divider" />
-        {/* Word's proofing indicator: a book with a tick when clean, a cross
-            when not, and clicking it opens the Editor pane. */}
+        {/* Word's proofing indicator. Named "Spelling" rather than "Editor":
+            this is a Hunspell checker, and calling it Editor implied more. */}
         <button
           className={`status-flat-btn status-proofing${proofingIssues > 0 ? ' has-issues' : ''}`}
           onClick={onOpenProofing}
@@ -87,7 +91,11 @@ export function StatusBar({
           data-testid="status-proofing"
         >
           <SpellCheck size={13} />
-          {!spellCheckEnabled ? 'Off' : proofingIssues > 0 ? String(proofingIssues) : '✓'}
+          {!spellCheckEnabled
+            ? 'Spelling: Off'
+            : proofingIssues > 0
+              ? `Spelling: ${proofingIssues}`
+              : 'Spelling: On'}
         </button>
         {trackChangesEnabled && (
           <>
@@ -113,11 +121,6 @@ export function StatusBar({
             </span>
           </>
         )}
-      </div>
-      <div className="status-bar-center">
-        <span className="status-page-indicator" data-testid="status-page-indicator">
-          Page {currentPage} of {pages}
-        </span>
       </div>
       <div className="status-bar-right">
         <div className="status-view-modes">
@@ -160,10 +163,18 @@ export function StatusBar({
         <button
           className="status-flat-btn status-zoom-pct"
           data-testid="status-zoom-pct"
+          onClick={() => onZoomChange(100)}
+          title="Reset the zoom to 100%"
+        >
+          {zoom}%
+        </button>
+        <button
+          className="status-flat-btn status-zoom-fit"
+          data-testid="status-zoom-fit"
           onClick={() => onZoomToFit?.('pageWidth')}
           title="Fit the page width to the window"
         >
-          {zoom}%
+          Fit
         </button>
       </div>
     </div>

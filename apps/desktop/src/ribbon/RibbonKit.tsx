@@ -306,10 +306,14 @@ export function RibbonSplitButton({
 
   return (
     <div className={`rb-split rb-split--${size}${active ? ' is-active' : ''}`}>
+      {/* The pressed state belongs on the button itself, not only on the
+          wrapper: a screen reader reading the button cannot see a parent's
+          class, and neither can anything else querying the control. */}
       <button
         type="button"
-        className="rb-split-main"
+        className={`rb-split-main${active ? ' is-active' : ''}`}
         title={title}
+        aria-pressed={active}
         disabled={disabled}
         onClick={onClick}
         data-testid={testId}

@@ -14,7 +14,7 @@ interface ProofingPaneProps {
 }
 
 /**
- * Review > Spelling & Grammar (F7), as Word's Editor pane.
+ * Review > Spelling & Grammar (F7).
  *
  * The pane walks the issue list the checker already produced rather than
  * re-scanning: the underline, the right-click menu and this pane therefore
@@ -114,7 +114,7 @@ export function ProofingPane({
   return (
     <aside className="side-pane proofing-pane" data-testid="proofing-pane">
       <div className="side-pane-header">
-        <strong>Editor</strong>
+        <strong>Spelling &amp; Grammar</strong>
         <button className="icon-btn" onClick={onClose} aria-label="Close">
           ×
         </button>

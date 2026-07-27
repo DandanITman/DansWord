@@ -2,11 +2,9 @@ import { useState } from 'react';
 import {
   SOURCE_TYPE_LABELS,
   formatBibliographyEntry,
-  includedRecords,
   suggestedTag,
   type CitationSource,
   type CitationStyle,
-  type MailMergeData,
   type SourceType,
 } from '@dansword/core';
 
@@ -130,86 +128,6 @@ export function SourcesDialog({
           </button>
           <button className="icon-btn" onClick={onClose}>
             Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Mailings > Edit Recipient List. */
-export function RecipientsDialog({
-  open,
-  data,
-  onChange,
-  onClose,
-}: {
-  open: boolean;
-  data: MailMergeData;
-  onChange: (data: MailMergeData) => void;
-  onClose: () => void;
-}) {
-  if (!open) return null;
-  const excluded = new Set(data.excluded);
-
-  return (
-    <div className="backdrop" onClick={onClose}>
-      <div
-        className="dialog panel-card dialog-wide"
-        data-testid="recipients-dialog"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <h2>Mail Merge Recipients</h2>
-        <p className="muted">
-          {data.sourceName ? `${data.sourceName} — ` : ''}
-          {includedRecords(data).length} of {data.records.length} recipients selected.
-        </p>
-        <div className="recipients-table-wrap">
-          <table className="recipients-table">
-            <thead>
-              <tr>
-                <th scope="col">Include</th>
-                {data.fields.map((field) => (
-                  <th key={field} scope="col">
-                    {field}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.records.map((record, index) => (
-                <tr key={index} className={excluded.has(index) ? 'is-excluded' : ''}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={!excluded.has(index)}
-                      aria-label={`Include recipient ${index + 1}`}
-                      onChange={(event) => {
-                        const next = new Set(data.excluded);
-                        if (event.target.checked) next.delete(index);
-                        else next.add(index);
-                        onChange({ ...data, excluded: [...next].sort((a, b) => a - b) });
-                      }}
-                    />
-                  </td>
-                  {data.fields.map((field) => (
-                    <td key={field}>{record[field]}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="dialog-actions">
-          <button
-            className="icon-btn"
-            onClick={() => onChange({ ...data, excluded: [] })}
-            data-testid="recipients-select-all"
-          >
-            Select all
-          </button>
-          <button className="icon-btn primary" onClick={onClose}>
-            Done
           </button>
         </div>
       </div>

@@ -5,5 +5,6 @@ export * from './document';
 export * from './styles';
 export * from './proofing';
 export * from './references';
-export * from './mailMerge';
 export * from './thesaurus';
+export * from './contrast';
+export * from './accessibility';

@@ -3,6 +3,7 @@ import {
   resetTestState,
   openBlankDocument,
   loadRegressionFixture,
+  openBackstage,
   visualMaskLocators,
 } from '../helpers/playwright';
 
@@ -51,8 +52,7 @@ test.describe('DansWord visual regression', () => {
 
   test('save backstage panel', async ({ page }) => {
     await openBlankDocument(page);
-    await page.locator('.ribbon-tab[data-tab="file"]').click();
-    await page.getByRole('button', { name: /Save As \/ Export/i }).click();
+    await openBackstage(page, 'save');
     await expect(page.getByTestId('backstage')).toHaveScreenshot('backstage-save.png', {
       mask: visualMaskLocators(page),
     });

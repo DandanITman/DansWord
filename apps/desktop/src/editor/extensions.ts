@@ -11,6 +11,8 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
 import type { Extensions } from '@tiptap/core';
 import { ResizableImage } from '../extensions/ResizableImage';
 import { TrackInsert } from '../extensions/TrackInsert';
@@ -86,6 +88,9 @@ export function createExtensions(options: EditorExtensionOptions = {}): Extensio
     Table.configure({ resizable: true }),
     TableRow,
     TableHeader,
+    TaskList,
+    // nested so a checklist can have sub-items, like Word's multilevel lists.
+    TaskItem.configure({ nested: true }),
     TableCell,
     TableFormatting,
     TrackInsert,

@@ -10,6 +10,7 @@ import {
   saveToPath,
   goHome,
   openBackstage,
+  fileMenu,
   acceptAppDialogs,
   dismissAlert,
   answerPrompt,
@@ -280,9 +281,10 @@ test.describe('File and document lifecycle', () => {
 
   test('mock PDF export records Electron call', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'file');
     await page.evaluate((p) => window.__DANSWORD_TEST__?.setSaveFileResult(p), PATHS.pdf);
-    await page.getByRole('button', { name: /Export PDF/i }).click();
+    // File > Export opens the backstage, where the formats live.
+    await openBackstage(page, 'export');
+    await page.getByTestId('export-pdf').click();
     await expect
       .poll(async () => page.evaluate(() => window.__DANSWORD_TEST__?.getExportPdfCallCount()))
       .toBe(1);
@@ -290,8 +292,7 @@ test.describe('File and document lifecycle', () => {
 
   test('mock print records Electron call', async ({ page }) => {
     await openBlankDocument(page);
-    await switchRibbonTab(page, 'file');
-    await page.locator('.ribbon-panel').getByRole('button', { name: 'Print', exact: true }).click();
+    await fileMenu(page, 'print');
     await expect
       .poll(async () => page.evaluate(() => window.__DANSWORD_TEST__?.getPrintCallCount()))
       .toBe(1);

@@ -27,6 +27,12 @@ export interface DansWordAPI {
   readFile: (filePath: string) => Promise<Uint8Array>;
   readTextFile: (filePath: string) => Promise<string>;
   writeFile: (filePath: string, data: Uint8Array | string) => Promise<boolean>;
+  /** File > Rename: resolves the new path, or null if the name is taken. */
+  renameFile: (filePath: string, newName: string) => Promise<string | null>;
+  /** File > Create a Copy: resolves the path of the numbered duplicate. */
+  copyFile: (filePath: string) => Promise<string | null>;
+  /** File > Delete: sends the file to the recycle bin, never an unlink. */
+  trashFile: (filePath: string) => Promise<boolean>;
   listDocuments: (folderPath: string) => Promise<ListedDocument[]>;
   getSettings: () => Promise<AppSettings | null>;
   setSettings: (settings: AppSettings) => Promise<boolean>;
@@ -45,6 +51,12 @@ export interface DansWordAPI {
   getUserDictionary: () => Promise<string[]>;
   /** Teach the checker a word; resolves with the updated dictionary. */
   addWordToDictionary: (word: string) => Promise<string[]>;
+
+  /**
+   * Help tab: open a project URL in the user's browser. Resolves false when the
+   * host rejects it — the allowlist lives in the main process, not here.
+   */
+  openExternal: (url: string) => Promise<boolean>;
 
   /** Mirror the unsaved-changes flag so the host can prompt before closing. */
   setDirty: (dirty: boolean) => Promise<boolean>;

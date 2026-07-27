@@ -1,6 +1,7 @@
 import type { AppSettings, DocumentMetadata, DocumentRevision } from '@dansword/core';
 import { DEFAULT_SETTINGS } from '@dansword/core';
 import { RevisionHistoryPanel } from './RevisionHistoryPanel';
+import { PROOFING_LANGUAGES } from '../constants/languages';
 
 type BackstageSection = 'info' | 'new' | 'open' | 'save' | 'export' | 'print' | 'options' | 'history';
 
@@ -322,11 +323,11 @@ export function Backstage({
                     value={settings.language}
                     onChange={(e) => onSettingsChange({ ...settings, language: e.target.value })}
                   >
-                    <option value="en-US">English (United States)</option>
-                    <option value="en-GB">English (United Kingdom)</option>
-                    <option value="de-DE">German</option>
-                    <option value="es-ES">Spanish</option>
-                    <option value="fr-FR">French</option>
+                    {PROOFING_LANGUAGES.map((language) => (
+                      <option key={language.id} value={language.id}>
+                        {language.label}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <button

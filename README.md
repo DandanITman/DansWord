@@ -23,25 +23,27 @@ DansWord is built so students, teachers, families, and anyone who needs to write
 ## Features
 
 - Home screen with recent files, pinned documents, and templates
-- Word's ribbon, tab for tab: File, Home, Insert, Draw, Design, Layout,
-  References, Mailings, Review, View — plus the contextual Picture Format and
-  Table Layout tabs
-- Rich text: fonts, colors, text effects, lists (bullets, numbering,
-  multilevel), tables with full structure and style editing, styles and style
-  sets, themes
+- An eight-tab ribbon — File, Home, Insert, Layout, References, Review, View,
+  Help — plus the contextual Draw, Picture Format and Table Layout tabs
+- A command search box (Alt+Q) that finds and runs any ribbon command by name
+- Rich text: fonts, colors, text effects, lists (bullets, numbering, multilevel,
+  checklists), left-to-right and right-to-left text, tables with full structure
+  and style editing, styles and style sets
 - Pictures with Word-style handles, rotation, seven wrap modes and drag
-  positioning with alignment guides; text boxes; shapes; freehand ink
+  positioning with alignment guides; text boxes; shapes; freehand ink; emoji
 - References: table of contents, footnotes and endnotes, citations and
   bibliography (APA, MLA, Chicago, IEEE), captions, cross-references, index
-- Mail merge from a CSV recipient list, with preview and one file per recipient
 - Open and save `.docx`, `.rtf`, `.html`, `.txt` and the native `.dansword`
 - Hunspell spell check in English, German, Spanish and French, plus a grammar
   checker, AutoCorrect and an offline thesaurus
+- An accessibility checker for alt text, table headers, heading order, link
+  wording and colour contrast
 - Track changes with insertions *and* deletions, Display for Review, a reviewing
-  pane, document compare, anchored comments, Restrict Editing
-- Five views, find and replace, word count with readability, zoom, light/dark
-  theme
-- Auto-save, version history, print, PDF export
+  pane, document compare, anchored comments, and Editing / Reviewing / Viewing
+  modes
+- Five views plus Immersive Reader, find and replace, word count with
+  readability, zoom, light/dark theme
+- Auto-save, version history, rename, copy, print, PDF export
 - Windows installer (NSIS) with `.docx` / `.dansword` file associations
 
 See [docs/FEATURES.md](docs/FEATURES.md) for the full list, including known

@@ -19,6 +19,8 @@ export interface AppSettings {
   showFormattingMarks: boolean;
   /** Show the horizontal and vertical rulers. */
   showRuler: boolean;
+  /** Insert > Emojis remembers what you picked, most recent first. */
+  recentEmoji: string[];
 }
 
 export interface RecentFile {
@@ -53,8 +55,6 @@ export interface DansWordDocument {
   /** Bibliography sources, in the order Manage Sources shows them. */
   sources?: import('./references').CitationSource[];
   citationStyle?: import('./references').CitationStyle;
-  /** Mail merge recipients, as loaded from a data file. */
-  mailMerge?: import('./mailMerge').MailMergeData;
   /** Read-only until the reviewer turns editing back on. */
   restrictEditing?: boolean;
   /** Design tab: which style set the document formatting came from. */
@@ -62,21 +62,22 @@ export interface DansWordDocument {
 }
 
 /**
- * Word's tab set, minus the tabs that need a cloud account (Share, Draw's
- * ink-to-text, Copilot). `pictureFormat` and `tableLayout` are contextual:
- * they only appear while the matching object is selected, as in Word.
+ * The eight tabs on the strip, followed by the three contextual ones that only
+ * appear while the matching object is selected: `draw` with a drawing canvas,
+ * `pictureFormat` with a picture, `tableLayout` inside a table.
+ *
+ * `file` is on the strip but has no panel — it opens a dropdown menu instead.
  */
 export type RibbonTab =
   | 'file'
   | 'home'
   | 'insert'
-  | 'draw'
-  | 'design'
   | 'pageLayout'
   | 'references'
-  | 'mailings'
   | 'review'
   | 'view'
+  | 'help'
+  | 'draw'
   | 'pictureFormat'
   | 'tableLayout';
 

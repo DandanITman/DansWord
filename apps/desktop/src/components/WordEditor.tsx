@@ -64,12 +64,15 @@ export interface WordEditorProps {
   autoCorrectEnabled?: boolean;
   showFormattingMarks?: boolean;
   showGridlines?: boolean;
+  /** View > Show, so the reader can hide the chrome around the text. */
+  showHeaderFooter?: boolean;
+  showFootnotes?: boolean;
+  showEndnotes?: boolean;
   /** Review > Display for Review. */
   markupView?: MarkupView;
   /** Review > Restrict Editing: the document becomes read-only. */
   readOnly?: boolean;
-  /** Mailings > Highlight Merge Fields. */
-  highlightMergeFields?: boolean;
+  /** Proofing language, as a BCP 47 tag. */
   language?: string;
   /** Words the user added to their dictionary; never flagged. */
   ignoredWords?: string[];
@@ -99,9 +102,11 @@ export function WordEditor({
   autoCorrectEnabled = true,
   showFormattingMarks = false,
   showGridlines = false,
+  showHeaderFooter = true,
+  showFootnotes = true,
+  showEndnotes = true,
   markupView = 'all',
   readOnly = false,
-  highlightMergeFields = false,
   language = 'en-US',
   ignoredWords = EMPTY_WORDS,
   trackChangesEnabled = false,
@@ -245,7 +250,11 @@ export function WordEditor({
 
   useEffect(() => {
     if (!editor) return;
-    editor.setEditable(!readOnly);
+    // emitUpdate: false. setEditable fires TipTap's `update` event by default,
+    // which App treats as an edit and flags the document dirty — so saving,
+    // which re-renders this component, immediately re-dirtied the document and
+    // the unsaved-changes asterisk never cleared. Editability is not content.
+    editor.setEditable(!readOnly, false);
   }, [editor, readOnly]);
 
   // Track changes reads its flags through refs so toggling does not tear the
@@ -413,7 +422,7 @@ export function WordEditor({
         <div
           className={`doc-page doc-page-active markup-${markupView}${
             showGridlines ? ' show-gridlines' : ''
-          }${highlightMergeFields ? ' highlight-merge-fields' : ''}${readOnly ? ' is-read-only' : ''}`}
+          }${readOnly ? ' is-read-only' : ''}`}
           style={pageStyle}
         >
           {watermark.enabled && watermark.text && (
@@ -421,7 +430,9 @@ export function WordEditor({
               {watermark.text}
             </div>
           )}
-          {headerFooter.header && <div className="doc-header">{headerFooter.header}</div>}
+          {showHeaderFooter && headerFooter.header && (
+            <div className="doc-header">{headerFooter.header}</div>
+          )}
           <div
             className={`doc-body${pageSetup.columns.count > 1 ? ' doc-body-columns' : ''}${
               pageSetup.hyphenation ? ' doc-body-hyphenated' : ''
@@ -449,7 +460,7 @@ export function WordEditor({
               ))}
             </div>
           </div>
-          {footnotes.length > 0 && (
+          {showFootnotes && footnotes.length > 0 && (
             <div className="doc-footnotes" data-testid="doc-footnotes">
               <hr />
               {footnotes.map((fn, i) => (
@@ -466,7 +477,7 @@ export function WordEditor({
               ))}
             </div>
           )}
-          {endnotes.length > 0 && (
+          {showEndnotes && endnotes.length > 0 && (
             <div className="doc-footnotes doc-endnotes" data-testid="doc-endnotes">
               <hr />
               <p className="doc-endnotes-title">Endnotes</p>
@@ -484,8 +495,10 @@ export function WordEditor({
               ))}
             </div>
           )}
-          {headerFooter.footer && <div className="doc-footer">{headerFooter.footer}</div>}
-          {headerFooter.showPageNumbers && (
+          {showHeaderFooter && headerFooter.footer && (
+            <div className="doc-footer">{headerFooter.footer}</div>
+          )}
+          {showHeaderFooter && headerFooter.showPageNumbers && (
             <div className="doc-footer doc-footer-pages">
               Page <span className="page-num" />
             </div>

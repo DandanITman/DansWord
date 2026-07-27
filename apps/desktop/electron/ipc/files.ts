@@ -1,4 +1,4 @@
-import { dialog, ipcMain, type BrowserWindow } from 'electron';
+import { dialog, ipcMain, shell, type BrowserWindow } from 'electron';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ensureDir } from '../store';
@@ -66,6 +66,51 @@ export function registerFileIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('fs:writeFile', async (_e, filePath: string, data: Uint8Array | string) => {
     ensureDir(path.dirname(filePath));
     await fs.writeFile(filePath, data);
+    return true;
+  });
+
+  /**
+   * File > Rename. Keeps the file in place and refuses to clobber a neighbour,
+   * so a careless name cannot silently destroy another document.
+   */
+  ipcMain.handle('fs:renameFile', async (_e, filePath: string, newName: string) => {
+    const target = path.join(path.dirname(filePath), path.basename(newName));
+    if (target === filePath) return filePath;
+    try {
+      await fs.access(target);
+      return null;
+    } catch {
+      // Nothing there, which is what we want.
+    }
+    await fs.rename(filePath, target);
+    return target;
+  });
+
+  /** File > Create a Copy. Numbers the suffix up rather than overwriting. */
+  ipcMain.handle('fs:copyFile', async (_e, filePath: string) => {
+    const dir = path.dirname(filePath);
+    const ext = path.extname(filePath);
+    const stem = path.basename(filePath, ext);
+    for (let n = 1; n < 100; n += 1) {
+      const target = path.join(dir, `${stem} (${n})${ext}`);
+      try {
+        await fs.access(target);
+      } catch {
+        await fs.copyFile(filePath, target);
+        return target;
+      }
+    }
+    return null;
+  });
+
+  /**
+   * File > Delete.
+   *
+   * Deliberately the recycle bin rather than fs.unlink: this sits one click deep
+   * in a dropdown, and an unrecoverable delete there is a data-loss bug.
+   */
+  ipcMain.handle('fs:trashFile', async (_e, filePath: string) => {
+    await shell.trashItem(filePath);
     return true;
   });
 

@@ -142,11 +142,12 @@ test.describe('Table tools', () => {
   test('TC-TBL-010: typed cell content survives a structural edit', async ({ page }) => {
     await insertTable(page);
     await page.keyboard.type('kept text');
-    await expect(editor(page).locator('td').first()).toContainText('kept text');
+    // AutoCorrect capitalises the sentence's first word.
+    await expect(editor(page).locator('td').first()).toContainText('Kept text');
 
     await editor(page).locator('td').first().click();
     await tableTool(page, 'table-add-row-after');
 
-    await expect(editor(page).locator('td').first()).toContainText('kept text');
+    await expect(editor(page).locator('td').first()).toContainText('Kept text');
   });
 });

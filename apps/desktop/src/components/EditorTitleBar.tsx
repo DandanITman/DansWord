@@ -1,84 +1,98 @@
-import {
-  Save,
-  Undo2,
-  Redo2,
-  FilePlus,
-  Printer,
-  Home,
-  Moon,
-  Sun,
-  Menu,
-} from 'lucide-react';
+import { Save, Undo2, Redo2, Grid3x3, Search, Settings } from 'lucide-react';
 import { appIconUrl } from '../utils/assets';
 
 interface EditorTitleBarProps {
   fileName: string;
   isDirty: boolean;
-  theme: 'light' | 'dark';
   onSave: () => void;
-  onNew: () => void;
-  onPrint: () => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
   onHome: () => void;
-  onToggleTheme: () => void;
+  onRename: () => void;
+  /** Rename only makes sense once the document exists on disk. */
+  canRename: boolean;
+  onOpenSearch: () => void;
+  onOpenSettings: () => void;
 }
 
+/**
+ * The header, following Word for the web: app launcher, product mark, document
+ * name, then the command search box in the middle.
+ *
+ * Two deliberate departures from the mockup. There is no account picture,
+ * because DansWord has no account — and no cloud-save tick, because it saves to
+ * disk. The quick-access buttons stay, for the same reason: nothing here
+ * autosaves to a server, so Save has to be reachable without opening a menu.
+ */
 export function EditorTitleBar({
   fileName,
   isDirty,
-  theme,
   onSave,
-  onNew,
-  onPrint,
   onUndo,
   onRedo,
   canUndo,
   canRedo,
   onHome,
-  onToggleTheme,
+  onRename,
+  canRename,
+  onOpenSearch,
+  onOpenSettings,
 }: EditorTitleBarProps) {
   return (
     <div className="editor-titlebar" data-testid="editor-titlebar">
       <div className="editor-titlebar-qat">
+        {/* Word's waffle opens Microsoft's app launcher. There is nothing to
+            launch here, so it goes to the DansWord home screen instead. */}
         <button className="qat-btn qat-menu" onClick={onHome} title="Home screen">
-          <Menu size={19} />
+          <Grid3x3 size={18} />
         </button>
+        <img className="editor-titlebar-icon" src={appIconUrl} alt="" width={22} height={22} />
+        <span className="editor-titlebar-product">DansWord</span>
+
+        <button
+          className="editor-titlebar-name"
+          onClick={canRename ? onRename : undefined}
+          disabled={!canRename}
+          title={canRename ? 'Rename this document' : 'Save the document to rename it'}
+          data-testid="editor-filename"
+        >
+          {fileName}
+          {isDirty ? ' *' : ''}
+        </button>
+      </div>
+
+      <div className="editor-titlebar-doc">
+        <button
+          className="titlebar-search"
+          onClick={onOpenSearch}
+          title="Search for tools, help, and more (Alt+Q)"
+          data-testid="titlebar-search"
+        >
+          <Search size={15} />
+          <span>Search for tools, help, and more (Alt + Q)</span>
+        </button>
+      </div>
+
+      <div className="editor-titlebar-right">
         <button className="qat-btn" onClick={onSave} title="Save (Ctrl+S)" data-testid="titlebar-save">
           <Save size={16} />
         </button>
-        <button className="qat-btn" onClick={onUndo} disabled={!canUndo} title="Undo">
+        <button className="qat-btn" onClick={onUndo} disabled={!canUndo} title="Undo (Ctrl+Z)">
           <Undo2 size={16} />
         </button>
-        <button className="qat-btn" onClick={onRedo} disabled={!canRedo} title="Redo">
+        <button className="qat-btn" onClick={onRedo} disabled={!canRedo} title="Redo (Ctrl+Y)">
           <Redo2 size={16} />
         </button>
-        <button className="qat-btn" onClick={onNew} title="New document" data-testid="titlebar-new">
-          <FilePlus size={16} />
+        <button
+          className="qat-btn"
+          onClick={onOpenSettings}
+          title="Settings"
+          data-testid="titlebar-settings"
+        >
+          <Settings size={16} />
         </button>
-        <button className="qat-btn" onClick={onPrint} title="Print">
-          <Printer size={16} />
-        </button>
-        <span className="editor-titlebar-product">DansWord</span>
-      </div>
-      <div className="editor-titlebar-doc">
-        <span className="editor-titlebar-name" data-testid="editor-filename">
-          {fileName}{isDirty ? ' *' : ''}
-        </span>
-      </div>
-      <div className="editor-titlebar-right">
-        <button className="qat-btn" onClick={onHome} title="Home screen">
-          <Home size={16} />
-        </button>
-        <button className="qat-btn" onClick={onToggleTheme} title="Toggle theme">
-          {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-        </button>
-        <div className="editor-user-badge">
-          <span>Local</span>
-          <img src={appIconUrl} alt="" width={22} height={22} />
-        </div>
       </div>
     </div>
   );
