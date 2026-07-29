@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import type { PageSetup, PageBorderStyle } from '@dansword/core';
+import { Dialog } from './Dialog';
+import { availableFonts } from '../../constants/fonts';
 import { FONT_SIZES, TEXT_EFFECTS, UNDERLINE_STYLES } from '../../extensions/CharacterFormatting';
 import type { RibbonState } from '../../ribbon/useRibbonState';
 
@@ -12,54 +14,7 @@ import type { RibbonState } from '../../ribbon/useRibbonState';
  * forget.
  */
 
-const FONT_FAMILIES = [
-  'Calibri',
-  'Calibri Light',
-  'Arial',
-  'Times New Roman',
-  'Georgia',
-  'Garamond',
-  'Verdana',
-  'Trebuchet MS',
-  'Tahoma',
-  'Courier New',
-  'Consolas',
-  'Cambria',
-  'Candara',
-  'Segoe UI',
-];
-
-function Dialog({
-  title,
-  onClose,
-  children,
-  testId,
-  wide,
-}: {
-  title: string;
-  onClose: () => void;
-  children: React.ReactNode;
-  testId: string;
-  wide?: boolean;
-}) {
-  return (
-    <div className="backdrop" onClick={onClose}>
-      <div
-        className={`dialog panel-card${wide ? ' dialog-wide' : ''}`}
-        data-testid={testId}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <h2>{title}</h2>
-        {children}
-        <div className="dialog-actions">
-          <button className="icon-btn primary" onClick={onClose}>
-            Done
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+const FONT_FAMILIES = availableFonts();
 
 export function FontDialog({
   open,

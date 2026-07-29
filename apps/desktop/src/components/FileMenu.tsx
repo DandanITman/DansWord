@@ -99,6 +99,13 @@ export function FileMenu({ anchor, open, onClose, actions, hasFile }: FileMenuPr
         onClick={run(actions.onSave)}
       />
       <FileMenuItem
+        icon={<Save size={16} />}
+        label="Save As"
+        hint="F12"
+        testId="file-menu-save-as"
+        onClick={run(actions.onSaveAs)}
+      />
+      <FileMenuItem
         icon={<Copy size={16} />}
         label="Create a Copy"
         disabled={!hasFile}

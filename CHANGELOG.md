@@ -6,6 +6,43 @@ file inside the app.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Table rows resize** by dragging a row's bottom border, alongside the column
+  resizing that already existed. Row heights are written to DOCX.
+- The **font list is the machine's own**. One measured list replaces three
+  hardcoded ones that disagreed with each other, so every installed face is
+  offered rather than fifteen names.
+- **F12** opens Save As, as it does in Word.
+
+### Fixed
+
+- **The font and size boxes offered only the value already in them** — the font
+  list showed just "Calibri" and "Calibri Light", the size list just "11". They
+  were an `<input list>` with a `<datalist>`, which filters its options against
+  the field's contents.
+- **Typing a font size could delete the selected text.** The same boxes
+  committed on every keystroke that completed an option, which handed focus back
+  to the document mid-edit and let the next keypress overwrite the selection.
+- **Column resizing did nothing.** The table had no `table-layout: fixed`, so
+  the widths the resize plugin wrote were discarded, and none of the handle or
+  cursor styling was present.
+- **Clicking a page margin did nothing**; it now places the caret on the nearest
+  line, as Word does.
+- **What's New** printed raw `[text](url)` Markdown, kept the brackets around
+  version numbers, and broke every wrapped line into its own paragraph. Both
+  Help dialogs also gained the close button, Escape and a pinned action row.
+- **Borders** clipped its glyph in the Home ribbon; icon buttons that open a
+  menu now leave room for the chevron.
+- **The ribbon changed height between tabs**, shunting the document down and
+  back as you switched.
+- DOCX export wrote every column as 100 twips (about 0.07in), discarding
+  resized widths, and put a stray newline in every empty cell.
+- Paragraph spacing in Layout was measured in `px`, a screen unit with no
+  meaning in print; it is now points.
+
 ## [0.2.0]
 
 ### Added

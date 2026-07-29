@@ -121,4 +121,63 @@ describe('docxExport', () => {
     });
     expect(await partOf(blob, 'word/comments.xml')).toContain('Needs a source.');
   });
+  it('writes real column widths into the table grid', async () => {
+    // A table whose first two columns were resized; the third is untouched.
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'table',
+          content: [
+            {
+              type: 'tableRow',
+              content: [
+                { type: 'tableCell', attrs: { colwidth: [192] }, content: [] },
+                { type: 'tableCell', attrs: { colwidth: [96] }, content: [] },
+                { type: 'tableCell', attrs: { colwidth: null }, content: [] },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const xml = await partOf(await exportToDocx(doc, {}), 'word/document.xml');
+    // 192px and 96px are 2in and 1in, so 2880 and 1440 twips.
+    expect(xml).toContain('<w:gridCol w:w="2880"/>');
+    expect(xml).toContain('<w:gridCol w:w="1440"/>');
+    // The unsized column takes what is left of the 6.5in text width.
+    expect(xml).toContain('<w:gridCol w:w="5040"/>');
+    // The old writer emitted a flat 100 twips for every column.
+    expect(xml).not.toContain('<w:gridCol w:w="100"/>');
+  });
+  it('carries a dragged row height into the row properties', async () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'table',
+          content: [
+            {
+              type: 'tableRow',
+              attrs: { height: 48 },
+              content: [{ type: 'tableCell', attrs: {}, content: [] }],
+            },
+            {
+              type: 'tableRow',
+              attrs: {},
+              content: [{ type: 'tableCell', attrs: {}, content: [] }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const xml = await partOf(await exportToDocx(doc, {}), 'word/document.xml');
+    // 48px is half an inch: 720 twips. "atLeast" so text is never clipped.
+    expect(xml).toContain('w:val="720"');
+    expect(xml).toContain('w:hRule="atLeast"');
+    // The untouched row must not gain a height.
+    expect(xml.match(/<w:trHeight/g)).toHaveLength(1);
+  });
 });
