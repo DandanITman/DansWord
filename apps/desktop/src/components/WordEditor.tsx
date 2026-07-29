@@ -424,6 +424,24 @@ export function WordEditor({
             showGridlines ? ' show-gridlines' : ''
           }${readOnly ? ' is-read-only' : ''}`}
           style={pageStyle}
+          // Word puts the caret on the nearest line when you click a margin.
+          // Here the margins are page padding outside the editable element, so
+          // clicking one did nothing at all — the page looked dead.
+          onMouseDown={(event) => {
+            if (!editor || readOnly) return;
+            const target = event.target as HTMLElement;
+            if (target.closest('.doc-body, .doc-header, .doc-footer, .doc-watermark')) return;
+
+            event.preventDefault();
+            const { view } = editor;
+            const box = view.dom.getBoundingClientRect();
+            // Aim at the same height in the text column, clamped inside it.
+            const left = Math.min(Math.max(event.clientX, box.left + 1), box.right - 1);
+            const top = Math.min(Math.max(event.clientY, box.top + 1), box.bottom - 1);
+            const hit = view.posAtCoords({ left, top });
+            const fallback = event.clientY < box.top ? 1 : Math.max(1, editor.state.doc.content.size - 1);
+            editor.chain().focus().setTextSelection(hit?.pos ?? fallback).run();
+          }}
         >
           {watermark.enabled && watermark.text && (
             <div className="doc-watermark" style={{ opacity: watermark.opacity }} aria-hidden>

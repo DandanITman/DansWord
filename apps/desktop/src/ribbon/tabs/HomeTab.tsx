@@ -38,6 +38,7 @@ import {
   HIGHLIGHT_COLORS,
   SHADING_COLORS,
 } from '../../constants/colorSwatches';
+import { availableFonts } from '../../constants/fonts';
 import { applyDocumentStyle } from '../../utils/applyStyle';
 import { copySelection, cutSelection } from '../../utils/clipboard';
 import { FONT_SIZES, TEXT_EFFECTS, UNDERLINE_STYLES } from '../../extensions/CharacterFormatting';
@@ -56,24 +57,6 @@ import {
   RibbonStack,
 } from '../RibbonKit';
 import type { RibbonTabProps } from '../types';
-
-const FONT_FAMILIES = [
-  'Calibri',
-  'Calibri Light',
-  'Arial',
-  'Times New Roman',
-  'Georgia',
-  'Garamond',
-  'Verdana',
-  'Trebuchet MS',
-  'Tahoma',
-  'Courier New',
-  'Consolas',
-  'Cambria',
-  'Candara',
-  'Segoe UI',
-  'Comic Sans MS',
-];
 
 const LINE_SPACINGS = [
   { id: '1', label: '1.0' },
@@ -184,10 +167,11 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
           <RibbonLine>
             <RibbonCombo
               value={state.fontFamily}
-              options={FONT_FAMILIES}
+              options={availableFonts()}
               listId="home-font-family"
               title="Font"
               width={132}
+              previewFont
               testId="ribbon-font-family"
               onCommit={(value) => editor?.chain().focus().setFontFamily(value).run()}
             />

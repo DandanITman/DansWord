@@ -1195,6 +1195,11 @@ export default function App() {
         // silently overwriting the open file.
         saveDocument(null, e.shiftKey);
       }
+      // Word's own Save As key, alongside the Ctrl+Shift+S above.
+      if (editorOnly && key === 'f12') {
+        e.preventDefault();
+        void saveDocument(null, true);
+      }
       if (e.ctrlKey && key === 'o') {
         e.preventDefault();
         (async () => {

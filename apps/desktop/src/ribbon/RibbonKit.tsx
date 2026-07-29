@@ -473,7 +473,21 @@ export function RibbonSpin({
   );
 }
 
-/** An editable combo box: type a value or pick one, as Word's font boxes do. */
+/**
+ * Word's font boxes: an editable field with a real dropdown beside it.
+ *
+ * Deliberately not an `<input list>` + `<datalist>`. A datalist filters its
+ * options against whatever is already in the field, so a box that always holds
+ * the current value could only ever offer that value back — the font list
+ * showed "Calibri" and the size list showed "11". Worse, a datalist pick
+ * arrives as an ordinary change event, so committing on change also fired on
+ * any keystroke that happened to complete an option: that handed focus back to
+ * the document mid-edit and let the next keypress overwrite the selection.
+ *
+ * So the list is owned here and is always complete, typing only narrows it, and
+ * a value is committed on Enter, on blur, or on picking an option — never on a
+ * keystroke.
+ */
 export function RibbonCombo({
   value,
   options,
@@ -482,6 +496,7 @@ export function RibbonCombo({
   width,
   testId,
   listId,
+  previewFont,
 }: {
   value: string;
   options: readonly string[];
@@ -490,41 +505,163 @@ export function RibbonCombo({
   width?: number;
   testId?: string;
   listId: string;
+  /** Draw each option in the face it names, as Word's font gallery does. */
+  previewFont?: boolean;
 }) {
   const [draft, setDraft] = useState(value);
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState(false);
+  const [highlight, setHighlight] = useState(-1);
+  const wrapRef = useRef<HTMLSpanElement>(null);
+
   useEffect(() => setDraft(value), [value]);
 
+  // Only what the user has actually typed narrows the list. Opening it without
+  // typing always shows every option, which is what makes the rest of the font
+  // list reachable from a box that already reads "Calibri".
+  const query = typed ? draft.trim().toLowerCase() : '';
+  const visible = query ? options.filter((o) => o.toLowerCase().includes(query)) : options;
+
+  const close = useCallback(() => {
+    setOpen(false);
+    setTyped(false);
+    setHighlight(-1);
+  }, []);
+
+  const commit = useCallback(
+    (next: string) => {
+      close();
+      const trimmed = next.trim();
+      if (!trimmed) {
+        setDraft(value);
+        return;
+      }
+      setDraft(trimmed);
+      onCommit(trimmed);
+    },
+    [close, onCommit, value],
+  );
+
   return (
-    <span className="rb-combo" style={{ width }}>
-      <input
-        className="rb-combo-input"
-        value={draft}
-        list={listId}
-        title={title}
-        aria-label={title}
-        data-testid={testId}
-        onChange={(event) => {
-          setDraft(event.target.value);
-          // A pick from the datalist arrives as a change with the final value,
-          // so commit immediately when it matches an option; otherwise wait for
-          // Enter or blur so partial typing does not reformat on every letter.
-          if (options.includes(event.target.value)) onCommit(event.target.value);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            onCommit(draft);
-          }
-        }}
-        onBlur={() => {
-          if (draft !== value) onCommit(draft);
-        }}
-      />
-      <datalist id={listId}>
-        {options.map((option) => (
-          <option key={option} value={option} />
-        ))}
-      </datalist>
-    </span>
+    <>
+      <span className="rb-combo" ref={wrapRef} style={{ width }}>
+        <input
+          className="rb-combo-input"
+          value={draft}
+          title={title}
+          aria-label={title}
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={`${listId}-list`}
+          aria-autocomplete="list"
+          data-testid={testId}
+          onChange={(event) => {
+            // Never commit here. Typing only edits the draft and narrows the
+            // list; the document is not touched until the user says so.
+            setDraft(event.target.value);
+            setTyped(true);
+            setHighlight(-1);
+            setOpen(true);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault();
+              if (!open) {
+                setTyped(false);
+                setHighlight(-1);
+                setOpen(true);
+                return;
+              }
+              if (!visible.length) return;
+              const step = event.key === 'ArrowDown' ? 1 : -1;
+              setHighlight((current) => {
+                const next = current + step;
+                if (next < 0) return visible.length - 1;
+                if (next >= visible.length) return 0;
+                return next;
+              });
+              return;
+            }
+            if (event.key === 'Enter') {
+              // Keep Enter out of the editor: it would split the paragraph, or
+              // replace the very selection being formatted.
+              event.preventDefault();
+              event.stopPropagation();
+              commit(open && highlight >= 0 ? visible[highlight] : draft);
+              return;
+            }
+            if (event.key === 'Escape' && open) {
+              event.preventDefault();
+              event.stopPropagation();
+              setDraft(value);
+              close();
+            }
+          }}
+          onBlur={() => {
+            close();
+            // Only when it actually changed: committing calls back into the
+            // editor and takes focus, which must not happen for a passing blur.
+            if (draft.trim() && draft !== value) commit(draft);
+            else setDraft(value);
+          }}
+        />
+        <button
+          type="button"
+          className="rb-combo-arrow"
+          tabIndex={-1}
+          aria-label={`${title} options`}
+          data-testid={testId ? `${testId}-arrow` : undefined}
+          // Keep focus in the field so opening the list does not fire a blur.
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => {
+            if (open) close();
+            else {
+              setTyped(false);
+              setHighlight(-1);
+              setOpen(true);
+            }
+          }}
+        >
+          <ChevronDown size={11} aria-hidden />
+        </button>
+      </span>
+      <RibbonPopover
+        anchor={wrapRef.current}
+        open={open}
+        onClose={close}
+        label={title}
+        width={Math.max(width ?? 0, previewFont ? 210 : 88)}
+        testId={testId ? `${testId}-list` : undefined}
+      >
+        <div className="rb-combo-list" id={`${listId}-list`} role="listbox" aria-label={title}>
+          {visible.length ? (
+            visible.map((option, index) => (
+              <button
+                key={option}
+                type="button"
+                role="option"
+                aria-selected={option === value}
+                className={`rb-menu-item${option === value ? ' is-checked' : ''}${
+                  index === highlight ? ' is-highlighted' : ''
+                }`}
+                style={previewFont ? { fontFamily: `"${option}", sans-serif` } : undefined}
+                // Commit on click, not on the blur that a click would cause.
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => commit(option)}
+              >
+                <span className="rb-menu-item-mark">
+                  {option === value ? <Check size={13} /> : null}
+                </span>
+                <span className="rb-menu-item-text">
+                  <span className="rb-menu-item-label">{option}</span>
+                </span>
+              </button>
+            ))
+          ) : (
+            <div className="rb-combo-empty">No matches</div>
+          )}
+        </div>
+      </RibbonPopover>
+    </>
   );
 }

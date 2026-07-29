@@ -9,6 +9,7 @@ import {
   UnderlineType,
   Table,
   TableRow,
+  HeightRule,
   TableCell,
   WidthType,
   ImageRun,
@@ -523,10 +524,56 @@ function tableBlock(
       );
     }
 
-    rows.push(new TableRow({ children: cells, tableHeader: isHeaderRow || undefined }));
+    // A dragged row height is "at least this tall", which is Word's ATLEAST
+    // rule — EXACT would clip text that no longer fits.
+    const rowHeight = Number(rowNode.attrs?.height);
+    rows.push(
+      new TableRow({
+        children: cells,
+        tableHeader: isHeaderRow || undefined,
+        ...(Number.isFinite(rowHeight) && rowHeight > 0
+          ? { height: { value: pxToDxa(rowHeight), rule: HeightRule.ATLEAST } }
+          : {}),
+      }),
+    );
   }
 
-  return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows });
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    columnWidths: tableColumnWidths(node),
+    rows,
+  });
+}
+
+/** US Letter less one-inch margins, in twips — the width a table spans by default. */
+const TEXT_WIDTH_DXA = 9360;
+
+/**
+ * The column widths for `w:tblGrid`.
+ *
+ * Word lays a table out from its grid, so the grid has to carry the real
+ * widths. Left to itself `docx` wrote every column as 100 twips — about
+ * 0.07in — which threw away any column the user had resized.
+ */
+function tableColumnWidths(node: TipTapNode): number[] {
+  const widths: number[] = [];
+
+  for (const cell of node.content?.[0]?.content ?? []) {
+    const span = Math.max(1, Number(cell.attrs?.colspan ?? 1));
+    const declared = Array.isArray(cell.attrs?.colwidth) ? cell.attrs.colwidth : undefined;
+    for (let index = 0; index < span; index += 1) {
+      const px = Number(declared?.[index]);
+      // 0 marks "not set yet" so the leftover space can be shared out below.
+      widths.push(Number.isFinite(px) && px > 0 ? pxToDxa(px) : 0);
+    }
+  }
+
+  const unset = widths.filter((width) => width === 0).length;
+  if (!unset) return widths;
+
+  const claimed = widths.reduce((total, width) => total + width, 0);
+  const share = Math.max(1, Math.round((TEXT_WIDTH_DXA - claimed) / unset));
+  return widths.map((width) => width || share);
 }
 
 function blocksFromNodes(
