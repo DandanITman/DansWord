@@ -99,9 +99,18 @@ let cached: readonly string[] | null = null;
 /**
  * The fonts to offer. Measured once per session — the installed set does not
  * change while the app runs, and probing ~160 faces is not free.
+ *
+ * The baseline set is always included, even when this machine cannot render it.
+ * Detection alone would have *removed* choices the app used to offer: a lean
+ * container has no Georgia, so Georgia vanished from the Font dialog and the
+ * style editor. A document may also name a font this machine lacks, and Word
+ * still lists it rather than silently dropping it.
  */
 export function availableFonts(): readonly string[] {
-  if (!cached) cached = detectInstalledFonts() ?? FALLBACK_FONTS;
+  if (!cached) {
+    const detected = detectInstalledFonts() ?? [];
+    cached = [...new Set([...FALLBACK_FONTS, ...detected])].sort((a, b) => a.localeCompare(b));
+  }
   return cached;
 }
 

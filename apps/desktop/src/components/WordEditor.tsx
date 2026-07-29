@@ -429,8 +429,14 @@ export function WordEditor({
           // clicking one did nothing at all — the page looked dead.
           onMouseDown={(event) => {
             if (!editor || readOnly) return;
-            const target = event.target as HTMLElement;
-            if (target.closest('.doc-body, .doc-header, .doc-footer, .doc-watermark')) return;
+            /*
+             * Only a hit on the page element itself is a margin click — the
+             * margins are this element's own padding. Testing instead for
+             * "outside the known regions" stole mousedown from everything not
+             * on the list, including the footnote editors, which lost focus to
+             * the document after a single keystroke.
+             */
+            if (event.target !== event.currentTarget) return;
 
             event.preventDefault();
             const { view } = editor;

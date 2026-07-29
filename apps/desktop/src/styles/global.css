@@ -3824,6 +3824,14 @@ select:focus-visible {
   padding: 0;
 }
 
+/*
+ * An icon button that also opens a menu draws a chevron beside its glyph, and
+ * the pair does not fit the plain 24px icon width — Borders clipped its glyph.
+ */
+.rb-btn--icon.rb-btn--menu {
+  width: 34px;
+}
+
 .rb-btn:hover:not(:disabled) {
   background: var(--bg-hover);
 }
