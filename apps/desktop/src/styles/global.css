@@ -3703,12 +3703,18 @@ select:focus-visible {
   color: var(--text);
 }
 
+/*
+ * Group padding is the ribbon's main width lever: Insert has eleven groups, so
+ * every pixel here costs eleven across the tab. At 8px the tab ran to 1249 of
+ * 1280 on Windows and overflowed outright on Linux, whose default faces are
+ * wider than Segoe UI — the last group (Emoji) ended up off the edge.
+ */
 .rb-group {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 2px;
-  padding: 2px 8px 0;
+  padding: 2px 5px 0;
   border-right: 1px solid var(--border);
   min-width: max-content;
   flex-shrink: 0;
@@ -3721,7 +3727,7 @@ select:focus-visible {
 .rb-group-body {
   display: flex;
   align-items: stretch;
-  gap: 4px;
+  gap: 3px;
   min-height: 64px;
 }
 
@@ -3771,7 +3777,7 @@ select:focus-visible {
 .rb-sep {
   width: 1px;
   align-self: stretch;
-  margin: 2px 3px;
+  margin: 2px 2px;
   background: var(--border);
 }
 
@@ -3780,7 +3786,7 @@ select:focus-visible {
 .rb-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   border: 1px solid transparent;
   border-radius: 3px;
   background: transparent;
@@ -3814,7 +3820,7 @@ select:focus-visible {
 
 .rb-btn--small {
   height: 20px;
-  padding: 0 6px;
+  padding: 0 4px;
 }
 
 .rb-btn--icon {
