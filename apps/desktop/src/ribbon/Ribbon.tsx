@@ -97,6 +97,36 @@ export function Ribbon({
   const previous = useRef({ image: false, table: false, ink: false });
 
   /**
+   * The panel used to scroll sideways once the groups outgrew the window, so
+   * below about 1280px the rightmost groups simply went behind a scrollbar —
+   * Word never scrolls its ribbon. The window can be as narrow as 900px, so
+   * the density steps down first and buys back the space instead.
+   */
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [density, setDensity] = useState<'normal' | 'compact'>('normal');
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const measure = () => {
+      // Measure against the un-compacted width, or the two states latch.
+      const overflowing = panel.scrollWidth > panel.clientWidth + 1;
+      setDensity((current) => {
+        if (overflowing) return 'compact';
+        return current === 'compact' && panel.scrollWidth <= panel.clientWidth - 60
+          ? 'normal'
+          : current;
+      });
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(panel);
+    return () => observer.disconnect();
+  }, [activeTab, collapsed, density]);
+
+  /**
    * Follow the selection into the contextual tabs and back out again.
    *
    * Selecting a picture in Word activates Picture Format; clicking away returns
@@ -210,7 +240,8 @@ export function Ribbon({
       </div>
       {!collapsed && (
         <div
-          className="ribbon-panel office-ribbon-panel"
+          ref={panelRef}
+          className={`ribbon-panel office-ribbon-panel${density === 'compact' ? ' is-compact' : ''}`}
           role="tabpanel"
           onMouseDown={preserveEditorFocus}
         >

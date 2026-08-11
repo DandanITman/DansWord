@@ -1741,6 +1741,15 @@ export default function App() {
             newFromTemplate('blank');
             setBackstageOpen(false);
           }}
+          onNewFromTemplate={(id) => {
+            newFromTemplate(id as Parameters<typeof newFromTemplate>[0]);
+            setBackstageOpen(false);
+          }}
+          recents={recents}
+          onOpenRecent={async (path) => {
+            await openDocumentAtPath(path);
+            setBackstageOpen(false);
+          }}
           onOpen={async () => {
             const path = await getPlatform().openFile();
             if (path) await openDocumentAtPath(path);

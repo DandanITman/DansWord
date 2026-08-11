@@ -19,15 +19,40 @@ export const DocShape = Node.create({
       fill: { default: '#3b82f6' },
       stroke: { default: '#1e40af' },
       strokeWidth: { default: 2 },
+      // A shape had no alignment or wrap, so once inserted there was no way to
+      // position it. These mirror the text box's, which the Arrange group on
+      // Layout now drives for both.
+      align: { default: 'left' },
+      wrap: { default: 'inline' },
     };
   },
 
   parseHTML() {
-    return [{ tag: 'div[data-doc-shape]' }];
+    return [
+      {
+        tag: 'div[data-doc-shape]',
+        getAttrs: (element) => {
+          const el = element as HTMLElement;
+          return {
+            align: el.dataset.align ?? 'left',
+            wrap: el.dataset.wrap ?? 'inline',
+          };
+        },
+      },
+    ];
   },
 
-  renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-doc-shape': 'true' })];
+  renderHTML({ HTMLAttributes, node }) {
+    const attrs = node.attrs as Record<string, unknown>;
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, {
+        'data-doc-shape': 'true',
+        'data-align': String(attrs.align),
+        'data-wrap': String(attrs.wrap),
+        class: `doc-shape align-${String(attrs.align)} wrap-${String(attrs.wrap)}`,
+      }),
+    ];
   },
 
   addNodeView() {

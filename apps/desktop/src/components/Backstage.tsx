@@ -1,5 +1,5 @@
-import type { AppSettings, DocumentMetadata, DocumentRevision } from '@dansword/core';
-import { DEFAULT_SETTINGS } from '@dansword/core';
+import type { AppSettings, DocumentMetadata, DocumentRevision, RecentFile } from '@dansword/core';
+import { DEFAULT_SETTINGS, TEMPLATES } from '@dansword/core';
 import { RevisionHistoryPanel } from './RevisionHistoryPanel';
 import { PROOFING_LANGUAGES } from '../constants/languages';
 
@@ -27,6 +27,10 @@ interface BackstageProps {
   onMetadataChange: (metadata: DocumentMetadata) => void;
   onExportRtf: () => void;
   onExportHtml: () => void;
+  /** New and Open show templates and recents, as Word's backstage does. */
+  onNewFromTemplate: (id: string) => void;
+  recents: RecentFile[];
+  onOpenRecent: (path: string) => void;
 }
 
 const NAV: { id: BackstageSection; label: string }[] = [
@@ -70,6 +74,9 @@ export function Backstage({
   onMetadataChange,
   onExportRtf,
   onExportHtml,
+  onNewFromTemplate,
+  recents,
+  onOpenRecent,
 }: BackstageProps) {
   const exportHandlers = {
     docx: onExportDocx,
@@ -162,22 +169,62 @@ export function Backstage({
               </div>
             </>
           )}
+          {/* New and Open used to be one button each. The templates and the
+              recent list existed only on the start screen, so once a document
+              was open they were unreachable — Word's backstage carries both. */}
           {section === 'new' && (
             <>
-              <h2>New Document</h2>
-              <p className="backstage-subtitle">Start fresh with a blank page.</p>
-              <button className="icon-btn primary" onClick={onNew}>
-                Create blank document
-              </button>
+              <h2>New</h2>
+              <p className="backstage-subtitle">Start from a blank page or a template.</p>
+              <div className="backstage-template-grid">
+                <button
+                  className="backstage-tpl-card"
+                  onClick={onNew}
+                  data-testid="backstage-template-blank"
+                >
+                  <span className="backstage-tpl-thumb">Aa</span>
+                  <span>Blank Document</span>
+                </button>
+                {TEMPLATES.filter((template) => template.id !== 'blank').map((template) => (
+                  <button
+                    key={template.id}
+                    className="backstage-tpl-card"
+                    onClick={() => onNewFromTemplate(template.id)}
+                    data-testid={`backstage-template-${template.id}`}
+                  >
+                    <span className="backstage-tpl-thumb">{template.name.charAt(0)}</span>
+                    <span>{template.name}</span>
+                  </button>
+                ))}
+              </div>
             </>
           )}
           {section === 'open' && (
             <>
               <h2>Open</h2>
-              <p className="backstage-subtitle">Browse for a document on your computer.</p>
+              <p className="backstage-subtitle">Pick up where you left off, or browse.</p>
               <button className="icon-btn primary" onClick={onOpen}>
                 Browse for file…
               </button>
+              <h3 className="backstage-subhead">Recent</h3>
+              {recents.length === 0 ? (
+                <p className="backstage-subtitle">No recent documents yet.</p>
+              ) : (
+                <ul className="backstage-recents" data-testid="backstage-recents">
+                  {recents.slice(0, 12).map((recent) => (
+                    <li key={recent.path}>
+                      <button
+                        className="backstage-recent"
+                        onClick={() => onOpenRecent(recent.path)}
+                        title={recent.path}
+                      >
+                        <span className="backstage-recent-name">{recent.name}</span>
+                        <span className="backstage-recent-path">{recent.path}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </>
           )}
           {section === 'save' && (

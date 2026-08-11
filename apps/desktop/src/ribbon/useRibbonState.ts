@@ -55,6 +55,9 @@ export interface RibbonState {
   imageAltText: string;
 
   shapeActive: boolean;
+  /** Alignment and wrap of the selected shape or text box. */
+  objectAlign: string;
+  objectWrap: string;
   inkActive: boolean;
   textBoxActive: boolean;
 
@@ -118,6 +121,8 @@ const EMPTY: RibbonState = {
   imageSaturation: 100,
   imageAltText: '',
   shapeActive: false,
+  objectAlign: 'left',
+  objectWrap: 'inline',
   inkActive: false,
   textBoxActive: false,
   inTable: false,
@@ -156,6 +161,11 @@ export function useRibbonState(editor: Editor | null): RibbonState {
       const heading = instance.getAttributes('heading');
       const image = instance.getAttributes('image');
       const table = instance.getAttributes('table');
+      // Shapes and text boxes share the Arrange group, so the ribbon reads
+      // whichever of the two is selected.
+      const shape = instance.getAttributes('docShape');
+      const textBox = instance.getAttributes('textBox');
+      const object = instance.isActive('docShape') ? shape : textBox;
       const bulletList = instance.getAttributes('bulletList');
       const orderedList = instance.getAttributes('orderedList');
       const block = instance.isActive('heading') ? heading : paragraph;
@@ -222,6 +232,8 @@ export function useRibbonState(editor: Editor | null): RibbonState {
         imageAltText: String(image.alt ?? ''),
 
         shapeActive: instance.isActive('docShape'),
+        objectAlign: String(object.align ?? 'left'),
+        objectWrap: String(object.wrap ?? 'inline'),
         inkActive: instance.isActive('inkDrawing'),
         textBoxActive: instance.isActive('textBox'),
 

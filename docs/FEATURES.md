@@ -20,7 +20,8 @@ the ribbon layout menu.
 
 ## File
 
-- New document from a blank page or the letter, report and resume templates
+- New document from a blank page or the letter, report and resume templates,
+  from the start screen or the backstage New pane
 - Open `.dansword`, `.docx`, `.doc`, `.rtf`, `.html`, `.txt`
 - Save and Save As; the format follows the file extension
 - Rename the open document, and Create a Copy alongside it
@@ -28,7 +29,8 @@ the ribbon layout menu.
 - Export a copy as DOCX, `.dansword`, RTF, HTML, PDF or TXT without changing
   which document is open
 - Print via the system dialog
-- Recent files with pinning, and remove-from-recent
+- Recent files with pinning, and remove-from-recent; the backstage Open pane
+  lists them too
 - Auto-save on an interval once the document has a path
 - Version history — up to 20 snapshots per document, for every save format
 - Windows file associations: double-clicking a `.docx` or `.dansword` opens it
@@ -95,6 +97,8 @@ Appears while a drawing canvas is selected, and closes when it is not.
   (continuous or restarting each page), automatic hyphenation
 - **Paragraph** — left and right indent, space before and after
 - **Page Background** — watermark, page colour, page borders
+- **Arrange** — appears while a shape or text box is selected: Wrap Text (in
+  line, square, tight, top and bottom) and left/centre/right alignment
 - Draggable margin markers on the ruler
 
 ## References
@@ -144,7 +148,7 @@ for it.
 - **Immersive Reader** — reading without the editing chrome, with three column
   widths, three text spacings, a white, sepia or grey page, and line focus
 - **Show** — ruler, gridlines, navigation pane, header and footer, footnotes and
-  endnotes
+  endnotes. The navigation pane has a search box and Headings / Results tabs
 - **Dark Mode** — the light and dark theme switch, also on the home screen
 - Zoom from 10% to 500%, with 100%, One Page, Page Width and a Zoom dialog
 - Ribbon layout: Classic or Single Line, and Always show ribbon, Show tabs only
@@ -217,8 +221,11 @@ marks, links, tables, lists and images.
 - The accessibility checker reads the document, not the rendered page: it cannot
   judge whether alt text is *useful*, only whether it is there
 - Section breaks, macros and password protection are not built
-- Shapes and text boxes still have no Arrange controls; only pictures can be
-  wrapped or positioned from the ribbon
+- The ribbon steps down to a compact density rather than collapsing whole
+  groups the way Word does, so the Review tab — the densest at eight groups —
+  still overflows below about 1050px. Every other tab holds to 1100px
+- Shapes and text boxes are arranged from Layout > Arrange rather than a
+  contextual tab of their own
 
 ## Not in scope
 

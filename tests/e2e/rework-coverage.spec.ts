@@ -12,6 +12,8 @@ import {
   resolveAllChanges,
   acceptAppDialogs,
   saveToPath,
+  insertShape,
+  openBackstage,
   PATHS,
 } from '../helpers/playwright';
 
@@ -262,6 +264,44 @@ test.describe('Reworked features', () => {
 
     await expect(page.getByTestId('word-editor').locator('[data-column-break]')).toHaveCount(1);
     await expect(page.getByTestId('word-editor').locator('[data-page-break]')).toHaveCount(0);
+  });
+
+  /**
+   * File > New and File > Open were one button each. Templates and recents
+   * lived only on the start screen, so with a document open they were gone.
+   */
+  test('TC-FILE-011: the backstage New pane offers the templates', async ({ page }) => {
+    await openBlankDocument(page);
+    await openBackstage(page, 'new');
+
+    await expect(page.getByTestId('backstage-template-blank')).toBeVisible();
+    await expect(page.getByTestId('backstage-template-letter')).toBeVisible();
+  });
+
+  /** Shapes could be inserted and then never positioned. */
+  test('TC-INS-010: Layout > Arrange wraps a selected shape', async ({ page }) => {
+    await openBlankDocument(page);
+    await insertShape(page, 'rect');
+
+    await switchRibbonTab(page, 'pageLayout');
+    await page.getByTestId('object-wrap-text').click();
+    await page.getByTestId('object-wrap-square').click();
+
+    await expect(page.getByTestId('word-editor').locator('.shape-block')).toHaveClass(
+      /wrap-square/,
+    );
+  });
+
+  /** Word's Navigation pane is search-first; this one had no search at all. */
+  test('TC-VIEW-011: the navigation pane searches the document', async ({ page }) => {
+    await openBlankDocument(page);
+    await typeInEditor(page, 'findme needle here');
+
+    await switchRibbonTab(page, 'view');
+    await page.getByTestId('view-navigation').click();
+    await page.getByTestId('nav-search').fill('needle');
+
+    await expect(page.getByTestId('nav-results').locator('li')).toHaveCount(1);
   });
 
   /** Word's Ctrl+G. There was no Go To command anywhere before. */

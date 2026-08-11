@@ -1,5 +1,9 @@
 import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
   Columns3,
+  Eye,
   Hash,
   LayoutTemplate,
   Minus,
@@ -37,8 +41,23 @@ const PPI = 96;
 const pxToPt = (px: number) => Math.round((px * 72) / PPI * 10) / 10;
 const ptToPx = (pt: number) => Math.round((pt * PPI) / 72);
 
+/** The wraps a shape or text box supports, as Word words them. */
+const OBJECT_WRAPS = [
+  { id: 'inline', label: 'In Line with Text' },
+  { id: 'square', label: 'Square' },
+  { id: 'tight', label: 'Tight' },
+  { id: 'topBottom', label: 'Top and Bottom' },
+] as const;
+
 export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
   const { pageSetup } = flags;
+
+  /** Arrange drives whichever object type is selected. */
+  const setObjectAttrs = (attrs: Record<string, unknown>) => {
+    if (!editor) return;
+    const node = state.shapeActive ? 'docShape' : 'textBox';
+    editor.chain().focus().updateAttributes(node, attrs).run();
+  };
 
   return (
     <>
@@ -272,6 +291,52 @@ export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
           />
         </RibbonStack>
       </RibbonGroup>
+
+      {/* Word keeps Arrange on Layout for any selected object. A shape or text
+          box could be inserted and then never wrapped or positioned, because
+          only pictures had a contextual tab. */}
+      {(state.shapeActive || state.textBoxActive) && (
+        <RibbonGroup label="Arrange">
+          <RibbonStack>
+            <RibbonMenuButton
+              icon={<Eye size={14} />}
+              label="Wrap Text"
+              title="Wrap text around the object"
+              testId="object-wrap-text"
+              menuWidth={230}
+            >
+              {OBJECT_WRAPS.map((wrap) => (
+                <RibbonMenuItem
+                  key={wrap.id}
+                  label={wrap.label}
+                  checked={state.objectWrap === wrap.id}
+                  onClick={() => setObjectAttrs({ wrap: wrap.id })}
+                  testId={`object-wrap-${wrap.id}`}
+                />
+              ))}
+            </RibbonMenuButton>
+            <RibbonLine>
+              {(
+                [
+                  ['left', AlignLeft, 'Align Left'],
+                  ['center', AlignCenter, 'Align Centre'],
+                  ['right', AlignRight, 'Align Right'],
+                ] as const
+              ).map(([value, Icon, label]) => (
+                <RibbonButton
+                  key={value}
+                  icon={<Icon size={15} />}
+                  title={label}
+                  size="icon"
+                  active={state.objectAlign === value}
+                  onClick={() => setObjectAttrs({ align: value })}
+                  testId={`object-align-${value}`}
+                />
+              ))}
+            </RibbonLine>
+          </RibbonStack>
+        </RibbonGroup>
+      )}
     </>
   );
 }

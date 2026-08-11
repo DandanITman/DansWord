@@ -92,4 +92,40 @@ test.describe('UI layout guards', () => {
     await openBackstage(page, 'export');
     await expectNoClippedControls(page.getByTestId('backstage'), 'backstage export');
   });
+
+  /**
+   * The ribbon used to scroll sideways as soon as the groups outgrew the
+   * window, hiding the rightmost groups behind a scrollbar — Word never does
+   * that. The compact density now holds every tab down to 1100px.
+   *
+   * Review, the densest tab at eight groups, still overflows below about
+   * 1050px; closing that needs real group collapse, which needs the tabs to
+   * declare their groups as data. The bound below is a regression guard so it
+   * cannot quietly get worse in the meantime.
+   */
+  test('TC-UI-002: the ribbon does not scroll sideways at narrow window widths', async ({
+    page,
+  }) => {
+    await openBlankDocument(page);
+    const overflowOf = () =>
+      page.evaluate(() => {
+        const panel = document.querySelector('.office-ribbon-panel');
+        return panel ? panel.scrollWidth - panel.clientWidth : 0;
+      });
+
+    await page.setViewportSize({ width: 1100, height: 700 });
+    for (const tab of ['home', 'insert', 'references', 'review', 'view'] as const) {
+      await switchRibbonTab(page, tab);
+      expect(await overflowOf(), `ribbon ${tab} tab overflows at 1100px`).toBeLessThanOrEqual(1);
+    }
+
+    await page.setViewportSize({ width: 900, height: 700 });
+    for (const tab of ['home', 'insert', 'references', 'view'] as const) {
+      await switchRibbonTab(page, tab);
+      expect(await overflowOf(), `ribbon ${tab} tab overflows at 900px`).toBeLessThanOrEqual(1);
+    }
+
+    await switchRibbonTab(page, 'review');
+    expect(await overflowOf(), 'review overflow at 900px regressed').toBeLessThanOrEqual(130);
+  });
 });

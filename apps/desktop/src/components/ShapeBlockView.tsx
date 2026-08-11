@@ -3,13 +3,24 @@ import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
 const SHAPES = ['rect', 'circle', 'triangle', 'line', 'arrow'] as const;
 
 export function ShapeBlockView({ node, updateAttributes, selected, editor, getPos }: NodeViewProps) {
-  const { shapeType, width, height, fill, stroke, strokeWidth } = node.attrs as {
+  const {
+    shapeType,
+    width,
+    height,
+    fill,
+    stroke,
+    strokeWidth,
+    align = 'left',
+    wrap = 'inline',
+  } = node.attrs as {
     shapeType: (typeof SHAPES)[number];
     width: number;
     height: number;
     fill: string;
     stroke: string;
     strokeWidth: number;
+    align?: string;
+    wrap?: string;
   };
 
   const renderSvg = () => {
@@ -49,7 +60,7 @@ export function ShapeBlockView({ node, updateAttributes, selected, editor, getPo
 
   return (
     <NodeViewWrapper
-      className={`shape-block${selected ? ' is-selected' : ''}`}
+      className={`shape-block align-${align} wrap-${wrap}${selected ? ' is-selected' : ''}`}
       onClick={() => {
         const pos = getPos();
         if (typeof pos === 'number') editor.chain().focus().setNodeSelection(pos).run();

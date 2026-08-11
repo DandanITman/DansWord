@@ -794,6 +794,49 @@ select:focus-visible {
   flex: 1;
 }
 
+/* Word's Navigation pane leads with search, then Headings / Results. */
+.nav-search {
+  padding: 8px 12px 0;
+}
+
+.nav-search input {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-panel);
+  color: var(--text);
+  font-size: 12px;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-tabs button {
+  flex: 1;
+  padding: 5px 6px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.nav-tabs button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.nav-results button {
+  font-size: 12px;
+  white-space: normal;
+}
+
 .nav-list {
   list-style: none;
   margin: 0;
@@ -999,6 +1042,95 @@ select:focus-visible {
   margin: 0 0 20px;
   color: var(--text-muted);
   font-size: 14px;
+}
+
+/* File > New and File > Open: Word's backstage shows a template gallery and a
+   recent list here, not a single button. */
+.backstage-subhead {
+  margin: 24px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.backstage-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 14px;
+}
+
+.backstage-tpl-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-panel);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.backstage-tpl-card:hover {
+  border-color: var(--accent);
+}
+
+.backstage-tpl-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 82px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: #fff;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.backstage-recents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.backstage-recent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.backstage-recent:hover {
+  border-color: var(--border);
+  background: var(--bg-hover);
+}
+
+.backstage-recent-name {
+  font-size: 13px;
+}
+
+.backstage-recent-path {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .dialog-grid {
@@ -1973,6 +2105,30 @@ select:focus-visible {
   clear: both;
 }
 
+/* Shapes take the same alignment and wrap as text boxes, so Layout > Arrange
+   can drive both. Only the floating wraps clear-exempt themselves. */
+.shape-block.align-center { text-align: center; }
+.shape-block.align-right { text-align: right; }
+
+.shape-block.wrap-square,
+.shape-block.wrap-tight {
+  float: left;
+  clear: none;
+  margin: 6px 14px 6px 0;
+  width: max-content;
+}
+
+.shape-block.align-right.wrap-square,
+.shape-block.align-right.wrap-tight {
+  float: right;
+  margin: 6px 0 6px 14px;
+}
+
+.shape-block.wrap-topBottom {
+  float: none;
+  clear: both;
+}
+
 .shape-block-inner {
   position: relative;
   display: inline-block;
@@ -2390,6 +2546,58 @@ select:focus-visible {
   overflow-y: hidden;
   background: var(--bg-ribbon, #f4f6f9);
   border-bottom: 1px solid var(--border);
+}
+
+/*
+ * Compact density, applied by Ribbon's ResizeObserver when the groups would
+ * otherwise overflow. Word collapses whole groups to a popout; the tabs here
+ * are JSX rather than data, so instead the padding, gaps and the widest
+ * controls give ground — which recovers enough for the narrow window sizes
+ * the app allows (minWidth is 900) before anything can scroll off.
+ */
+.office-ribbon-panel.is-compact {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.office-ribbon-panel.is-compact .rb-group {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.office-ribbon-panel.is-compact .rb-btn {
+  gap: 3px;
+}
+
+/* Large buttons dominate Review and Insert. Narrowing them and letting the
+   caption run to two tighter lines is what those tabs need. */
+.office-ribbon-panel.is-compact .rb-btn--large {
+  min-width: 44px;
+  max-width: 58px;
+  padding: 4px 2px;
+  font-size: 10.5px;
+}
+
+.office-ribbon-panel.is-compact .rb-btn--small,
+.office-ribbon-panel.is-compact .rb-btn:not(.rb-btn--large):not(.rb-btn--icon) {
+  font-size: 11px;
+}
+
+.office-ribbon-panel.is-compact .rb-group-body {
+  gap: 1px;
+}
+
+/* Styles is by far the widest group. Collapsing its tiles to the More menu is
+   the same trade Word makes when it collapses a group to a popout, and it is
+   what actually buys back enough room at 900px. */
+.office-ribbon-panel.is-compact .rb-style-tile {
+  display: none;
+}
+
+/* The font name box is the single widest control on the ribbon. Its width is
+   set inline on the wrapper, so the cap has to go there to win. */
+.office-ribbon-panel.is-compact .rb-combo {
+  max-width: 96px;
 }
 
 .ribbon-btn-lg {

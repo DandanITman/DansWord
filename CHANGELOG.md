@@ -6,6 +6,40 @@ file inside the app.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2]
+
+Second Word-parity pass, taking the four remaining gaps where a command Word
+has had no route in DansWord at all.
+
+### Added
+
+- **File > New and File > Open are real backstage panes.** New shows the
+  template gallery; Open lists recent documents above Browse. Both existed
+  only on the start screen, so once a document was open they were unreachable
+  — the panes behind them were a single button each.
+- **Layout > Arrange** appears when a shape or text box is selected, with Wrap
+  Text and alignment. Only pictures had a contextual tab, so a shape could be
+  inserted and then never wrapped or positioned. Shapes gained the alignment
+  and wrap attributes text boxes already had.
+- **The Navigation pane searches.** It has a search box and Headings / Results
+  tabs, as Word's does; it was a flat heading list and nothing else.
+
+### Changed
+
+- **The ribbon no longer scrolls sideways.** It stepped groups off behind a
+  horizontal scrollbar once they outgrew the window, and the window can be
+  dragged to 900px. A compact density now steps in first — tighter padding,
+  narrower large buttons, and the Styles tiles collapsing to their menu, which
+  is the same trade Word makes when it collapses a group. Every tab holds down
+  to 1100px.
+
+### Known limitations
+
+- Review, at eight groups, still overflows below about 1050px. Closing that
+  needs true group collapse, which needs the ribbon tabs to declare their
+  groups as data rather than JSX; TC-UI-002 bounds the overflow so it cannot
+  quietly get worse.
+
 ## [0.2.1]
 
 Word-parity pass over the ribbon: the audit compared every tab against Word
