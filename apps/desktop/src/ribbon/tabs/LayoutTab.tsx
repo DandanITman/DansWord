@@ -33,6 +33,9 @@ import type { RibbonTabProps } from '../types';
 
 /** Pixels per inch, so the spin boxes can show inches like Word does. */
 const PPI = 96;
+/** CSS px are 1/96in and points are 1/72in, so a point is 4/3 px. */
+const pxToPt = (px: number) => Math.round((px * 72) / PPI * 10) / 10;
+const ptToPx = (pt: number) => Math.round((pt * PPI) / 72);
 
 export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
   const { pageSetup } = flags;
@@ -208,24 +211,29 @@ export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
           />
         </RibbonStack>
         <RibbonStack>
+          {/*
+            Shown in points, as Word does: px is a screen unit and means nothing
+            on a printed page. The document model stays in px, so this converts
+            at the edge and leaves stored documents and the DOCX writer alone.
+          */}
           <RibbonSpin
             label="Space before"
-            value={state.spaceBefore}
-            step={2}
-            suffix="px"
+            value={pxToPt(state.spaceBefore)}
+            step={1}
+            suffix="pt"
             testId="layout-space-before"
             onChange={(value) =>
-              editor?.chain().focus().setParagraphSpacing(value, state.spaceAfter).run()
+              editor?.chain().focus().setParagraphSpacing(ptToPx(value), state.spaceAfter).run()
             }
           />
           <RibbonSpin
             label="Space after"
-            value={state.spaceAfter}
-            step={2}
-            suffix="px"
+            value={pxToPt(state.spaceAfter)}
+            step={1}
+            suffix="pt"
             testId="layout-space-after"
             onChange={(value) =>
-              editor?.chain().focus().setParagraphSpacing(state.spaceBefore, value).run()
+              editor?.chain().focus().setParagraphSpacing(state.spaceBefore, ptToPx(value)).run()
             }
           />
         </RibbonStack>

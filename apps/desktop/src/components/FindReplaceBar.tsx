@@ -16,14 +16,18 @@ export function FindReplaceBar({ editor, open, focusField = 'find', onClose }: F
   const [replaceQuery, setReplaceQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const [status, setStatus] = useState('');
+  const [matchCase, setMatchCase] = useState(false);
+  const [wholeWord, setWholeWord] = useState(false);
   const findRef = useRef<HTMLInputElement>(null);
   const replaceRef = useRef<HTMLInputElement>(null);
 
-  // Recomputed so the count follows edits and query changes.
+  const options = useMemo(() => ({ matchCase, wholeWord }), [matchCase, wholeWord]);
+
+  // Recomputed so the count follows edits, query changes and the options.
   const matches = useMemo(
-    () => (editor && findQuery ? findAllInEditor(editor, findQuery) : []),
+    () => (editor && findQuery ? findAllInEditor(editor, findQuery, options) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editor, findQuery, open, status],
+    [editor, findQuery, open, status, options],
   );
 
   useEffect(() => {
@@ -37,7 +41,7 @@ export function FindReplaceBar({ editor, open, focusField = 'find', onClose }: F
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [findQuery]);
+  }, [findQuery, matchCase, wholeWord]);
 
   if (!open) return null;
 
@@ -53,13 +57,13 @@ export function FindReplaceBar({ editor, open, focusField = 'find', onClose }: F
 
   const replaceOne = () => {
     if (!editor) return;
-    const count = replaceInEditor(editor, findQuery, replaceQuery, false);
+    const count = replaceInEditor(editor, findQuery, replaceQuery, false, options);
     setStatus(count ? 'Replaced 1' : 'No matches');
   };
 
   const replaceAll = () => {
     if (!editor) return;
-    const count = replaceInEditor(editor, findQuery, replaceQuery, true);
+    const count = replaceInEditor(editor, findQuery, replaceQuery, true, options);
     setStatus(count ? `Replaced ${count} occurrence${count === 1 ? '' : 's'}` : 'No matches');
   };
 
@@ -142,6 +146,25 @@ export function FindReplaceBar({ editor, open, focusField = 'find', onClose }: F
           data-testid="replace-all"
         >
           Replace All
+        </button>
+        {/* Word's "Match case" and "Find whole words only". */}
+        <button
+          className={`icon-btn find-toggle${matchCase ? ' is-active' : ''}`}
+          onClick={() => setMatchCase((on) => !on)}
+          title="Match case"
+          aria-pressed={matchCase}
+          data-testid="find-match-case"
+        >
+          Aa
+        </button>
+        <button
+          className={`icon-btn find-toggle${wholeWord ? ' is-active' : ''}`}
+          onClick={() => setWholeWord((on) => !on)}
+          title="Find whole words only"
+          aria-pressed={wholeWord}
+          data-testid="find-whole-word"
+        >
+          ab
         </button>
         {status && (
           <span className="find-status" data-testid="find-status">

@@ -8,7 +8,6 @@ import Highlight from '@tiptap/extension-highlight';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import TaskList from '@tiptap/extension-task-list';
@@ -30,6 +29,8 @@ import { CharacterFormatting } from '../extensions/CharacterFormatting';
 import { ListFormatting } from '../extensions/ListFormatting';
 import { TableFormatting } from '../extensions/TableFormatting';
 import { FormattingMarks } from '../extensions/FormattingMarks';
+import { ParkedSelection } from '../extensions/ParkedSelection';
+import { TableRowResizing } from '../extensions/TableRowResizing';
 import { TextBox } from '../extensions/TextBox';
 import { InkDrawing } from '../extensions/InkDrawing';
 import { Bibliography, Bookmark, DocumentIndex, IndexEntry, TableOfFigures } from '../extensions/DocFields';
@@ -79,6 +80,7 @@ export function createExtensions(options: EditorExtensionOptions = {}): Extensio
     SubscriptMark,
     ParagraphFormatting,
     ListFormatting,
+    ParkedSelection,
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
     Link.configure({ openOnClick: false, autolink: true, linkOnPaste: true }),
     ResizableImage,
@@ -86,7 +88,7 @@ export function createExtensions(options: EditorExtensionOptions = {}): Extensio
     InkDrawing,
     Placeholder.configure({ placeholder }),
     Table.configure({ resizable: true }),
-    TableRow,
+    TableRowResizing,
     TableHeader,
     TaskList,
     // nested so a checklist can have sub-items, like Word's multilevel lists.

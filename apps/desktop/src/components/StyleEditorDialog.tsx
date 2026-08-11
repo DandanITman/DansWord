@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { DocumentStyle } from '@dansword/core';
 import { BUILTIN_STYLES } from '@dansword/core';
+import { availableFonts } from '../constants/fonts';
 
 interface StyleEditorDialogProps {
   open: boolean;
@@ -9,7 +10,7 @@ interface StyleEditorDialogProps {
   onClose: () => void;
 }
 
-const FONT_FAMILIES = ['Calibri', 'Arial', 'Times New Roman', 'Georgia', 'Courier New'];
+const FONT_FAMILIES = availableFonts();
 const FONT_SIZES = ['8pt', '9pt', '10pt', '11pt', '12pt', '14pt', '16pt', '18pt', '24pt', '36pt'];
 
 const BUILTIN_IDS = new Set(BUILTIN_STYLES.map((s) => s.id));
