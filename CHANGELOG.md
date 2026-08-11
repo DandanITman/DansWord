@@ -6,6 +6,39 @@ file inside the app.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.7]
+
+Headers and footers become real three-zone regions — the third of the four
+structural gaps.
+
+### Added
+
+- **Header and footer zones.** Both were a single line of text rendered
+  centred, so a title on the left with a page number on the right — the
+  commonest arrangement there is — could not be expressed at all. They now
+  have left, centre and right zones, laid out against the page margins on
+  screen and against Word's own centre and right tab stops in DOCX, so the
+  arrangement survives a round trip.
+- **`%p` and `%P` fields**, expanding to the page number and the page count
+  when the document is printed or exported. CSS counters are the only way to
+  get a real page number into a printed margin box, so the tokens are expanded
+  rather than printed literally.
+- **Different First Page**, which suppresses both on page one as Word's does.
+
+### Compatibility
+
+- Documents written before the zones existed still open: their single header
+  and footer strings read back as the centre zone, which is where they
+  rendered. The flat fields are kept in step when the centre zone is edited,
+  so a document saved by this build still opens in one that predates it.
+
+### Known limitations
+
+- Section breaks remain the last structural gap: page setup is still one
+  record for the whole document, so a `.docx` with sections is flattened on
+  import and its sections are lost on save. Header and footer content is
+  plain text, not rich text.
+
 ## [0.2.6]
 
 Two of the four remaining structural gaps: the ribbon is operable from the

@@ -80,7 +80,8 @@ the dialogs, comments and synonyms.
   and Drawing, which inserts an ink canvas and opens the Draw tab
 - **Links** — hyperlinks, bookmarks and cross-references
 - **Comments** — New Comment
-- **Header & Footer** — header, footer, page numbers
+- **Header & Footer** — header and footer with left, centre and right zones,
+  `%p` and `%P` page-number fields, page numbers and Different First Page
 - **Text** — text boxes (simple, sidebar, pull quote), Drop Cap, Date & Time in
   three formats
 - **Symbols** — inline equation runs, a symbol gallery with a full picker of
@@ -236,7 +237,10 @@ marks, links, tables, lists and images.
   laid out as a formula
 - The accessibility checker reads the document, not the rendered page: it cannot
   judge whether alt text is *useful*, only whether it is there
-- Section breaks, macros and password protection are not built
+- Section breaks, macros and password protection are not built. Page setup is
+  one record for the whole document, so a `.docx` with sections is flattened
+  on import and its sections are lost on save
+- Header and footer text is plain, not rich: no per-zone formatting
 - There is no picture crop
 - The ribbon steps down to a compact density below 1250px rather than
   collapsing whole groups the way Word does. The Styles tiles fold back into

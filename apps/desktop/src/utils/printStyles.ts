@@ -1,5 +1,5 @@
 import type { HeaderFooter, PageSetup } from '@dansword/core';
-import { PAGE_DIMENSIONS } from '@dansword/core';
+import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf } from '@dansword/core';
 
 const STYLE_ID = 'dansword-print-styles';
 
@@ -44,24 +44,63 @@ export function applyPrintPageSetup(pageSetup: PageSetup, headerFooter?: HeaderF
   const sizeRule = NAMED_SIZES[pageSetup.size] ?? `${pageWidthIn}in ${pageHeightIn}in`;
   const orientation = pageSetup.orientation === 'landscape' ? ' landscape' : '';
 
-  const header = headerFooter?.header?.trim();
-  const footer = headerFooter?.footer?.trim();
+  const headerZones = headerZonesOf(headerFooter);
+  const footerZones = footerZonesOf(headerFooter);
   const showPageNumbers = !!headerFooter?.showPageNumbers;
 
-  const headerBox = header
-    ? `@top-center { content: "${escapeCss(header)}"; font-size: 9pt; color: #444; }`
-    : '';
+  /**
+   * `%p` and `%P` are the page-number fields Word writes; CSS counters are the
+   * only way to get a real page number into a printed margin box, so the
+   * tokens are expanded here rather than being rendered as literal text.
+   */
+  const zoneContent = (text: string, withPageNumbers = false) => {
+    const trimmed = text.trim();
+    const parts: string[] = [];
+    if (trimmed) {
+      const pieces = trimmed.split(/(%p|%P)/g).filter(Boolean);
+      for (const piece of pieces) {
+        if (piece === '%p') parts.push('counter(page)');
+        else if (piece === '%P') parts.push('counter(pages)');
+        else parts.push(`"${escapeCss(piece)}"`);
+      }
+    }
+    if (withPageNumbers) {
+      if (parts.length) parts.push('"  "');
+      parts.push('"Page " counter(page) " of " counter(pages)');
+    }
+    return parts.join(' ');
+  };
 
-  const footerContent = [
-    footer ? `"${escapeCss(footer)}"` : '',
-    showPageNumbers
-      ? `${footer ? '"  " ' : ''}"Page " counter(page) " of " counter(pages)`
-      : '',
+  const box = (position: string, content: string) =>
+    content ? `${position} { content: ${content}; font-size: 9pt; color: #444; }` : '';
+
+  const headerBox = [
+    box('@top-left', zoneContent(headerZones.left)),
+    box('@top-center', zoneContent(headerZones.center)),
+    box('@top-right', zoneContent(headerZones.right)),
   ]
     .filter(Boolean)
-    .join(' ');
-  const footerBox = footerContent
-    ? `@bottom-center { content: ${footerContent}; font-size: 9pt; color: #444; }`
+    .join('\n      ');
+
+  const footerBox = [
+    box('@bottom-left', zoneContent(footerZones.left)),
+    // Page numbers ride in the centre footer, which is where they were before.
+    box('@bottom-center', zoneContent(footerZones.center, showPageNumbers)),
+    box('@bottom-right', zoneContent(footerZones.right)),
+  ]
+    .filter(Boolean)
+    .join('\n      ');
+
+  // Word's Different First Page suppresses both margin boxes on page one.
+  const firstPageRule = headerFooter?.differentFirstPage
+    ? `@page :first {
+      @top-left { content: none; }
+      @top-center { content: none; }
+      @top-right { content: none; }
+      @bottom-left { content: none; }
+      @bottom-center { content: none; }
+      @bottom-right { content: none; }
+    }`
     : '';
 
   el.textContent = `
@@ -71,6 +110,7 @@ export function applyPrintPageSetup(pageSetup: PageSetup, headerFooter?: HeaderF
       ${headerBox}
       ${footerBox}
     }
+    ${firstPageRule}
     @media print {
       /* The zoom transform must not scale printed output. */
       .editor-scroll {

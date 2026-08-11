@@ -1,5 +1,12 @@
-import type { PageSetup, PageOrientation, PageSizePreset, LineNumberMode } from '@dansword/core';
-import { MARGIN_PRESETS, PAGE_SIZE_LABELS } from '@dansword/core';
+import type {
+  PageSetup,
+  PageOrientation,
+  PageSizePreset,
+  LineNumberMode,
+  HeaderFooter,
+  HeaderFooterZones,
+} from '@dansword/core';
+import { MARGIN_PRESETS, PAGE_SIZE_LABELS, footerZonesOf, headerZonesOf } from '@dansword/core';
 
 interface PageSetupDialogProps {
   open: boolean;
@@ -172,50 +179,91 @@ export function PageSetupDialog({ open, pageSetup, onChange, onClose }: PageSetu
 
 interface HeaderFooterDialogProps {
   open: boolean;
-  header: string;
-  footer: string;
-  showPageNumbers: boolean;
-  onChange: (header: string, footer: string, showPageNumbers: boolean) => void;
+  value: HeaderFooter;
+  onChange: (next: HeaderFooter) => void;
   onClose: () => void;
 }
 
-export function HeaderFooterDialog({
-  open,
-  header,
-  footer,
-  showPageNumbers,
-  onChange,
-  onClose,
-}: HeaderFooterDialogProps) {
+/**
+ * Word lays a header and footer out in three zones. This was two single-line
+ * inputs, so a title on the left with a page number on the right — the
+ * commonest arrangement there is — could not be expressed at all.
+ */
+export function HeaderFooterDialog({ open, value, onChange, onClose }: HeaderFooterDialogProps) {
   if (!open) return null;
+
+  const headerZones = headerZonesOf(value);
+  const footerZones = footerZonesOf(value);
+
+  const setZone = (which: 'headerZones' | 'footerZones', zone: keyof HeaderFooterZones, text: string) => {
+    const current = which === 'headerZones' ? headerZones : footerZones;
+    const next: HeaderFooter = { ...value, [which]: { ...current, [zone]: text } };
+    // Keep the flat fields in step so a document saved here still opens in a
+    // build that only knows about them.
+    if (which === 'headerZones' && zone === 'center') next.header = text;
+    if (which === 'footerZones' && zone === 'center') next.footer = text;
+    onChange(next);
+  };
+
+  const ZONES: Array<{ id: keyof HeaderFooterZones; label: string }> = [
+    { id: 'left', label: 'Left' },
+    { id: 'center', label: 'Centre' },
+    { id: 'right', label: 'Right' },
+  ];
 
   return (
     <div className="backdrop" onClick={onClose}>
-      <div className="dialog panel-card" onClick={(e) => e.stopPropagation()}>
-        <h2>Header & Footer</h2>
-        <label>
-          Header text
+      <div className="dialog panel-card" onClick={(e) => e.stopPropagation()} data-testid="header-footer-dialog">
+        <h2>Header &amp; Footer</h2>
+
+        <h3 className="dialog-subhead">Header</h3>
+        <div className="hf-zone-row">
+          {ZONES.map((zone) => (
+            <label key={`header-${zone.id}`}>
+              {zone.label}
+              <input
+                value={headerZones[zone.id]}
+                onChange={(e) => setZone('headerZones', zone.id, e.target.value)}
+                data-testid={`header-${zone.id}`}
+              />
+            </label>
+          ))}
+        </div>
+
+        <h3 className="dialog-subhead">Footer</h3>
+        <div className="hf-zone-row">
+          {ZONES.map((zone) => (
+            <label key={`footer-${zone.id}`}>
+              {zone.label}
+              <input
+                value={footerZones[zone.id]}
+                onChange={(e) => setZone('footerZones', zone.id, e.target.value)}
+                data-testid={`footer-${zone.id}`}
+              />
+            </label>
+          ))}
+        </div>
+        <p className="dialog-hint">
+          %p becomes the page number and %P the page count when the document is printed.
+        </p>
+
+        <label className="checkbox-row">
           <input
-            value={header}
-            onChange={(e) => onChange(e.target.value, footer, showPageNumbers)}
-            placeholder="Header appears at top of each page"
+            type="checkbox"
+            checked={value.showPageNumbers}
+            onChange={(e) => onChange({ ...value, showPageNumbers: e.target.checked })}
+            data-testid="hf-page-numbers"
           />
-        </label>
-        <label>
-          Footer text
-          <input
-            value={footer}
-            onChange={(e) => onChange(header, e.target.value, showPageNumbers)}
-            placeholder="Footer appears at bottom of each page"
-          />
+          Show page numbers in the centre footer
         </label>
         <label className="checkbox-row">
           <input
             type="checkbox"
-            checked={showPageNumbers}
-            onChange={(e) => onChange(header, footer, e.target.checked)}
+            checked={Boolean(value.differentFirstPage)}
+            onChange={(e) => onChange({ ...value, differentFirstPage: e.target.checked })}
+            data-testid="hf-different-first-page"
           />
-          Show page numbers in footer
+          Different first page
         </label>
         <div className="dialog-actions">
           <button className="icon-btn primary" onClick={onClose}>

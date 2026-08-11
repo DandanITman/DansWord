@@ -5,6 +5,7 @@ import {
   type DocumentComment,
   type DocumentFootnote,
   type HeaderFooter,
+  type HeaderFooterZones,
   type PageSetup,
   type PageSizePreset,
 } from '@dansword/core';
@@ -512,11 +513,18 @@ function pageSetupFromSectPr(sectPr: XmlNode | undefined): PageSetup {
 }
 
 /** Plain text of a header/footer part, plus whether it contains a PAGE field. */
-function headerFooterText(part: XmlNode | undefined): { text: string; hasPageNumber: boolean } {
-  if (!part) return { text: '', hasPageNumber: false };
+function headerFooterText(part: XmlNode | undefined): {
+  text: string;
+  zones: HeaderFooterZones;
+  hasPageNumber: boolean;
+} {
+  const empty: HeaderFooterZones = { left: '', center: '', right: '' };
+  if (!part) return { text: '', zones: empty, hasPageNumber: false };
   const body = child(part, 'w:hdr') ?? child(part, 'w:ftr') ?? part;
   const lines: string[] = [];
+  const zones: HeaderFooterZones = { ...empty };
   let hasPageNumber = false;
+  let readZones = false;
 
   for (const p of children(body, 'w:p')) {
     // Field instructions (PAGE, NUMPAGES) are machinery, not user-visible text.
@@ -524,11 +532,36 @@ function headerFooterText(part: XmlNode | undefined): { text: string; hasPageNum
     if (fieldInstructions(p).some((code) => /\bPAGE\b|\bNUMPAGES\b/.test(code))) {
       hasPageNumber = true;
     }
-    const text = textOf(p).trim();
+    // Only the runs: `w:pPr` holds the tab-stop *definitions* as `w:tab`
+    // elements, and textOf emits a tab for each, so reading the whole
+    // paragraph put two phantom separators before the first zone.
+    const raw = p.children
+      .filter((node) => node.name !== 'w:pPr')
+      .map((node) => textOf({ ...node, children: [node] } as XmlNode))
+      .join('');
+    const text = raw.trim();
     if (text) lines.push(text);
+
+    // Word lays the three zones against a centre and a right tab stop, so the
+    // tabs are the separators. Only the first paragraph carrying them is read
+    // that way; the flat text still keeps every line.
+    if (!readZones && raw.includes('\t')) {
+      const parts = raw.split('\t');
+      zones.left = (parts[0] ?? '').trim();
+      zones.center = (parts[1] ?? '').trim();
+      zones.right = parts.slice(2).join(' ').trim();
+      readZones = true;
+    }
   }
 
-  return { text: lines.join('\n'), hasPageNumber };
+  const text = lines.join('\n');
+  return {
+    // Without tabs the whole thing was one centred run, which is how headers
+    // were written before the zones existed.
+    text,
+    zones: readZones ? zones : { ...empty, center: text },
+    hasPageNumber,
+  };
 }
 
 /**
@@ -728,8 +761,10 @@ export async function importDocx(data: ArrayBuffer | Uint8Array): Promise<DocxIm
 
   const headerFooter: HeaderFooter = {
     ...DEFAULT_HEADER_FOOTER,
-    header: header.text,
-    footer: footer.text,
+    header: header.zones.center || header.text,
+    footer: footer.zones.center || footer.text,
+    headerZones: header.zones,
+    footerZones: footer.zones,
     showPageNumbers: header.hasPageNumber || footer.hasPageNumber,
   };
 

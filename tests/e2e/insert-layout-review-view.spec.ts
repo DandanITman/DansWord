@@ -124,18 +124,40 @@ test.describe('Layout, review, and view', () => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'insert');
     await page.getByTestId('ribbon-header').click();
-    await page.getByPlaceholder('Header appears at top of each page').fill('Confidential');
-    await page.getByPlaceholder('Footer appears at bottom of each page').fill('Draft copy');
+    // The header and footer are three zones now; the centre is where a single
+    // string used to render.
+    await page.getByTestId('header-center').fill('Confidential');
+    await page.getByTestId('footer-center').fill('Draft copy');
     await page.getByRole('button', { name: 'Done' }).click();
     await expect(page.locator('.doc-header')).toContainText('Confidential');
     await expect(page.locator('.doc-footer')).toContainText('Draft copy');
+  });
+
+  /**
+   * A title on the left with a page number on the right is the commonest
+   * header there is, and it could not be expressed at all when the header was
+   * a single string.
+   */
+  test('TC-LAY-011: header and footer zones render left, centre and right', async ({ page }) => {
+    await openBlankDocument(page);
+    await switchRibbonTab(page, 'insert');
+    await page.getByTestId('ribbon-header').click();
+    await page.getByTestId('header-left').fill('Quarterly report');
+    await page.getByTestId('header-right').fill('Confidential');
+    await page.getByTestId('footer-left').fill('Acme Ltd');
+    await page.getByRole('button', { name: 'Done' }).click();
+
+    await expect(page.locator('.doc-header .doc-hf-left')).toHaveText('Quarterly report');
+    await expect(page.locator('.doc-header .doc-hf-right')).toHaveText('Confidential');
+    await expect(page.locator('.doc-footer .doc-hf-left')).toHaveText('Acme Ltd');
   });
 
   test('opens header and footer dialog', async ({ page }) => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'insert');
     await page.getByTestId('ribbon-footer').click();
-    await expect(page.getByText(/Header text/i)).toBeVisible();
+    await expect(page.getByTestId('header-footer-dialog')).toBeVisible();
+    await expect(page.getByTestId('header-left')).toBeVisible();
   });
 
   test('TC-LAY-003: enables watermark text on document', async ({ page }) => {

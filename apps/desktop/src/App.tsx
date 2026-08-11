@@ -1620,11 +1620,8 @@ export default function App() {
       />
       <HeaderFooterDialog
         open={headerFooterOpen}
-        header={envelope.headerFooter.header}
-        footer={envelope.headerFooter.footer}
-        showPageNumbers={envelope.headerFooter.showPageNumbers}
-        onChange={(header, footer, showPageNumbers) =>
-          updateEnvelope({ headerFooter: { header, footer, showPageNumbers } })
+        value={envelope.headerFooter}
+        onChange={(headerFooter) => updateEnvelope({ headerFooter })
         }
         onClose={() => setHeaderFooterOpen(false)}
       />

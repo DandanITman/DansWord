@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import type { Editor } from '@tiptap/react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { DocumentFootnote, HeaderFooter, PageSetup, Watermark } from '@dansword/core';
-import { PAGE_DIMENSIONS } from '@dansword/core';
+import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf, zonesEmpty } from '@dansword/core';
 import { createExtensions } from '../editor/extensions';
 import { trackChangesPlugin, trackChangesKey } from '../editor/trackChangesPlugin';
 import { proofingIssueAt, type DocumentProofingIssue } from '../extensions/ProofingCheck';
@@ -378,6 +378,9 @@ export function WordEditor({
         }
       : undefined;
 
+  const headerZones = headerZonesOf(headerFooter);
+  const footerZones = footerZonesOf(headerFooter);
+
   const pageStyle: CSSProperties = {
     width: pageWidth,
     minHeight: pageHeight * pageCount,
@@ -454,8 +457,15 @@ export function WordEditor({
               {watermark.text}
             </div>
           )}
-          {showHeaderFooter && headerFooter.header && (
-            <div className="doc-header">{headerFooter.header}</div>
+          {/* Three zones against the page margins, as Word lays them out —
+              a title on the left and a page number on the right is the
+              commonest arrangement and was impossible with one field. */}
+          {showHeaderFooter && !zonesEmpty(headerZones) && (
+            <div className="doc-header">
+              <span className="doc-hf-left">{headerZones.left}</span>
+              <span className="doc-hf-center">{headerZones.center}</span>
+              <span className="doc-hf-right">{headerZones.right}</span>
+            </div>
           )}
           <div
             className={`doc-body${pageSetup.columns.count > 1 ? ' doc-body-columns' : ''}${
@@ -519,8 +529,12 @@ export function WordEditor({
               ))}
             </div>
           )}
-          {showHeaderFooter && headerFooter.footer && (
-            <div className="doc-footer">{headerFooter.footer}</div>
+          {showHeaderFooter && !zonesEmpty(footerZones) && (
+            <div className="doc-footer">
+              <span className="doc-hf-left">{footerZones.left}</span>
+              <span className="doc-hf-center">{footerZones.center}</span>
+              <span className="doc-hf-right">{footerZones.right}</span>
+            </div>
           )}
           {showHeaderFooter && headerFooter.showPageNumbers && (
             <div className="doc-footer doc-footer-pages">

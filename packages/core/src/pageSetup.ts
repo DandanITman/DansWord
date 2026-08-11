@@ -46,10 +46,51 @@ export interface DocumentFootnote {
   text: string;
 }
 
+/**
+ * Word lays a header and footer out in three zones against tab stops — title
+ * on the left, page number on the right is the commonest arrangement of all.
+ */
+export interface HeaderFooterZones {
+  left: string;
+  center: string;
+  right: string;
+}
+
 export interface HeaderFooter {
+  /**
+   * The centre zone, kept as a plain string so documents written before the
+   * zones existed still load. `headerZones` wins when it is present.
+   */
   header: string;
   footer: string;
   showPageNumbers: boolean;
+  headerZones?: HeaderFooterZones;
+  footerZones?: HeaderFooterZones;
+  /** Word's "Different First Page": suppresses both on page one. */
+  differentFirstPage?: boolean;
+}
+
+const EMPTY_ZONES: HeaderFooterZones = { left: '', center: '', right: '' };
+
+/**
+ * The zones for a header or footer, whichever way the document stores them.
+ *
+ * Documents saved before zones existed carry only `header`/`footer`; those
+ * read back as the centre zone, which is where a single string was rendered.
+ */
+export function headerZonesOf(headerFooter: HeaderFooter | undefined): HeaderFooterZones {
+  if (headerFooter?.headerZones) return headerFooter.headerZones;
+  return { ...EMPTY_ZONES, center: headerFooter?.header ?? '' };
+}
+
+export function footerZonesOf(headerFooter: HeaderFooter | undefined): HeaderFooterZones {
+  if (headerFooter?.footerZones) return headerFooter.footerZones;
+  return { ...EMPTY_ZONES, center: headerFooter?.footer ?? '' };
+}
+
+/** True when nothing in any zone would render. */
+export function zonesEmpty(zones: HeaderFooterZones): boolean {
+  return !zones.left.trim() && !zones.center.trim() && !zones.right.trim();
 }
 
 export interface DocumentComment {

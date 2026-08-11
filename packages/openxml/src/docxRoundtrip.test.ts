@@ -95,3 +95,54 @@ describe('column breaks survive export', () => {
     expect(html).toContain('break-before:column');
   });
 });
+
+/**
+ * Headers and footers were a single centred string, so "title on the left,
+ * page number on the right" — the commonest arrangement there is — could not
+ * be expressed, let alone survive a save. Word lays the zones out against a
+ * centre and a right tab stop.
+ */
+describe('header and footer zones survive a DOCX round trip', () => {
+  const doc = {
+    type: 'doc',
+    content: [{ type: 'paragraph', content: [{ type: 'text', text: 'body' }] }],
+  };
+
+  it('keeps all three header zones and both footer edges', async () => {
+    const blob = await exportToDocx(doc, {
+      title: 'Zones',
+      headerFooter: {
+        header: 'centre head',
+        footer: 'centre foot',
+        showPageNumbers: false,
+        headerZones: { left: 'left head', center: 'centre head', right: 'right head' },
+        footerZones: { left: 'left foot', center: 'centre foot', right: 'right foot' },
+      },
+    });
+    const bytes = new Uint8Array(blob instanceof ArrayBuffer ? blob : await blob.arrayBuffer());
+
+    const imported = await importFromDocx(bytes);
+    expect(imported.headerFooter.headerZones).toEqual({
+      left: 'left head',
+      center: 'centre head',
+      right: 'right head',
+    });
+    expect(imported.headerFooter.footerZones).toEqual({
+      left: 'left foot',
+      center: 'centre foot',
+      right: 'right foot',
+    });
+  });
+
+  it('reads a document written before zones existed as a centred header', async () => {
+    const blob = await exportToDocx(doc, {
+      title: 'Legacy',
+      headerFooter: { header: 'just the middle', footer: '', showPageNumbers: false },
+    });
+    const bytes = new Uint8Array(blob instanceof ArrayBuffer ? blob : await blob.arrayBuffer());
+
+    const imported = await importFromDocx(bytes);
+    expect(imported.headerFooter.headerZones?.center).toBe('just the middle');
+    expect(imported.headerFooter.headerZones?.left).toBe('');
+  });
+});

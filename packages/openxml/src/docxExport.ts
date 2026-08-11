@@ -23,6 +23,9 @@ import {
   Header,
   Footer,
   PageNumber,
+  Tab,
+  TabStopType,
+  TabStopPosition,
   LevelFormat,
   InsertedTextRun,
   DeletedTextRun,
@@ -38,10 +41,11 @@ import type {
   DocumentFootnote,
   DocumentStyle,
   HeaderFooter,
+  HeaderFooterZones,
   PageSetup,
   Watermark,
 } from '@dansword/core';
-import { PAGE_DIMENSIONS } from '@dansword/core';
+import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf, zonesEmpty } from '@dansword/core';
 
 type TipTapNode = {
   type?: string;
@@ -821,36 +825,70 @@ export async function exportToDocx(
 
   if (opts.pageSetup) section.properties = sectionProperties(opts.pageSetup);
 
+  /**
+   * Word lays header and footer zones out against a centre and a right tab
+   * stop in a single paragraph. Writing them that way is what makes a title
+   * on the left and a page number on the right survive the round trip — the
+   * previous single centred run could not express it.
+   *
+   * `%p` and `%P` are expanded into real page-number fields.
+   */
+  const zoneRuns = (text: string): (TextRun | string)[] => {
+    if (!text.trim()) return [];
+    return text
+      .split(/(%p|%P)/g)
+      .filter(Boolean)
+      .map((piece) =>
+        piece === '%p'
+          ? new TextRun({ children: [PageNumber.CURRENT] })
+          : piece === '%P'
+            ? new TextRun({ children: [PageNumber.TOTAL_PAGES] })
+            : new TextRun(piece),
+      );
+  };
+
+  const zoneParagraph = (zones: HeaderFooterZones, trailing: TextRun[] = []) => {
+    const children: (TextRun | Tab)[] = [];
+    children.push(...(zoneRuns(zones.left) as TextRun[]));
+    children.push(new TextRun({ children: [new Tab()] }));
+    children.push(...(zoneRuns(zones.center) as TextRun[]), ...trailing);
+    children.push(new TextRun({ children: [new Tab()] }));
+    children.push(...(zoneRuns(zones.right) as TextRun[]));
+    return new Paragraph({
+      tabStops: [
+        { type: TabStopType.CENTER, position: TabStopPosition.MAX / 2 },
+        { type: TabStopType.RIGHT, position: TabStopPosition.MAX },
+      ],
+      children,
+    });
+  };
+
+  const headerZones = headerZonesOf(opts.headerFooter);
+  const footerZones = footerZonesOf(opts.headerFooter);
+
   const headerChildren: Paragraph[] = [...watermarkHeaderChildren(opts.watermark)];
-  if (opts.headerFooter?.header) {
-    headerChildren.push(
-      new Paragraph({ children: [new TextRun(opts.headerFooter.header)] }),
-    );
-  }
+  if (!zonesEmpty(headerZones)) headerChildren.push(zoneParagraph(headerZones));
   if (headerChildren.length) {
     section.headers = { default: new Header({ children: headerChildren }) };
   }
 
-  if (opts.headerFooter?.footer || opts.headerFooter?.showPageNumbers) {
-    const children: TextRun[] = [];
-    if (opts.headerFooter.footer) children.push(new TextRun(opts.headerFooter.footer));
-    if (opts.headerFooter.showPageNumbers) {
-      children.push(
+  const pageNumberRuns = opts.headerFooter?.showPageNumbers
+    ? [
         new TextRun({
           children: [
-            opts.headerFooter.footer ? '  ' : '',
+            headerZones.center ? '  ' : '',
             'Page ',
             PageNumber.CURRENT,
             ' of ',
             PageNumber.TOTAL_PAGES,
           ],
         }),
-      );
-    }
+      ]
+    : [];
+
+  if (!zonesEmpty(footerZones) || pageNumberRuns.length) {
     section.footers = {
-      default: new Footer({
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children })],
-      }),
+      default: new Footer({ children: [zoneParagraph(footerZones, pageNumberRuns)] }),
     };
   }
 

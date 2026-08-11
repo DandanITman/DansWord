@@ -693,6 +693,25 @@ select:focus-visible {
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 8px;
   margin-bottom: 16px;
+  /* Word's three zones sit against the margins with the middle centred; a
+     grid of equal thirds keeps the centre centred on the page rather than
+     between whatever the other two happen to contain. */
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.doc-hf-left {
+  text-align: left;
+}
+
+.doc-hf-center {
+  text-align: center;
+}
+
+.doc-hf-right {
+  text-align: right;
 }
 
 .doc-footer {

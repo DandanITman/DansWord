@@ -239,8 +239,8 @@ test.describe('Layout, settings, and workflows', () => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'insert');
     await page.getByTestId('ribbon-footer').click();
-    await page.getByPlaceholder('Footer appears at bottom of each page').fill('Footer note');
-    await page.getByLabel('Show page numbers in footer').check();
+    await page.getByTestId('footer-center').fill('Footer note');
+    await page.getByTestId('hf-page-numbers').check();
     await page.getByRole('button', { name: 'Done' }).click();
     await expect(page.locator('.doc-page-shell-label').first()).toContainText('Page 1 of');
     await expect(page.getByText('Footer note')).toBeVisible();
