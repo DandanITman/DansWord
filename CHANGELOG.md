@@ -6,6 +6,29 @@ file inside the app.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.8]
+
+Documentation and the project website. No behaviour changes in the app.
+
+### Changed
+
+- **The website shows the actual application.** It previously showed a
+  hand-drawn mock-up of a window that matched nothing in the app, and listed
+  tabs and features that do not exist — a Design tab, a Mailings tab and mail
+  merge, which was removed from the codebase some time ago. Every screenshot
+  is now a real render, generated from the app by a Playwright spec so they
+  can be refreshed rather than going stale:
+  `DANSWORD_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts`.
+- **The site uses Word's own palette** — the #2B579A brand blue, Office's warm
+  grey surfaces and Segoe UI — so it looks like it belongs to the application
+  it advertises. The gradient headline and the emoji bullet list are gone.
+- **A screenshot tour** with ribbon-style tabs: start screen, writing, insert,
+  references, review, navigation and dark mode. The tabs are keyboard
+  navigable, as the app's own ribbon now is.
+- **The README leads with what the app is for** rather than a feature dump,
+  shows a real screenshot, and points at `FEATURES.md` as the honest list —
+  the one that records what is missing as well as what is built.
+
 ## [0.2.7]
 
 Headers and footers become real three-zone regions — the third of the four

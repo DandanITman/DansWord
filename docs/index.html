@@ -5,181 +5,274 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="DansWord — a non-profit educational project and free Word alternative for everyone. Open source for anyone to edit."
+      content="DansWord — a free, open-source word processor for Windows. A non-profit educational project: no subscription, no account, your files stay on your machine."
     />
-    <title>DansWord — Free Word Alternative · Open Source</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,800;1,9..40,400&family=IBM+Plex+Mono:wght@500&display=swap"
-      rel="stylesheet"
+    <meta property="og:title" content="DansWord — a free word processor for everyone" />
+    <meta
+      property="og:description"
+      content="Free and open source. Opens and saves .docx. Runs offline on Windows."
     />
+    <meta property="og:image" content="shots/editor.png" />
+    <title>DansWord — a free word processor for everyone</title>
+    <link rel="icon" href="logo.png" />
     <link rel="stylesheet" href="site.css" />
   </head>
   <body>
-    <div class="paper-bg" aria-hidden="true"></div>
-
     <header class="topbar">
       <a class="brand" href="#top">
-        <img src="logo.png" alt="" class="brand-logo" width="32" height="32" />
+        <img src="logo.png" alt="" class="brand-logo" width="28" height="28" />
         <span>DansWord</span>
       </a>
       <nav class="topnav">
-        <a href="#about">About</a>
-        <a href="#features">Features</a>
-        <a href="#opensource">Open Source</a>
-        <a href="https://github.com/DandanITman/DansWord" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="#tour">Take a look</a>
+        <a href="#what">What it does</a>
+        <a href="#why">Why it exists</a>
+        <a href="#build">Build it yourself</a>
+        <a class="topnav-cta" href="#download">Download</a>
       </nav>
     </header>
 
     <main id="top">
+      <!-- Hero ---------------------------------------------------------- -->
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">Non-profit · Educational · Free for everyone</p>
-          <h1>
-            Write freely.<br />
-            <span class="gradient-text">No subscription. No catch.</span>
-          </h1>
+          <p class="eyebrow">Free · Open source · Non-profit educational project</p>
+          <h1>A word processor that doesn't ask for your card.</h1>
           <p class="lede">
-            DansWord is a <strong>non-profit educational project</strong> — a
-            <strong>free alternative to Word for everyone</strong>. The full source code is
-            <strong>open source for anyone to edit</strong>, so students, teachers, families, and
-            contributors can use, learn from, and improve it without subscriptions or license fees.
+            DansWord writes essays, letters, reports and CVs — with the ribbon, the styles and the
+            <code>.docx</code> files you already know. It runs on your own Windows PC, works
+            offline, and costs nothing. Ever.
           </p>
 
           <div class="cta-row">
-            <a id="download-btn" class="btn btn-primary" href="#download">
-              <span class="btn-icon">⬇</span>
-              Download for Windows
-            </a>
-            <a class="btn btn-secondary" href="https://github.com/DandanITman/DansWord" target="_blank" rel="noreferrer">
-              View source on GitHub
-            </a>
+            <a id="download-btn" class="btn btn-primary" href="#download">Download for Windows</a>
+            <a
+              class="btn btn-ghost"
+              href="https://github.com/DandanITman/DansWord"
+              target="_blank"
+              rel="noreferrer"
+              >Read the source</a
+            >
           </div>
+          <p id="download-meta" class="download-meta">Checking for the latest release…</p>
 
-          <p id="download-meta" class="download-meta">Fetching latest release…</p>
-
-          <ul class="hero-badges">
-            <li>🎓 Built for learning</li>
-            <li>🔓 Open source — edit the code yourself</li>
-            <li>💻 Offline-first Windows app</li>
-            <li>📄 DOCX + native .dansword format</li>
+          <ul class="hero-facts">
+            <li><strong>No account.</strong> Nothing to sign up for.</li>
+            <li><strong>No cloud.</strong> Your documents never leave the machine.</li>
+            <li><strong>No lock-in.</strong> Saves the same .docx Word does.</li>
           </ul>
         </div>
 
-        <div class="hero-preview" aria-hidden="true">
-          <div class="app-window">
-            <div class="app-titlebar">
-              <span class="dot red"></span>
-              <span class="dot yellow"></span>
-              <span class="dot green"></span>
-              <span class="app-title">Essay Draft — DansWord</span>
-            </div>
-            <div class="app-ribbon">
-              <span class="active">Home</span>
-              <span>Insert</span>
-              <span>Design</span>
-              <span>Layout</span>
-              <span>References</span>
-              <span>Review</span>
-            </div>
-            <div class="app-doc">
-              <h2>My Science Report</h2>
-              <p>DansWord helps you focus on <em>ideas</em>, not licensing fees.</p>
-              <p class="muted">Free. Local. Yours to study and improve.</p>
-            </div>
-          </div>
-          <div class="floating-note note-1">100% free</div>
-          <div class="floating-note note-2">fork me on GitHub</div>
-        </div>
+        <figure class="hero-shot">
+          <img
+            src="shots/editor.png"
+            alt="DansWord editing a document titled The Water Cycle, showing the Home ribbon with the clipboard, font, paragraph and styles groups"
+            width="1440"
+            height="900"
+            loading="eager"
+          />
+          <figcaption>The real thing — every screenshot on this page is the actual app.</figcaption>
+        </figure>
       </section>
 
-      <section id="about" class="panel">
-        <div class="about-header">
-          <img src="logo.png" alt="DansWord logo" class="about-logo" width="112" height="112" />
-          <div class="about-copy">
-            <h2>Why DansWord exists</h2>
-            <p class="section-lede">
-              A non-profit educational project and free Word alternative for everyone — open source
-              for anyone to edit.
-            </p>
-          </div>
-        </div>
-        <div class="cards three">
-          <article class="card">
-            <h3>🎓 Non-profit & educational</h3>
-            <p>
-              DansWord is a community education project — not a commercial product. The goal is to
-              help people learn writing, formatting, and software literacy without a paywall.
-            </p>
-          </article>
-          <article class="card">
-            <h3>🌍 Free Word alternative</h3>
-            <p>
-              Familiar ribbon-style editing, spell check, templates, and DOCX support — without
-              Microsoft 365 subscriptions or license keys.
-            </p>
-          </article>
-          <article class="card">
-            <h3>🔧 Open source — anyone can edit</h3>
-            <p>
-              The full source code is public on GitHub. Anyone can read it, fork it, fix bugs, add
-              features, or adapt it for a classroom, club, or personal project.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section id="features" class="panel alt">
-        <h2>What you get today</h2>
-        <ul class="feature-grid">
-          <li>Word's ribbon, tab for tab — File, Home, Insert, Draw, Design, Layout, References, Mailings, Review, View</li>
-          <li>Rich text: styles and style sets, themes, lists, tables, pictures with Word-style handles and wrapping, text boxes, ink</li>
-          <li>References: contents, footnotes and endnotes, citations, captions, index — and mail merge</li>
-          <li>Open & save DOCX, RTF, HTML, TXT, and native .dansword files</li>
-          <li>Spell check and grammar check, AutoCorrect, thesaurus, track changes, compare, find & replace</li>
-          <li>Templates for letters, reports, and resumes; auto-save and version history</li>
-          <li>Runs locally on Windows — your documents stay on your machine</li>
-        </ul>
-      </section>
-
-      <section id="opensource" class="panel">
-        <h2>Open source — anyone can edit</h2>
+      <!-- Tour ---------------------------------------------------------- -->
+      <section id="tour" class="panel">
+        <h2>Take a look around</h2>
         <p class="section-lede">
-          DansWord is licensed for open collaboration. Clone the repo, run it locally, send pull
-          requests, or fork it for your own classroom or club project.
+          Click a tab, the way you would in the app itself.
         </p>
-        <div class="code-block">
-          <code>git clone https://github.com/DandanITman/DansWord.git</code>
-          <code>cd DansWord && npm install && npm run dev</code>
+
+        <div class="tour">
+          <div class="tour-tabs" role="tablist" aria-label="Screenshots">
+            <button role="tab" aria-selected="true" data-shot="home">Start screen</button>
+            <button role="tab" aria-selected="false" data-shot="editor">Writing</button>
+            <button role="tab" aria-selected="false" data-shot="insert">Insert</button>
+            <button role="tab" aria-selected="false" data-shot="references">References</button>
+            <button role="tab" aria-selected="false" data-shot="review">Review</button>
+            <button role="tab" aria-selected="false" data-shot="navigation">Navigation</button>
+            <button role="tab" aria-selected="false" data-shot="dark">Dark mode</button>
+          </div>
+
+          <figure class="tour-stage">
+            <img id="tour-image" src="shots/home.png" alt="" width="1440" height="900" />
+            <figcaption id="tour-caption">
+              Pick up where you left off, or start from a template.
+            </figcaption>
+          </figure>
         </div>
-        <p>
-          See <a href="https://github.com/DandanITman/DansWord/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>
-          for how to contribute. Tests run automatically on every pull request.
+      </section>
+
+      <!-- What it does -------------------------------------------------- -->
+      <section id="what" class="panel alt">
+        <h2>What it does</h2>
+        <p class="section-lede">
+          Everything below is built and working today. Anything missing is listed honestly in
+          <a href="https://github.com/DandanITman/DansWord/blob/main/docs/FEATURES.md">FEATURES.md</a>
+          — including what DansWord still can't do.
+        </p>
+
+        <div class="cards">
+          <article class="card">
+            <h3>Write</h3>
+            <p>
+              Fonts, colours, text effects, bullets, numbering, checklists and multilevel lists,
+              tables you can size to the inch, pictures with Word-style handles and seven wrap
+              modes, shapes, text boxes and freehand ink.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Structure</h3>
+            <p>
+              A styles gallery, style sets, a table of contents that keeps itself current,
+              footnotes and endnotes, captions, cross-references, an index, and citations in APA,
+              MLA, Chicago or IEEE.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Check</h3>
+            <p>
+              Spell check in English, German, Spanish and French, a grammar checker, AutoCorrect,
+              an offline thesaurus, word count with readability, and an accessibility checker for
+              alt text, headings and contrast.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Review</h3>
+            <p>
+              Track changes with insertions <em>and</em> deletions, a reviewing pane, document
+              compare, comments anchored to the text, and Editing / Reviewing / Viewing modes.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Share</h3>
+            <p>
+              Open and save <code>.docx</code>, <code>.rtf</code>, <code>.html</code>,
+              <code>.txt</code> and the native <code>.dansword</code>. Export a PDF. Print with a
+              preview so you can see the page breaks first.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Stay safe</h3>
+            <p>
+              Auto-save, up to twenty versions kept per document, and a delete that goes to the
+              recycle bin rather than nowhere. No telemetry and no network calls of its own.
+            </p>
+          </article>
+        </div>
+
+        <p class="keyboard-note">
+          <strong>Keyboard first.</strong> The shortcuts are Word's — Ctrl+B, Ctrl+K, Ctrl+G, F7 —
+          and the ribbon itself is fully keyboard-operable: arrow along the tabs, open a menu, and
+          walk it without touching the mouse. Alt+Q searches every command by name.
         </p>
       </section>
 
-      <section id="download" class="panel download-panel alt">
+      <!-- Why ----------------------------------------------------------- -->
+      <section id="why" class="panel">
+        <h2>Why it exists</h2>
+        <div class="why-grid">
+          <div>
+            <p class="section-lede">
+              Writing a school essay shouldn't need a subscription.
+            </p>
+            <p>
+              DansWord is a non-profit educational project. It was built so students, teachers,
+              families and anyone else who needs to write can do it without paying for office
+              software — and so that people learning to program have a real, working application
+              they can read end to end.
+            </p>
+            <p>
+              It is not trying to be a clone. It borrows the layout conventions a Word user already
+              has in their fingers, then stops. Where it differs, it says so.
+            </p>
+          </div>
+          <table class="compare">
+            <caption class="sr-only">DansWord compared with a typical commercial office suite</caption>
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">DansWord</th>
+                <th scope="col">Typical suite</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Cost</th>
+                <td class="yes">Free</td>
+                <td>Subscription</td>
+              </tr>
+              <tr>
+                <th scope="row">Account required</th>
+                <td class="yes">No</td>
+                <td>Usually</td>
+              </tr>
+              <tr>
+                <th scope="row">Works offline</th>
+                <td class="yes">Always</td>
+                <td>Sometimes</td>
+              </tr>
+              <tr>
+                <th scope="row">Source code</th>
+                <td class="yes">Yours to read</td>
+                <td>Closed</td>
+              </tr>
+              <tr>
+                <th scope="row">Telemetry</th>
+                <td class="yes">None</td>
+                <td>Common</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Build --------------------------------------------------------- -->
+      <section id="build" class="panel alt">
+        <h2>Build it yourself</h2>
+        <p class="section-lede">
+          Three commands and it's running on your machine. Pull requests welcome — the tests run on
+          every one.
+        </p>
+        <pre class="code-block"><code>git clone https://github.com/DandanITman/DansWord.git
+cd DansWord
+npm install &amp;&amp; npm run dev</code></pre>
+        <p class="fine-print">
+          <a href="https://github.com/DandanITman/DansWord/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>
+          explains the layout of the code ·
+          <a href="https://github.com/DandanITman/DansWord/blob/main/docs/testing.md">testing.md</a>
+          explains how the tests are written · every test drives the app through the same controls a
+          person clicks.
+        </p>
+      </section>
+
+      <!-- Download ------------------------------------------------------ -->
+      <section id="download" class="panel download-panel">
         <h2>Get DansWord</h2>
-        <p>Windows 10/11 · Free download · No account required</p>
+        <p class="section-lede">Windows 10 and 11 · free · no account</p>
         <a id="download-btn-bottom" class="btn btn-primary btn-lg" href="#">
-          Download latest Windows build
+          Download the latest Windows build
         </a>
         <p class="fine-print">
-          Prefer to build yourself? Run <code>npm run package</code> from the repository.
-          Older releases are on the
-          <a href="https://github.com/DandanITman/DansWord/releases" target="_blank" rel="noreferrer">Releases</a>
-          page.
+          Older builds live on the
+          <a href="https://github.com/DandanITman/DansWord/releases" target="_blank" rel="noreferrer"
+            >Releases</a
+          >
+          page. Prefer to compile it? <code>npm run package</code>.
         </p>
       </section>
     </main>
 
     <footer class="footer">
       <p>
-        <strong>DansWord</strong> — non-profit educational project · free Word alternative for everyone · open source for anyone to edit ·
+        <strong>DansWord</strong> — a free word processor for everyone.
         <a href="https://github.com/DandanITman/DansWord">github.com/DandanITman/DansWord</a>
+        · <a href="https://github.com/DandanITman/DansWord/blob/main/CHANGELOG.md">Changelog</a>
+        · <a href="https://github.com/DandanITman/DansWord/blob/main/LICENSE">MIT licence</a>
       </p>
-      <p class="fine-print">Not affiliated with Microsoft or Microsoft Word. DOCX is an open file format.</p>
+      <p class="fine-print">
+        An independent open-source project. Not affiliated with Microsoft. DOCX is an open,
+        published file format.
+      </p>
     </footer>
 
     <script src="site.js"></script>

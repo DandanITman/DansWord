@@ -44,4 +44,58 @@ function prettySize(bytes) {
   return `${mb.toFixed(1)} MB`;
 }
 
+/**
+ * The screenshot tour. Each tab swaps the image and its caption; the captions
+ * live here rather than in the markup so the two cannot drift apart.
+ */
+const SHOTS = {
+  home: 'Pick up where you left off, or start from a template.',
+  editor: 'The Home tab: clipboard, font, paragraph, a live styles gallery, and find.',
+  insert: 'Tables, pictures, shapes, links, headers and footers, symbols and emoji.',
+  references: 'Contents, footnotes, citations and bibliography, captions and an index.',
+  review: 'Spelling and grammar, comments, track changes, compare, accessibility.',
+  navigation: 'The navigation pane searches the document and lists its headings.',
+  dark: 'Dark mode, for writing at night.',
+};
+
+function setUpTour() {
+  const tabs = Array.from(document.querySelectorAll('.tour-tabs button'));
+  const image = document.getElementById('tour-image');
+  const caption = document.getElementById('tour-caption');
+  if (!tabs.length || !image || !caption) return;
+
+  const show = (tab) => {
+    const shot = tab.dataset.shot;
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
+    image.src = `shots/${shot}.png`;
+    image.alt = `DansWord — ${tab.textContent.trim()}`;
+    caption.textContent = SHOTS[shot] ?? '';
+  };
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => show(tab));
+    // A tablist owes arrow-key navigation, the same as the app's own ribbon.
+    tab.addEventListener('keydown', (event) => {
+      const index = tabs.indexOf(tab);
+      const next =
+        event.key === 'ArrowRight'
+          ? (index + 1) % tabs.length
+          : event.key === 'ArrowLeft'
+            ? (index - 1 + tabs.length) % tabs.length
+            : null;
+      if (next === null) return;
+      event.preventDefault();
+      tabs[next].focus();
+      show(tabs[next]);
+    });
+  });
+
+  // Preload the rest so switching tabs does not flash an empty frame.
+  Object.keys(SHOTS).forEach((shot) => {
+    const img = new Image();
+    img.src = `shots/${shot}.png`;
+  });
+}
+
 loadLatestRelease();
+setUpTour();

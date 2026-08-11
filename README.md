@@ -1,61 +1,41 @@
 <p align="center">
-  <img src="docs/logo.png" alt="DansWord logo" width="128" height="128" />
+  <img src="docs/logo.png" alt="" width="112" height="112" />
 </p>
 
-# DansWord
+<h1 align="center">DansWord</h1>
 
-**A non-profit educational project — a free Word alternative for everyone, open source for anyone to edit.**
+<p align="center">
+  <strong>A word processor that doesn't ask for your card.</strong><br />
+  Free, open source, and yours to keep — a non-profit educational project.
+</p>
 
-DansWord is built so students, teachers, families, and anyone who needs to write documents can do it **without paying for office software**. The full source code is on GitHub: **anyone can read it, fork it, learn from it, and contribute improvements.**
+<p align="center">
+  <a href="https://dandanitman.github.io/DansWord/">Website</a> ·
+  <a href="https://github.com/DandanITman/DansWord/releases/latest">Download</a> ·
+  <a href="docs/FEATURES.md">Features</a> ·
+  <a href="CHANGELOG.md">Changelog</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a>
+</p>
 
-🌐 **Project site:** [dansword.github.io](https://dandanitman.github.io/DansWord/) (GitHub Pages)  
-📥 **Downloads:** [Latest Windows release](https://github.com/DandanITman/DansWord/releases/latest)
+---
 
-## Why DansWord?
+DansWord writes essays, letters, reports and CVs — with the ribbon, the styles and the `.docx`
+files you already know. It runs on your own Windows PC, works offline, and costs nothing.
 
-| | DansWord | Typical commercial office suite |
-|---|----------|----------------------------------|
-| Cost | **Free** | Subscription or license |
-| Mission | **Non-profit education** | Commercial product |
-| Source code | **Open — fork & edit** | Closed |
-| Privacy | **Local-first, offline** | Often cloud-dependent |
+There is **no account, no cloud, and no telemetry.** Your documents stay on your machine, and the
+app makes no network requests of its own.
 
-## Features
+<p align="center">
+  <img src="docs/shots/editor.png" alt="DansWord editing a document, showing the Home ribbon" width="820" />
+</p>
 
-- Home screen with recent files, pinned documents, and templates
-- An eight-tab ribbon — File, Home, Insert, Layout, References, Review, View,
-  Help — plus the contextual Draw, Picture Format and Table Layout tabs
-- A command search box (Alt+Q) that finds and runs any ribbon command by name
-- Rich text: fonts, colors, text effects, lists (bullets, numbering, multilevel,
-  checklists), left-to-right and right-to-left text, tables with full structure
-  and style editing, styles and style sets
-- Pictures with Word-style handles, rotation, seven wrap modes and drag
-  positioning with alignment guides; text boxes; shapes; freehand ink; emoji
-- References: table of contents, footnotes and endnotes, citations and
-  bibliography (APA, MLA, Chicago, IEEE), captions, cross-references, index
-- Open and save `.docx`, `.rtf`, `.html`, `.txt` and the native `.dansword`
-- Hunspell spell check in English, German, Spanish and French, plus a grammar
-  checker, AutoCorrect and an offline thesaurus
-- An accessibility checker for alt text, table headers, heading order, link
-  wording and colour contrast
-- Track changes with insertions *and* deletions, Display for Review, a reviewing
-  pane, document compare, anchored comments, and Editing / Reviewing / Viewing
-  modes
-- Five views plus Immersive Reader, find and replace, word count with
-  readability, zoom, light/dark theme
-- Auto-save, version history, rename, copy, print, PDF export
-- Windows installer (NSIS) with `.docx` / `.dansword` file associations
+## Try it
 
-See [docs/FEATURES.md](docs/FEATURES.md) for the full list, including known
-limitations.
+**Just want to use it?** Grab the
+[latest Windows build](https://github.com/DandanITman/DansWord/releases/latest), install, and open
+it. That's the whole process.
 
-## Quick start (users)
-
-1. Download the latest **Windows installer** from [Releases](https://github.com/DandanITman/DansWord/releases/latest)
-2. Install and open DansWord
-3. Create a blank document or pick a template
-
-## Quick start (developers)
+**Want to run the code?**
 
 ```bash
 git clone https://github.com/DandanITman/DansWord.git
@@ -64,46 +44,79 @@ npm install
 npm run dev
 ```
 
-### Testing
+## What it can do
 
-```bash
-npm run regression    # typecheck, build, unit, e2e, Electron, visual
-npm test              # unit tests only
-npm run test:e2e      # UI tests in a browser harness
-npm run test:electron # tests against a real Electron process
-```
+| | |
+|---|---|
+| **Write** | Fonts, colours and text effects · bullets, numbering, checklists and multilevel lists · tables you can size to the inch · pictures with Word-style handles and seven wrap modes · shapes, text boxes and freehand ink |
+| **Structure** | A live styles gallery and style sets · a table of contents that keeps itself current · footnotes and endnotes · captions, cross-references and an index · citations in APA, MLA, Chicago or IEEE |
+| **Check** | Spell check in English, German, Spanish and French · grammar checking · AutoCorrect · an offline thesaurus · word count with readability · an accessibility checker for alt text, headings and contrast |
+| **Review** | Track changes with insertions *and* deletions · a reviewing pane · document compare · comments anchored to the text · Editing / Reviewing / Viewing modes |
+| **Share** | Open and save `.docx`, `.rtf`, `.html`, `.txt` and the native `.dansword` · export PDF · print with a preview so you see the page breaks first |
+| **Keep safe** | Auto-save · up to twenty versions kept per document · delete goes to the recycle bin |
 
-Tests must reach the app through the controls a user actually clicks. There is
-deliberately no way for a test to drive the editor directly.
+The ribbon is fully keyboard-operable — arrow along the tabs, open a menu and walk it without
+touching the mouse. `Alt+Q` searches every command by name, and the shortcuts are the ones you
+already use: `Ctrl+B`, `Ctrl+K`, `Ctrl+G`, `F7`.
 
-See [docs/testing.md](docs/testing.md) for the complete testing guide.
+**[docs/FEATURES.md](docs/FEATURES.md) is the honest list** — it records what exists *and* what
+doesn't, including the known limitations.
 
-### Build installer
+## Why it exists
 
-```bash
-npm run package
-```
+Writing a school essay shouldn't need a subscription. DansWord is a non-profit educational
+project, built so students, teachers, families and anyone else who needs to write can do it
+without paying for office software — and so that people learning to program have a real, working
+application they can read end to end.
 
-Output: `apps/desktop/release/`
-
-## Project structure
-
-```
-apps/desktop/     Electron + React app
-packages/core/    Shared types, defaults, templates
-packages/openxml/ DOCX import/export
-docs/             Project site + documentation
-tests/            Playwright e2e, visual, fixtures
-```
+It is not trying to be a clone. It borrows the layout conventions a Word user already has in their
+fingers, then stops. Where it differs, it says so.
 
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome, and small ones are genuinely useful — a typo, a clearer error message,
+a missing test. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## License
+A few things worth knowing before you open a pull request:
 
-[MIT](LICENSE) — free to use, modify, and share.
+```bash
+npm run regression    # everything: typecheck, build, unit, e2e, Electron, visual
+npm test              # unit tests only
+npm run test:e2e      # the app driven through a browser harness
+npm run test:electron # against a real Electron process
+```
+
+**Tests reach the app through the controls a person actually clicks.** There is deliberately no
+back door for a test to drive the editor directly — a test that cannot click its way to the
+feature is testing the wrong thing. [docs/testing.md](docs/testing.md) explains the approach.
+
+Screenshots on the website are regenerated from the real app, never mocked up:
+
+```bash
+DANSWORD_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts
+```
+
+## How the code is laid out
+
+```
+apps/desktop/      Electron main process + the React app
+packages/core/     Shared types, defaults, templates, page setup
+packages/openxml/  DOCX, RTF and HTML import/export
+docs/              The project website and documentation
+tests/             Playwright e2e, Electron and visual tests
+```
+
+## Building an installer
+
+```bash
+npm run package     # output lands in apps/desktop/release/
+```
+
+## Licence
+
+[MIT](LICENSE) — use it, change it, share it, ship it.
 
 ---
 
-*DansWord is an independent open-source project. Not affiliated with Microsoft or Microsoft Word.*
+<sub>An independent open-source project. Not affiliated with Microsoft. DOCX is an open, published
+file format.</sub>
