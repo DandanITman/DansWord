@@ -28,6 +28,7 @@ interface StatusBarProps {
   readOnly?: boolean;
   onOpenProofing?: () => void;
   onOpenWordCount?: () => void;
+  onOpenGoTo?: () => void;
   onZoomToFit?: (fit: 'pageWidth' | 'onePage' | 'multiplePages') => void;
 }
 
@@ -55,15 +56,23 @@ export function StatusBar({
   readOnly = false,
   onOpenProofing,
   onOpenWordCount,
+  onOpenGoTo,
   onZoomToFit,
 }: StatusBarProps) {
 
   return (
     <div className="status-bar office-status" data-testid="status-bar">
       <div className="status-bar-left">
-        <span className="status-page-indicator" data-testid="status-page-indicator">
+        {/* Clicking the page count opens Go To, as it does in Word — the
+            word count beside it was already a button. */}
+        <button
+          className="status-flat-btn status-page-indicator"
+          onClick={onOpenGoTo}
+          title="Go to page (Ctrl+G)"
+          data-testid="status-page-indicator"
+        >
           Page {currentPage} of {pages}
-        </span>
+        </button>
         <span className="status-divider" />
         <button
           className="status-flat-btn"

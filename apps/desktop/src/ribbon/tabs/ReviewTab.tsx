@@ -202,7 +202,7 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
         <RibbonStack>
           <RibbonMenuButton
             icon={<span className="rb-glyph">◧</span>}
-            label="Display for Review"
+            label={MARKUP_VIEWS.find((v) => v.id === flags.markupView)?.label ?? 'Display for Review'}
             title="Choose how the changes are shown"
             testId="ribbon-markup-view"
             menuWidth={280}

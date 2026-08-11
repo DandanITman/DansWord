@@ -19,7 +19,6 @@ import {
   Pilcrow,
   PilcrowLeft,
   PilcrowRight,
-  Redo2,
   Scissors,
   Search,
   Sparkles,
@@ -28,7 +27,6 @@ import {
   Superscript,
   Type,
   Underline,
-  Undo2,
 } from 'lucide-react';
 import { BUILTIN_STYLES, STYLE_SETS } from '@dansword/core';
 import { ColorPickerButton } from '../../components/ColorPickerButton';
@@ -69,8 +67,9 @@ const LINE_SPACINGS = [
 
 export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
   const styleGallery = flags.customStyles.length ? flags.customStyles : BUILTIN_STYLES;
+  // Word's desktop Styles group is a gallery with the active style lit, not a
+  // separate "current style" box — the highlighted tile is the readout.
   const quickStyles = styleGallery.filter((style) => style.kind !== 'character').slice(0, 5);
-  const currentStyle = styleGallery.find((style) => style.id === (state.styleId || 'normal'));
 
   const changeCase = (mode: 'sentence' | 'lower' | 'upper' | 'capitalise' | 'toggle') => {
     if (!editor) return;
@@ -137,27 +136,6 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
               flags.formatPainterActive ? actions.onFormatPainterApply() : actions.onFormatPainterCopy()
             }
             testId="ribbon-format-painter"
-          />
-        </RibbonStack>
-      </RibbonGroup>
-
-      <RibbonGroup label="Undo">
-        <RibbonStack>
-          <RibbonButton
-            icon={<Undo2 size={14} />}
-            label="Undo"
-            title="Undo (Ctrl+Z)"
-            disabled={!state.canUndo}
-            onClick={() => editor?.chain().focus().undo().run()}
-            testId="ribbon-undo"
-          />
-          <RibbonButton
-            icon={<Redo2 size={14} />}
-            label="Redo"
-            title="Redo (Ctrl+Y)"
-            disabled={!state.canRedo}
-            onClick={() => editor?.chain().focus().redo().run()}
-            testId="ribbon-redo"
           />
         </RibbonStack>
       </RibbonGroup>
@@ -598,26 +576,32 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
 
       <RibbonGroup label="Styles" onLaunch={actions.onOpenStyleEditor} launchTitle="Styles pane">
         <div className="rb-style-gallery">
-          {/* Word for the web shows the style at the caret in one box rather
-              than a tile gallery. The whole gallery is one click away in the
-              menu, and the five tiles it replaces cost 250px the eight-tab
-              ribbon does not have. */}
-          <div className="rb-style-current" data-testid="ribbon-current-style">
-            <span
-              className="rb-style-current-name"
-              style={{
-                fontFamily: currentStyle?.fontFamily,
-                fontWeight: currentStyle?.bold ? 700 : 500,
-                fontStyle: currentStyle?.italic ? 'italic' : 'normal',
-                color: currentStyle?.color,
-              }}
+          {/* Word leads Styles with a live tile gallery, so applying Heading 1
+              is one click. The caret's current style stays as the first tile,
+              and the full list is still behind More. */}
+          {quickStyles.map((style) => (
+            <button
+              key={`tile-${style.id}`}
+              type="button"
+              className={`rb-style-tile${state.styleId === style.id ? ' is-active' : ''}`}
+              title={style.name}
+              data-testid={`style-tile-${style.id}`}
+              onClick={() => editor && applyDocumentStyle(editor, style)}
             >
-              {currentStyle?.name ?? 'Normal'}
-            </span>
-            <span className="rb-style-current-font">
-              {(currentStyle?.fontFamily ?? state.fontFamily)}, {state.fontSize}
-            </span>
-          </div>
+              <span
+                className="rb-style-preview"
+                style={{
+                  fontFamily: style.fontFamily,
+                  fontWeight: style.bold ? 700 : 400,
+                  fontStyle: style.italic ? 'italic' : 'normal',
+                  color: style.color,
+                }}
+              >
+                Aa
+              </span>
+              <span className="rb-style-name">{style.name}</span>
+            </button>
+          ))}
           <RibbonMenuButton
             icon={<Type size={14} />}
             title="Styles"
@@ -668,13 +652,27 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
 
       <RibbonGroup label="Editing">
         <RibbonStack>
-          <RibbonButton
+          {/* Word's Find is a split button whose menu carries Go To. */}
+          <RibbonSplitButton
             icon={<Search size={14} />}
             label="Find"
             title="Find (Ctrl+F)"
+            size="small"
             onClick={() => actions.onToggleFindReplace('find')}
             testId="ribbon-find"
-          />
+          >
+            <RibbonMenuItem
+              label="Find…"
+              hint="Ctrl+F"
+              onClick={() => actions.onToggleFindReplace('find')}
+            />
+            <RibbonMenuItem
+              label="Go To…"
+              hint="Ctrl+G"
+              onClick={actions.onOpenGoTo}
+              testId="ribbon-go-to"
+            />
+          </RibbonSplitButton>
           <RibbonButton
             icon={<span className="rb-glyph">⇄</span>}
             label="Replace"

@@ -17,6 +17,7 @@ import { ResizableImage } from '../extensions/ResizableImage';
 import { TrackInsert } from '../extensions/TrackInsert';
 import { TrackDelete } from '../extensions/TrackDelete';
 import { PageBreak } from '../extensions/PageBreak';
+import { ColumnBreak } from '../extensions/ColumnBreak';
 import { TableOfContents } from '../extensions/TableOfContents';
 import { CommentAnchor } from '../extensions/CommentAnchor';
 import { DocShape } from '../extensions/DocShape';
@@ -98,6 +99,7 @@ export function createExtensions(options: EditorExtensionOptions = {}): Extensio
     TrackInsert,
     TrackDelete,
     PageBreak,
+    ColumnBreak,
     TableOfContents,
     CommentAnchor,
     DocShape,

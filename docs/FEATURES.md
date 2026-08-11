@@ -10,6 +10,9 @@ View, Help**, plus three contextual tabs — **Draw**, **Picture Format** and
 Groups are labelled and open their dialogs from a corner launcher, as Word's do.
 File is a dropdown menu rather than a panel.
 
+Undo and redo live in the Quick Access toolbar in the header, as they do in
+Word, rather than in a ribbon group.
+
 The header carries the document name, which opens Rename when clicked, and a
 search box (Alt+Q) that finds and runs any ribbon command. The right-hand end of
 the tab strip holds Comments, an Editing / Reviewing / Viewing mode picker, and
@@ -36,7 +39,6 @@ the ribbon layout menu.
 
 - **Clipboard** — Paste as a split button with Keep Source Formatting, Merge
   Formatting and Keep Text Only; Cut, Copy, Format Painter
-- **Undo** — undo and redo
 - **Font** — family and size combo boxes, Grow/Shrink Font, Change Case
   (five modes), Clear All Formatting, bold, italic, underline with six underline
   styles, strikethrough, sub- and superscript, text effects (shadow, outline,
@@ -47,12 +49,14 @@ the ribbon layout menu.
   left-to-right and right-to-left text direction, Sort, Show/Hide formatting
   marks, the four alignments, line and paragraph spacing, shading, borders on
   any side, border colour, and a Paragraph dialog
-- **Styles** — Word's gallery (Normal, No Spacing, the headings, Title,
+- **Styles** — a live gallery of preview tiles with the caret's style lit, and
+  behind More the full set (Normal, No Spacing, the headings, Title,
   Subtitle, Quote, Intense Quote, List Paragraph and the character styles
   Emphasis, Strong, Subtle/Intense Emphasis, references and Book Title), a style
   editor for custom styles, and the eight style sets, which restyle the
   paragraphs already in the document rather than only the gallery
-- **Editing** — Find, Replace and Select
+- **Editing** — Find (a split button whose menu holds Go To), Replace and
+  Select
 
 Everything above tracks the caret: the ribbon shows the formatting at the
 cursor, not the formatting from the last edit. A mini toolbar appears above the
@@ -65,17 +69,15 @@ the dialogs, comments and synonyms.
 - **Tables** — the hover-to-size grid picker, a quick 3 × 3, and Delete Table
 - **Illustrations** — Pictures, Shapes (rectangle, oval, triangle, line, arrow)
   and Drawing, which inserts an ink canvas and opens the Draw tab
-- **Links** — hyperlinks and cross-references
-- **Table of Contents** — an automatic table built from the headings
-- **Bookmarks** — name a place in the document to refer back to
+- **Links** — hyperlinks, bookmarks and cross-references
 - **Comments** — New Comment
 - **Header & Footer** — header, footer, page numbers
 - **Text** — text boxes (simple, sidebar, pull quote), Drop Cap, Date & Time in
   three formats
 - **Symbols** — inline equation runs, a symbol gallery with a full picker of
-  eight Unicode subsets, horizontal lines
-- **Emojis** — around six hundred emoji in seven groups, searchable by name,
-  with a recently-used row that survives a restart
+  eight Unicode subsets, horizontal lines, and the emoji picker: around six
+  hundred emoji in seven groups, searchable by name, with a recently-used row
+  that survives a restart
 
 ## Draw (contextual)
 
@@ -89,8 +91,8 @@ Appears while a drawing canvas is selected, and closes when it is not.
 
 - **Page Setup** — margins gallery (Normal, Narrow, Moderate, Wide, Mirrored),
   orientation, six page sizes (Letter, A4, Legal, A5, Executive, Tabloid),
-  columns with an optional line between, breaks, line numbers (continuous or
-  restarting each page), automatic hyphenation
+  columns with an optional line between, page and column breaks, line numbers
+  (continuous or restarting each page), automatic hyphenation
 - **Paragraph** — left and right indent, space before and after
 - **Page Background** — watermark, page colour, page borders
 - Draggable margin markers on the ruler
@@ -162,7 +164,7 @@ for it.
 
 Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, Ctrl+P, Ctrl+Z/Y, Ctrl+B/I/U,
 Ctrl+L/E/R/J, Ctrl+1/2/5 (line spacing), Ctrl+0 (space before), Ctrl+M and
-Ctrl+Shift+M (indent), Ctrl+[ and Ctrl+] (font size), Ctrl+Shift+D (double
+Ctrl+Shift+M (indent), Ctrl+[ and Ctrl+] (font size), Ctrl+G (go to), Ctrl+Shift+D (double
 underline), Ctrl+Shift+K (small caps), Ctrl+K (hyperlink), Ctrl+F, Ctrl+H,
 Ctrl+Enter (page break), Ctrl+Shift+8 (formatting marks), Ctrl+F1 (collapse the
 ribbon), Ctrl+Shift+E (track changes), Ctrl+Alt+M (comment), Ctrl+Alt+F
@@ -208,8 +210,6 @@ marks, links, tables, lists and images.
 - Ink drawings, text boxes, endnotes, bookmarks, index entries, checklists and
   the generated bibliography/index blocks round-trip through `.dansword` and
   HTML, but DOCX export writes them as ordinary paragraphs
-- Shapes and text boxes have no contextual tab, so they cannot be wrapped or
-  repositioned from the ribbon the way pictures can
 - Compare works at paragraph level, not word level
 - The thesaurus is a built-in offline word list, not a licensed data set
 - Equations are typed as inline runs in Word's linear format rather than being
@@ -217,6 +217,8 @@ marks, links, tables, lists and images.
 - The accessibility checker reads the document, not the rendered page: it cannot
   judge whether alt text is *useful*, only whether it is there
 - Section breaks, macros and password protection are not built
+- Shapes and text boxes still have no Arrange controls; only pictures can be
+  wrapped or positioned from the ribbon
 
 ## Not in scope
 

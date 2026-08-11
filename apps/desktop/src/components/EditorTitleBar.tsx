@@ -79,10 +79,22 @@ export function EditorTitleBar({
         <button className="qat-btn" onClick={onSave} title="Save (Ctrl+S)" data-testid="titlebar-save">
           <Save size={16} />
         </button>
-        <button className="qat-btn" onClick={onUndo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+        <button
+          className="qat-btn"
+          onClick={onUndo}
+          disabled={!canUndo}
+          title="Undo (Ctrl+Z)"
+          data-testid="ribbon-undo"
+        >
           <Undo2 size={16} />
         </button>
-        <button className="qat-btn" onClick={onRedo} disabled={!canRedo} title="Redo (Ctrl+Y)">
+        <button
+          className="qat-btn"
+          onClick={onRedo}
+          disabled={!canRedo}
+          title="Redo (Ctrl+Y)"
+          data-testid="ribbon-redo"
+        >
           <Redo2 size={16} />
         </button>
         <button

@@ -115,6 +115,8 @@ export interface RibbonActions {
   onOpenProofing: () => void;
   onOpenThesaurus: () => void;
   onOpenWordCount: () => void;
+  /** Word's Ctrl+G — jump to a page, line or bookmark. */
+  onOpenGoTo: () => void;
   onSetLanguage: (language: string) => void;
   onToggleSpellCheck: () => void;
   onToggleGrammarCheck: () => void;

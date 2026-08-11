@@ -135,7 +135,7 @@ export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
             />
             <RibbonMenuItem
               label="Column"
-              onClick={() => editor?.chain().focus().insertPageBreak().run()}
+              onClick={() => editor?.chain().focus().insertColumnBreak().run()}
             />
             <RibbonMenuSeparator />
             <RibbonMenuItem

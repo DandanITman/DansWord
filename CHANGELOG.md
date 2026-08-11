@@ -6,6 +6,52 @@ file inside the app.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1]
+
+Word-parity pass over the ribbon: the audit compared every tab against Word
+2024 and this release closes the gaps that left commands missing or misplaced.
+
+### Added
+
+- **Go To (Ctrl+G)** — jump to a page, line or bookmark. Word's primary
+  long-document navigation had no equivalent here at all. It opens from the
+  Find split button and from the status bar's page indicator, which is now a
+  button rather than dead text.
+- **A real Styles gallery** on Home. Applying Heading 1 was two clicks into an
+  unlabelled `T` menu; it is now one click on a live preview tile, with the
+  caret's style lit and the full list still behind More.
+- **Select Column** and **Select Row** on the Table Layout tab.
+
+### Fixed
+
+- **"Select Table" selected the whole document.** It ran `selectAll()`, so
+  choosing it and then typing destroyed everything outside the table. It now
+  selects exactly the table.
+- **Layout > Breaks > Column inserted a page break**, silently — it called the
+  page-break command. Column breaks are now their own node and break the
+  column, not the page.
+- **Lock Aspect Ratio could not be unlocked.** The button read `imageActive`,
+  so it was lit whenever the tab was visible and only ever wrote `true`.
+- **Picture Height and Width were in screen pixels**, which mean nothing on a
+  printed page. They are in inches, as Word's are.
+- **Display for Review never showed the current setting** — the label was
+  hardcoded, so the review state was invisible until the menu was opened.
+- The **dialog launcher** used the same chevron as every dropdown. It is now a
+  corner arrow parked in the group's corner, the way Word draws it.
+- The command search offered a **"Review › Protect"** breadcrumb for a group
+  that does not exist.
+
+### Changed
+
+- **Home follows Word's group order** — Clipboard, Font, Paragraph, Styles,
+  Editing. The Undo group is gone; undo and redo remain in the Quick Access
+  toolbar, where Word keeps them.
+- **Insert drops from eleven groups to eight.** Bookmark moves into Links and
+  Emoji into Symbols, both as Word places them, and the duplicate Table of
+  Contents group is gone — References still has it.
+- View's **"Window" group is now "Tools"**. It held Find, Print and Word Count,
+  none of which are window commands.
+
 ## [Unreleased]
 
 ### Added

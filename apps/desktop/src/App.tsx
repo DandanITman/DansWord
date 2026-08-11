@@ -39,6 +39,7 @@ import { applyPrintPageSetup } from './utils/printStyles';
 import { StyleEditorDialog } from './components/StyleEditorDialog';
 import { WatermarkDialog } from './components/WatermarkDialog';
 import { WordCountDialog } from './components/WordCountDialog';
+import { GoToDialog } from './components/GoToDialog';
 import { HomeScreen } from './components/HomeScreen';
 import { Ribbon } from './ribbon/Ribbon';
 import { CommandPalette } from './components/CommandPalette';
@@ -220,6 +221,7 @@ export default function App() {
   const [styleEditorOpen, setStyleEditorOpen] = useState(false);
   const [watermarkOpen, setWatermarkOpen] = useState(false);
   const [wordCountOpen, setWordCountOpen] = useState(false);
+  const [goToOpen, setGoToOpen] = useState(false);
   const [dialog, setDialog] = useState<
     | null
     | 'font'
@@ -1048,6 +1050,7 @@ export default function App() {
         setProofingOpen(false);
       },
       onOpenWordCount: () => setWordCountOpen(true),
+      onOpenGoTo: () => setGoToOpen(true),
       onSetLanguage: (language) => setSettings((prev) => ({ ...prev, language })),
       onToggleSpellCheck: () =>
         setSettings((prev) => ({ ...prev, spellCheckEnabled: !prev.spellCheckEnabled })),
@@ -1215,6 +1218,11 @@ export default function App() {
         e.preventDefault();
         setFindOpen(true);
         setFindFocus('find');
+      }
+      // Word's Ctrl+G. Without it a long document had no way to jump to a page.
+      if (editorOnly && e.ctrlKey && key === 'g') {
+        e.preventDefault();
+        setGoToOpen(true);
       }
       // Ctrl+H is Replace: it must land in the replace field, not repeat Ctrl+F.
       if (editorOnly && e.ctrlKey && key === 'h') {
@@ -1569,6 +1577,7 @@ export default function App() {
             readOnly={readOnly}
             onOpenProofing={() => setProofingOpen(true)}
             onOpenWordCount={() => setWordCountOpen(true)}
+            onOpenGoTo={() => setGoToOpen(true)}
             onZoomToFit={ribbonActions.onZoomToFit}
           />
           <MiniToolbar
@@ -1633,6 +1642,12 @@ export default function App() {
         editor={editor}
         pages={wordStats.pages}
         onClose={() => setWordCountOpen(false)}
+      />
+      <GoToDialog
+        open={goToOpen}
+        editor={editor}
+        pages={wordStats.pages}
+        onClose={() => setGoToOpen(false)}
       />
       <StyleEditorDialog
         open={styleEditorOpen}

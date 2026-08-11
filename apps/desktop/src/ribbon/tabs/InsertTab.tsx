@@ -8,7 +8,6 @@ import {
   Hash,
   Image as ImageIcon,
   Link as LinkIcon,
-  ListOrdered,
   MessageSquarePlus,
   Minus,
   Omega,
@@ -242,6 +241,15 @@ export function InsertTab({ editor, state, actions, flags }: RibbonTabProps) {
             onClick={setLink}
             testId="ribbon-link"
           />
+          {/* Word keeps Bookmark in Links, and Table of Contents only on
+              References — so Insert drops from eleven groups to eight. */}
+          <RibbonButton
+            icon={<BookmarkIcon size={14} />}
+            label="Bookmark"
+            title="Add a bookmark to this place in the document"
+            onClick={actions.onInsertBookmark}
+            testId="ribbon-bookmark"
+          />
           <RibbonButton
             icon={<ArrowRight size={14} />}
             label="Cross-reference"
@@ -250,28 +258,6 @@ export function InsertTab({ editor, state, actions, flags }: RibbonTabProps) {
             testId="ribbon-cross-reference"
           />
         </RibbonStack>
-      </RibbonGroup>
-
-      <RibbonGroup label="Table of Contents">
-        <RibbonButton
-          icon={<ListOrdered size={22} className="icon-toc" />}
-          label="Table of Contents"
-          title="Insert a table of contents built from the headings"
-          size="large"
-          onClick={actions.onInsertToc}
-          testId="ribbon-insert-toc"
-        />
-      </RibbonGroup>
-
-      <RibbonGroup label="Bookmarks">
-        <RibbonButton
-          icon={<BookmarkIcon size={22} />}
-          label="Bookmarks"
-          title="Add a bookmark to this place in the document"
-          size="large"
-          onClick={actions.onInsertBookmark}
-          testId="ribbon-bookmark"
-        />
       </RibbonGroup>
 
       <RibbonGroup label="Comments">
@@ -427,18 +413,14 @@ export function InsertTab({ editor, state, actions, flags }: RibbonTabProps) {
             onClick={() => editor?.chain().focus().setHorizontalRule().run()}
             testId="ribbon-horizontal-rule"
           />
+          <RibbonButton
+            icon={<Smile size={14} />}
+            label="Emoji"
+            title="Insert an emoji"
+            onClick={actions.onOpenEmojiPicker}
+            testId="ribbon-emoji"
+          />
         </RibbonStack>
-      </RibbonGroup>
-
-      <RibbonGroup label="Emojis">
-        <RibbonButton
-          icon={<Smile size={22} />}
-          label="Emoji"
-          title="Insert an emoji"
-          size="large"
-          onClick={actions.onOpenEmojiPicker}
-          testId="ribbon-emoji"
-        />
       </RibbonGroup>
     </>
   );

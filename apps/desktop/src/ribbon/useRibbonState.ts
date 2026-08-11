@@ -45,6 +45,7 @@ export interface RibbonState {
   imageWrap: string;
   imageWidth: number | null;
   imageHeight: number | null;
+  imageLockAspect: boolean;
   imageRotation: number;
   imageFrame: string;
   imageBorderColor: string | null;
@@ -108,6 +109,7 @@ const EMPTY: RibbonState = {
   imageWrap: 'square',
   imageWidth: null,
   imageHeight: null,
+  imageLockAspect: true,
   imageRotation: 0,
   imageFrame: 'none',
   imageBorderColor: null,
@@ -210,6 +212,7 @@ export function useRibbonState(editor: Editor | null): RibbonState {
         imageWrap: String(image.wrap ?? 'square'),
         imageWidth: image.width == null ? null : Number(image.width),
         imageHeight: image.height == null ? null : Number(image.height),
+        imageLockAspect: image.lockAspect !== false,
         imageRotation: Number(image.rotation ?? 0),
         imageFrame: String(image.frame ?? 'none'),
         imageBorderColor: (image.borderColor as string | undefined) ?? null,

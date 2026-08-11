@@ -248,6 +248,34 @@ test.describe('Reworked features', () => {
       .not.toBeNull();
   });
 
+  /**
+   * Layout > Breaks > Column called insertPageBreak, so it silently gave the
+   * user a page break instead. The two must produce different nodes.
+   */
+  test('TC-LAY-010: a column break is not a page break', async ({ page }) => {
+    await openBlankDocument(page);
+    await typeInEditor(page, 'before');
+
+    await switchRibbonTab(page, 'pageLayout');
+    await page.getByTestId('layout-breaks').click();
+    await page.getByRole('menuitem', { name: 'Column' }).click();
+
+    await expect(page.getByTestId('word-editor').locator('[data-column-break]')).toHaveCount(1);
+    await expect(page.getByTestId('word-editor').locator('[data-page-break]')).toHaveCount(0);
+  });
+
+  /** Word's Ctrl+G. There was no Go To command anywhere before. */
+  test('TC-VIEW-010: Go To opens from the status bar page indicator', async ({ page }) => {
+    await openBlankDocument(page);
+    await page.getByTestId('status-page-indicator').click();
+
+    await expect(page.getByTestId('go-to-dialog')).toBeVisible();
+    await page.getByTestId('go-to-value').fill('1');
+    await page.getByTestId('go-to-confirm').click();
+
+    await expect(page.getByTestId('go-to-dialog')).toBeHidden();
+  });
+
   test('TC-REV-009: add to dictionary stops a word being flagged', async ({ page }) => {
     await page.evaluate(() => {
       window.__DANSWORD_TEST__?.setSpellCheckResults([false]);

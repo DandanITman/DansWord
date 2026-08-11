@@ -12,6 +12,7 @@ import {
   Table2,
   Trash2,
 } from 'lucide-react';
+import { CellSelection, selectedRect } from '@tiptap/pm/tables';
 import { ColorPickerButton } from '../../components/ColorPickerButton';
 import { SHADING_COLORS } from '../../constants/colorSwatches';
 import { TABLE_STYLES } from '../../extensions/TableFormatting';
@@ -34,6 +35,31 @@ import type { RibbonTabProps } from '../types';
 export function TableLayoutTab({ editor, state, actions }: RibbonTabProps) {
   const chain = () => editor?.chain().focus();
 
+  /**
+   * Word's Select menu scopes to the table part, never the document. Going
+   * through prosemirror-tables' own rect keeps "Select Table" from becoming
+   * Select All, which would let the next keystroke wipe the document.
+   */
+  const selectTablePart = (part: 'row' | 'column' | 'table') => {
+    if (!editor) return;
+    const { state: pmState } = editor.view;
+    const rect = selectedRect(pmState);
+    if (!rect) return;
+    const anchorCell =
+      part === 'row' ? rect.map.map[rect.top * rect.map.width]
+      : part === 'column' ? rect.map.map[rect.left]
+      : rect.map.map[0];
+    const headCell =
+      part === 'row' ? rect.map.map[rect.top * rect.map.width + rect.map.width - 1]
+      : part === 'column' ? rect.map.map[(rect.map.height - 1) * rect.map.width + rect.left]
+      : rect.map.map[rect.map.width * rect.map.height - 1];
+    const tr = pmState.tr.setSelection(
+      CellSelection.create(pmState.doc, rect.tableStart + anchorCell, rect.tableStart + headCell),
+    );
+    editor.view.dispatch(tr);
+    editor.view.focus();
+  };
+
   return (
     <>
       <RibbonGroup label="Table">
@@ -45,7 +71,9 @@ export function TableLayoutTab({ editor, state, actions }: RibbonTabProps) {
             testId="table-select"
           >
             <RibbonMenuItem label="Select Cell" onClick={() => chain()?.selectParentNode().run()} />
-            <RibbonMenuItem label="Select Table" onClick={() => chain()?.selectAll().run()} />
+            <RibbonMenuItem label="Select Column" onClick={() => selectTablePart('column')} />
+            <RibbonMenuItem label="Select Row" onClick={() => selectTablePart('row')} />
+            <RibbonMenuItem label="Select Table" onClick={() => selectTablePart('table')} />
           </RibbonMenuButton>
           <RibbonButton
             icon={<Settings2 size={14} />}

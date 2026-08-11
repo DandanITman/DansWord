@@ -166,7 +166,9 @@ export function buildCommands(): RibbonCommand[] {
     { id: 'review.noMarkup', label: 'Show no markup', tab: 'review', group: 'Tracking', run: (c) => c.actions.onSetMarkupView('none') },
     { id: 'review.reviewingPane', label: 'Reviewing pane', tab: 'review', group: 'Tracking', run: (c) => c.actions.onToggleReviewingPane() },
     { id: 'review.compare', label: 'Compare documents', tab: 'review', group: 'Compare', keywords: ['diff'], run: (c) => c.actions.onCompareDocuments() },
-    { id: 'review.restrict', label: 'Restrict editing', tab: 'review', group: 'Protect', keywords: ['read only', 'lock'], run: (c) => c.actions.onToggleRestrictEditing() },
+    // There is no Protect group on the tab — the mode picker owns this flag —
+    // so the breadcrumb points at where the control actually lives.
+    { id: 'review.restrict', label: 'Restrict editing', tab: 'review', group: 'Editing mode', keywords: ['read only', 'lock', 'protect'], run: (c) => c.actions.onToggleRestrictEditing() },
 
     // ---- View ----
     { id: 'view.print', label: 'Print layout', tab: 'view', group: 'Views', keywords: ['separate pages'], run: (c) => c.actions.onSetViewMode('print') },

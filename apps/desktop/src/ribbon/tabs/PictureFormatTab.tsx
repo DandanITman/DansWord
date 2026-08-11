@@ -31,8 +31,15 @@ export function PictureFormatTab({ editor, state, actions }: RibbonTabProps) {
   const update = (attrs: Record<string, unknown>) =>
     editor?.chain().focus().updateAttributes('image', attrs).run();
 
+  /** Word sizes pictures in inches, not screen pixels; CSS px are 1/96in. */
+  const PPI = 96;
+  const pxToIn = (px: number) => Math.round((px / PPI) * 100) / 100;
+  const inToPx = (inches: number) => Math.round(inches * PPI);
+
   const aspect =
-    state.imageWidth && state.imageHeight ? state.imageWidth / state.imageHeight : null;
+    state.imageLockAspect && state.imageWidth && state.imageHeight
+      ? state.imageWidth / state.imageHeight
+      : null;
 
   return (
     <>
@@ -203,35 +210,33 @@ export function PictureFormatTab({ editor, state, actions }: RibbonTabProps) {
         <RibbonStack>
           <RibbonSpin
             label="Height"
-            value={state.imageHeight ?? 0}
-            step={10}
-            max={2000}
-            suffix="px"
+            value={pxToIn(state.imageHeight ?? 0)}
+            step={0.1}
+            max={22}
+            suffix='"'
             testId="picture-height"
-            onChange={(value) =>
+            onChange={(value) => {
+              const height = Math.max(16, inToPx(value));
               update({
-                height: Math.max(16, Math.round(value)),
-                ...(aspect && state.imageWidth
-                  ? { width: Math.round(Math.max(16, value) * aspect) }
-                  : {}),
-              })
-            }
+                height,
+                ...(aspect && state.imageWidth ? { width: Math.round(height * aspect) } : {}),
+              });
+            }}
           />
           <RibbonSpin
             label="Width"
-            value={state.imageWidth ?? 0}
-            step={10}
-            max={2000}
-            suffix="px"
+            value={pxToIn(state.imageWidth ?? 0)}
+            step={0.1}
+            max={22}
+            suffix='"'
             testId="picture-width"
-            onChange={(value) =>
+            onChange={(value) => {
+              const width = Math.max(16, inToPx(value));
               update({
-                width: Math.max(16, Math.round(value)),
-                ...(aspect && state.imageHeight
-                  ? { height: Math.round(Math.max(16, value) / aspect) }
-                  : {}),
-              })
-            }
+                width,
+                ...(aspect && state.imageHeight ? { height: Math.round(width / aspect) } : {}),
+              });
+            }}
           />
         </RibbonStack>
         <RibbonStack>
@@ -246,8 +251,8 @@ export function PictureFormatTab({ editor, state, actions }: RibbonTabProps) {
             icon={<span className="rb-glyph">🔒</span>}
             label="Lock Aspect Ratio"
             title="Keep the proportions when resizing"
-            active={state.imageActive}
-            onClick={() => update({ lockAspect: true })}
+            active={state.imageLockAspect}
+            onClick={() => update({ lockAspect: !state.imageLockAspect })}
             testId="picture-lock-aspect"
           />
         </RibbonStack>

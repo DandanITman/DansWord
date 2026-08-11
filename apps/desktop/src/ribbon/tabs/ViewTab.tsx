@@ -184,7 +184,10 @@ export function ViewTab({ actions, flags }: RibbonTabProps) {
         </RibbonStack>
       </RibbonGroup>
 
-      <RibbonGroup label="Window">
+      {/* Word's View > Window is New Window / Split / Side by Side, none of
+          which exist in a single-window app. These are shortcuts, so the group
+          is named for what it holds rather than borrowing Word's label. */}
+      <RibbonGroup label="Tools">
         <RibbonStack>
           <RibbonButton
             icon={<Search size={14} />}

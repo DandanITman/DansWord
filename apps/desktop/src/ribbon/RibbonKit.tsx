@@ -62,7 +62,10 @@ export function RibbonGroup({
             aria-label={launchTitle ?? `${label} options`}
             onClick={onLaunch}
           >
-            <span aria-hidden>⌄</span>
+            {/* Word's launcher is a corner arrow, not a dropdown chevron —
+                the distinct glyph is how users tell "opens the full dialog"
+                apart from "opens a menu". */}
+            <span aria-hidden>⌟</span>
           </button>
         )}
       </div>

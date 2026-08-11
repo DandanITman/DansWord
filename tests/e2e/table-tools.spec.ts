@@ -139,6 +139,25 @@ test.describe('Table tools', () => {
     await expect(editor(page).locator('table')).toHaveCount(0);
   });
 
+  /**
+   * "Select Table" used to run selectAll(), so it selected the whole document.
+   * Typing straight after it destroyed everything outside the table.
+   */
+  test('TC-TBL-011: Select Table selects the table, not the document', async ({ page }) => {
+    await page.getByTestId('word-editor').click();
+    await page.keyboard.type('Keep this paragraph');
+    await page.keyboard.press('Enter');
+    await insertTable(page);
+
+    await switchRibbonTab(page, 'tableLayout');
+    await page.getByTestId('table-select').click();
+    await page.getByRole('menuitem', { name: 'Select Table' }).click();
+    await page.keyboard.type('x');
+
+    // The paragraph outside the table must survive.
+    await expect(editor(page)).toContainText('Keep this paragraph');
+  });
+
   test('TC-TBL-010: typed cell content survives a structural edit', async ({ page }) => {
     await insertTable(page);
     await page.keyboard.type('kept text');
