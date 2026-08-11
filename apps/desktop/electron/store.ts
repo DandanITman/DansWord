@@ -17,8 +17,26 @@ export function ensureDataDir() {
   ensureDir(dataDir);
 }
 
-/** Where the app kept its data before the DansWord → Officewrite rename. */
-const LEGACY_APP_DIR = 'DansWord';
+/**
+ * Where the app kept its data before the DansWord → Officewrite rename.
+ *
+ * Electron derives userData from the package name, and this one is scoped, so
+ * the real folder is `%APPDATA%\@dansword\desktop` — not `%APPDATA%\DansWord`,
+ * which is what you would assume and which never existed. Both spellings are
+ * tried anyway: a build that set a plain productName would have used the
+ * second, and checking costs nothing.
+ */
+function legacyDataDirs(): string[] {
+  const current = app.getPath('userData');
+  return [
+    // ...\@officewrite\desktop  ->  ...\@dansword\desktop
+    current.replace(/@officewrite/i, '@dansword'),
+    // ...\Officewrite  ->  ...\DansWord
+    path.join(path.dirname(current), 'DansWord'),
+  ]
+    .filter((dir) => dir !== current)
+    .map((dir) => path.join(dir, 'data'));
+}
 
 /**
  * Carry settings, recents and version history across the rename.
@@ -37,8 +55,8 @@ const LEGACY_APP_DIR = 'DansWord';
 export function migrateLegacyUserData() {
   if (existsSync(dataDir)) return;
 
-  const legacyDir = path.join(path.dirname(app.getPath('userData')), LEGACY_APP_DIR, 'data');
-  if (!existsSync(legacyDir)) return;
+  const legacyDir = legacyDataDirs().find((dir) => existsSync(dir));
+  if (!legacyDir) return;
 
   try {
     cpSync(legacyDir, dataDir, { recursive: true });
