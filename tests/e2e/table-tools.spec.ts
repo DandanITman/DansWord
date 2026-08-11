@@ -158,6 +158,42 @@ test.describe('Table tools', () => {
     await expect(editor(page)).toContainText('Keep this paragraph');
   });
 
+  /**
+   * Word's Cell Size group. There was no way to give a column a specific
+   * width at all — the only width control reset them.
+   */
+  test('TC-TBL-012: column width and row height can be set explicitly', async ({ page }) => {
+    await insertTable(page);
+    await switchRibbonTab(page, 'tableLayout');
+
+    const before = await editor(page).locator('td').first().evaluate((el) => el.getBoundingClientRect().width);
+
+    await page.getByTestId('table-column-width').fill('3');
+    await page.getByTestId('table-column-width').blur();
+
+    await expect
+      .poll(async () =>
+        editor(page).locator('td').first().evaluate((el) => Math.round(el.getBoundingClientRect().width)),
+      )
+      .not.toBe(Math.round(before));
+  });
+
+  test('TC-TBL-013: distribute columns evens the widths', async ({ page }) => {
+    await insertTable(page);
+    await switchRibbonTab(page, 'tableLayout');
+    await page.getByTestId('table-column-width').fill('1');
+    await page.getByTestId('table-column-width').blur();
+
+    await page.getByTestId('table-distribute-columns').click();
+
+    const widths = await editor(page)
+      .locator('tr')
+      .first()
+      .locator('td, th')
+      .evaluateAll((cells) => cells.map((c) => Math.round(c.getBoundingClientRect().width)));
+    expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(2);
+  });
+
   test('TC-TBL-010: typed cell content survives a structural edit', async ({ page }) => {
     await insertTable(page);
     await page.keyboard.type('kept text');

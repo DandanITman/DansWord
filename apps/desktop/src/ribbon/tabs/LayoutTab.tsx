@@ -2,6 +2,7 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  BringToFront,
   Columns3,
   Eye,
   Hash,
@@ -10,6 +11,7 @@ import {
   Palette,
   RectangleHorizontal,
   RectangleVertical,
+  SendToBack,
   SeparatorHorizontal,
   Square,
   Stamp,
@@ -53,10 +55,18 @@ export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
   const { pageSetup } = flags;
 
   /** Arrange drives whichever object type is selected. */
+  const objectNode = () => (state.shapeActive ? 'docShape' : 'textBox');
+
   const setObjectAttrs = (attrs: Record<string, unknown>) => {
     if (!editor) return;
-    const node = state.shapeActive ? 'docShape' : 'textBox';
-    editor.chain().focus().updateAttributes(node, attrs).run();
+    editor.chain().focus().updateAttributes(objectNode(), attrs).run();
+  };
+
+  /** Word's Bring Forward / Send Backward, one step at a time. */
+  const stepObjectZ = (delta: number) => {
+    if (!editor) return;
+    const current = Number(editor.getAttributes(objectNode()).z ?? 0);
+    setObjectAttrs({ z: current + delta });
   };
 
   return (
@@ -333,6 +343,20 @@ export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {
                   testId={`object-align-${value}`}
                 />
               ))}
+              <RibbonButton
+                icon={<BringToFront size={15} />}
+                title="Bring Forward"
+                size="icon"
+                onClick={() => stepObjectZ(1)}
+                testId="object-bring-forward"
+              />
+              <RibbonButton
+                icon={<SendToBack size={15} />}
+                title="Send Backward"
+                size="icon"
+                onClick={() => stepObjectZ(-1)}
+                testId="object-send-backward"
+              />
             </RibbonLine>
           </RibbonStack>
         </RibbonGroup>

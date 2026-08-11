@@ -13,6 +13,7 @@ import {
   acceptAppDialogs,
   saveToPath,
   insertShape,
+  insertDefaultTable,
   openBackstage,
   PATHS,
 } from '../helpers/playwright';
@@ -302,6 +303,44 @@ test.describe('Reworked features', () => {
     await page.getByTestId('nav-search').fill('needle');
 
     await expect(page.getByTestId('nav-results').locator('li')).toHaveCount(1);
+  });
+
+  /**
+   * Clicking into a table used to force the ribbon onto Table Layout, pulling
+   * Bold and the font boxes away mid-sentence. Word reveals the tab and leaves
+   * the active one alone.
+   */
+  test('TC-RIB-008: entering a table reveals the tab without switching to it', async ({ page }) => {
+    await openBlankDocument(page);
+    await insertDefaultTable(page);
+    await switchRibbonTab(page, 'insert');
+    await page.getByTestId('word-editor').locator('td').first().click();
+
+    await expect(page.getByTestId('ribbon-tab-tableLayout')).toBeVisible();
+    await expect(page.locator('.ribbon-tab.active')).toHaveText('Insert');
+  });
+
+  /** Leaving an object used to dump you on Home wherever you had come from. */
+  test('TC-RIB-009: leaving a picture returns to the tab you came from', async ({ page }) => {
+    await page.evaluate(() => {
+      window.__DANSWORD_TEST__?.seedBinaryFile(
+        'C:\DansWordTest\photo.png',
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      );
+      window.__DANSWORD_TEST__?.setOpenImageFileResult('C:\DansWordTest\photo.png');
+    });
+    await openBlankDocument(page);
+    await switchRibbonTab(page, 'review');
+    await switchRibbonTab(page, 'insert');
+    await page.getByTestId('ribbon-pictures').click();
+    await page.getByTestId('word-editor').locator('img').waitFor({ state: 'visible' });
+
+    await page.locator('.image-block').click({ force: true });
+    await expect(page.locator('.ribbon-tab.active')).toHaveText('Picture Format');
+
+    // Move the caret off the picture.
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.ribbon-tab.active')).toHaveText('Insert');
   });
 
   /** Word's Ctrl+G. There was no Go To command anywhere before. */

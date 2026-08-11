@@ -24,6 +24,7 @@ export const DocShape = Node.create({
       // Layout now drives for both.
       align: { default: 'left' },
       wrap: { default: 'inline' },
+      z: { default: 0 },
     };
   },
 
@@ -36,6 +37,7 @@ export const DocShape = Node.create({
           return {
             align: el.dataset.align ?? 'left',
             wrap: el.dataset.wrap ?? 'inline',
+            z: Number(el.dataset.z ?? 0),
           };
         },
       },
@@ -50,6 +52,7 @@ export const DocShape = Node.create({
         'data-doc-shape': 'true',
         'data-align': String(attrs.align),
         'data-wrap': String(attrs.wrap),
+        'data-z': String(attrs.z ?? 0),
         class: `doc-shape align-${String(attrs.align)} wrap-${String(attrs.wrap)}`,
       }),
     ];

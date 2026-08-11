@@ -25,6 +25,7 @@ export const TextBox = Node.create({
       height: { default: null as number | null },
       align: { default: 'left' },
       wrap: { default: 'square' },
+      z: { default: 0 },
       offsetX: { default: 0 },
       offsetY: { default: 0 },
       fill: { default: '#ffffff' },

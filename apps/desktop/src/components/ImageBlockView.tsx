@@ -68,6 +68,7 @@ export function ImageBlockView({ node, updateAttributes, selected, editor, getPo
     frame = 'none' as ImageFrame,
     borderColor = null,
     lockAspect = true,
+    z = 0,
   } = node.attrs as {
     src: string;
     alt?: string;
@@ -85,6 +86,7 @@ export function ImageBlockView({ node, updateAttributes, selected, editor, getPo
     frame?: ImageFrame;
     borderColor?: string | null;
     lockAspect?: boolean;
+    z?: number;
   };
 
   const floating = FLOATING_WRAPS.has(wrap);
@@ -294,11 +296,15 @@ export function ImageBlockView({ node, updateAttributes, selected, editor, getPo
     return parts.join(' ');
   }, [brightness, contrast, saturation]);
 
-  const wrapperStyle: CSSProperties = floating
-    ? wrap === 'behind' || wrap === 'front'
-      ? { transform: `translate(${offsetX}px, ${offsetY}px)` }
-      : { marginLeft: offsetX, marginTop: offsetY }
-    : { marginTop: offsetY || undefined };
+  const wrapperStyle: CSSProperties = {
+    ...(floating
+      ? wrap === 'behind' || wrap === 'front'
+        ? { transform: `translate(${offsetX}px, ${offsetY}px)` }
+        : { marginLeft: offsetX, marginTop: offsetY }
+      : { marginTop: offsetY || undefined }),
+    // Stacking order, so two overlapping floats can be reordered.
+    ...(z ? { zIndex: z } : {}),
+  };
 
   const imageStyle: CSSProperties = {
     ...(width ? { width: `${width}px` } : { maxWidth: '100%' }),

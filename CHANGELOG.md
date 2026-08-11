@@ -6,6 +6,45 @@ file inside the app.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4]
+
+Fourth Word-parity pass: the contextual tabs stop fighting the user, tables
+get real sizing, and floating objects get a stacking order.
+
+### Added
+
+- **Cell Size on the Table Layout tab** — Row Height and Column Width in
+  inches, Distribute Rows, Distribute Columns, and AutoFit (Contents, Window,
+  Fixed). There was no way to give a column a specific width at all; the one
+  width control reset them. The boxes write the same attributes the drag
+  resizers do, so dragging and typing a number agree.
+- **Bring Forward and Send Backward** for pictures, shapes and text boxes.
+  Pictures already supported "Behind Text", so two overlapping floats could be
+  created and then never reordered.
+
+### Fixed
+
+- **Clicking into a table hijacked the ribbon.** Putting the caret in a table
+  forced the tab to Table Layout, pulling Bold and the font boxes away
+  mid-sentence. Word reveals the contextual tab and leaves the active one
+  alone, which is what happens now.
+- **Leaving an object dumped you on Home.** Deselecting a picture or drawing
+  hardcoded a jump to Home, so editing from Insert or Review and clicking away
+  landed you somewhere you had never been. It returns to the tab you came
+  from.
+- **The Crop icon was on a button that does not crop.** "Fit to Column" — a
+  resize — wore the crop glyph, so a Word user scanning for crop found it and
+  got something else. It is "Reset Size" with a resize icon now. The size and
+  position dialog was likewise labelled with a brightness icon.
+- **Go To ▸ Line assumed every line was 24px tall.** Any document using the
+  line-spacing menu or a different font size landed the caret on the wrong
+  line, drifting further with every line down the page. It walks the real line
+  boxes now.
+
+### Known limitations
+
+- There is still no Crop. The icon no longer claims otherwise.
+
 ## [0.2.3]
 
 A re-audit against Word 2024 found that three of the previous two releases'

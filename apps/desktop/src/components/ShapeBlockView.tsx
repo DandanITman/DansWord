@@ -12,6 +12,7 @@ export function ShapeBlockView({ node, updateAttributes, selected, editor, getPo
     strokeWidth,
     align = 'left',
     wrap = 'inline',
+    z = 0,
   } = node.attrs as {
     shapeType: (typeof SHAPES)[number];
     width: number;
@@ -21,6 +22,7 @@ export function ShapeBlockView({ node, updateAttributes, selected, editor, getPo
     strokeWidth: number;
     align?: string;
     wrap?: string;
+    z?: number;
   };
 
   const renderSvg = () => {
@@ -61,6 +63,7 @@ export function ShapeBlockView({ node, updateAttributes, selected, editor, getPo
   return (
     <NodeViewWrapper
       className={`shape-block align-${align} wrap-${wrap}${selected ? ' is-selected' : ''}`}
+      style={z ? { zIndex: z } : undefined}
       onClick={() => {
         const pos = getPos();
         if (typeof pos === 'number') editor.chain().focus().setNodeSelection(pos).run();

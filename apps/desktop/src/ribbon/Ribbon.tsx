@@ -102,6 +102,8 @@ export function Ribbon({
   // Recomputed on every editor transaction, so control state follows the caret.
   const state = useRibbonState(editor);
   const previous = useRef({ image: false, table: false, ink: false });
+  /** The tab to come back to when an object is deselected. */
+  const returnTab = useRef<RibbonTab>('home');
 
   /**
    * The panel used to scroll sideways once the groups outgrew the window, so
@@ -130,33 +132,39 @@ export function Ribbon({
   /**
    * Follow the selection into the contextual tabs and back out again.
    *
-   * Selecting a picture in Word activates Picture Format; clicking away returns
-   * to whichever tab you were on. Without this the contextual tabs exist but
-   * nothing ever opens them.
+   * Word only *activates* a contextual tab when you select an object — a
+   * picture or a drawing canvas. Putting the caret in a table reveals Table
+   * Layout but leaves the tab alone, because you are usually typing, and
+   * yanking Bold and the font boxes away mid-sentence is hostile. Table Layout
+   * is revealed here and left for the user to click.
+   *
+   * Leaving an object returns to the tab you came from. This used to hardcode
+   * 'home', so editing from Insert or Review and clicking away dumped you
+   * somewhere you had not been.
    */
   useEffect(() => {
     const wasImage = previous.current.image;
-    const wasTable = previous.current.table;
     const wasInk = previous.current.ink;
     previous.current = { image: state.imageActive, table: state.inTable, ink: state.inkActive };
 
     // Ink first: a drawing canvas is a block atom, so it can never be selected
     // at the same time as a picture or from inside a table.
     if (state.inkActive && !wasInk) {
+      if (activeTab !== 'draw') returnTab.current = activeTab;
       onTabChange('draw');
       return;
     }
     if (state.imageActive && !wasImage) {
+      if (activeTab !== 'pictureFormat') returnTab.current = activeTab;
       onTabChange('pictureFormat');
       return;
     }
-    if (state.inTable && !wasTable && !state.imageActive) {
-      onTabChange('tableLayout');
-      return;
-    }
-    if (!state.inkActive && activeTab === 'draw') onTabChange('home');
-    if (!state.imageActive && activeTab === 'pictureFormat') onTabChange('home');
-    if (!state.inTable && activeTab === 'tableLayout') onTabChange('home');
+
+    const leftObject =
+      (!state.inkActive && activeTab === 'draw') ||
+      (!state.imageActive && activeTab === 'pictureFormat') ||
+      (!state.inTable && activeTab === 'tableLayout');
+    if (leftObject) onTabChange(returnTab.current);
   }, [state.imageActive, state.inTable, state.inkActive, activeTab, onTabChange]);
 
   // Keep the document selection while a ribbon button is pressed.

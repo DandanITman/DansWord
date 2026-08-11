@@ -7,6 +7,9 @@ percentage from it.
 The ribbon has eight tabs: **File, Home, Insert, Layout, References, Review,
 View, Help**, plus three contextual tabs — **Draw**, **Picture Format** and
 **Table Layout** — that appear when a drawing, a picture or a table is selected.
+Selecting a picture or a drawing switches to its tab and leaves it again for
+wherever you were; putting the caret in a table reveals Table Layout but leaves
+the tab alone, since you are usually typing.
 Groups are labelled and open their dialogs from a corner launcher, as Word's do.
 File is a dropdown menu rather than a panel.
 
@@ -68,7 +71,10 @@ the dialogs, comments and synonyms.
 ## Insert
 
 - **Pages** — four cover pages, Blank Page, Page Break
-- **Tables** — the hover-to-size grid picker, a quick 3 × 3, and Delete Table
+- **Tables** — the hover-to-size grid picker, a quick 3 × 3, and Delete Table.
+  The contextual Table Layout tab adds rows and columns, merges and splits
+  cells, selects a cell/row/column/table, sets row height and column width in
+  inches, distributes rows or columns evenly, and offers AutoFit
 - **Illustrations** — Pictures, Shapes (rectangle, oval, triangle, line, arrow)
   and Drawing, which inserts an ink canvas and opens the Draw tab
 - **Links** — hyperlinks, bookmarks and cross-references
@@ -98,7 +104,8 @@ Appears while a drawing canvas is selected, and closes when it is not.
 - **Paragraph** — left and right indent, space before and after
 - **Page Background** — watermark, page colour, page borders
 - **Arrange** — appears while a shape or text box is selected: Wrap Text (in
-  line, square, tight, top and bottom) and left/centre/right alignment
+  line, square, tight, top and bottom), left/centre/right alignment, and Bring
+  Forward / Send Backward
 - Draggable margin markers on the ruler
 
 ## References
@@ -189,8 +196,9 @@ Help > Keyboard Shortcuts renders.
 - Seven wrap modes: In Line, Square, Tight, Through, Top and Bottom, Behind Text
   and In Front of Text
 - Picture styles (frames, rounded, oval, shadow), border colour, brightness,
-  contrast and saturation, Reset Picture, a size and position dialog, and Alt
-  Text
+  contrast and saturation, Reset Picture, Bring Forward and Send Backward, a
+  size and position dialog, and Alt Text
+- Height and width are in inches, as Word's are
 
 ## Document formats
 
@@ -221,6 +229,7 @@ marks, links, tables, lists and images.
 - The accessibility checker reads the document, not the rendered page: it cannot
   judge whether alt text is *useful*, only whether it is there
 - Section breaks, macros and password protection are not built
+- There is no picture crop
 - The ribbon steps down to a compact density below 1250px rather than
   collapsing whole groups the way Word does. The Styles tiles fold back into
   their menu there, and the Review tab — the densest at eight groups — still

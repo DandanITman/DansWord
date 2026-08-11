@@ -51,12 +51,28 @@ export function GoToDialog({ open, editor, pages, onClose }: GoToDialogProps) {
     if (!Number.isFinite(parsed) || parsed < 1) return onClose();
 
     if (target === 'line') {
-      // Lines are uniform in the editor's own layout, so the nth line is the
-      // nth line box from the top of the editable surface.
-      const lineHeight = 24;
-      const y = editor.view.dom.getBoundingClientRect().top + (parsed - 1) * lineHeight + 2;
-      const at = editor.view.posAtCoords({ left: editor.view.dom.getBoundingClientRect().left + 4, top: y });
-      if (at) editor.chain().focus().setTextSelection(at.pos).scrollIntoView().run();
+      // Lines are not a fixed height — the line-spacing menu and any font size
+      // change them — so this walks the real line boxes instead of assuming
+      // 24px, which drifted further off with every line down the page.
+      const { doc } = editor.state;
+      const tops: number[] = [];
+      let found: number | null = null;
+
+      for (let pos = 1; pos < doc.content.size && found == null; pos += 1) {
+        let coords;
+        try {
+          coords = editor.view.coordsAtPos(pos);
+        } catch {
+          continue;
+        }
+        const top = Math.round(coords.top);
+        if (tops[tops.length - 1] !== top) {
+          tops.push(top);
+          if (tops.length === parsed) found = pos;
+        }
+      }
+
+      if (found != null) editor.chain().focus().setTextSelection(found).scrollIntoView().run();
       return onClose();
     }
 

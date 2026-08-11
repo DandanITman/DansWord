@@ -2,12 +2,14 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
-  Contrast,
-  Crop,
+  BringToFront,
   Droplet,
   Eye,
+  Maximize2,
+  Move,
   RotateCcw,
   RotateCw,
+  SendToBack,
   Sun,
 } from 'lucide-react';
 import { ColorPickerButton } from '../../components/ColorPickerButton';
@@ -195,9 +197,25 @@ export function PictureFormatTab({ editor, state, actions }: RibbonTabProps) {
               onClick={() => editor?.chain().focus().rotateImage(-90).run()}
               testId="picture-rotate-left"
             />
+            {/* Two overlapping floats could be created and then never
+                reordered — a picture behind text had no way back in front. */}
+            <RibbonButton
+              icon={<BringToFront size={15} />}
+              title="Bring Forward"
+              size="icon"
+              onClick={() => update({ z: Number(editor?.getAttributes('image').z ?? 0) + 1 })}
+              testId="picture-bring-forward"
+            />
+            <RibbonButton
+              icon={<SendToBack size={15} />}
+              title="Send Backward"
+              size="icon"
+              onClick={() => update({ z: Number(editor?.getAttributes('image').z ?? 0) - 1 })}
+              testId="picture-send-backward"
+            />
           </RibbonLine>
           <RibbonButton
-            icon={<Contrast size={14} />}
+            icon={<Move size={14} />}
             label="Position…"
             title="Size and position dialog"
             onClick={actions.onOpenPictureLayout}
@@ -240,10 +258,13 @@ export function PictureFormatTab({ editor, state, actions }: RibbonTabProps) {
           />
         </RibbonStack>
         <RibbonStack>
+          {/* This wore the Crop icon while doing nothing of the sort — a Word
+              user scanning for crop found it and got a resize. There is no
+              crop yet, so the glyph goes back to what the button does. */}
           <RibbonButton
-            icon={<Crop size={14} />}
-            label="Fit to Column"
-            title="Resize the picture to the text column width"
+            icon={<Maximize2 size={14} />}
+            label="Reset Size"
+            title="Reset the picture to the text column width"
             onClick={() => update({ width: null, height: null })}
             testId="picture-fit-column"
           />

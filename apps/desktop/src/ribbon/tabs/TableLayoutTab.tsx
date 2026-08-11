@@ -23,6 +23,7 @@ import {
   RibbonMenuButton,
   RibbonMenuItem,
   RibbonMenuSeparator,
+  RibbonSpin,
   RibbonStack,
 } from '../RibbonKit';
 import type { RibbonTabProps } from '../types';
@@ -58,6 +59,112 @@ export function TableLayoutTab({ editor, state, actions }: RibbonTabProps) {
     );
     editor.view.dispatch(tr);
     editor.view.focus();
+  };
+
+  /** CSS px are 1/96in, and the boxes read in inches as Word's do. */
+  const PPI = 96;
+  const pxToIn = (px: number) => Math.round((px / PPI) * 100) / 100;
+  const inToPx = (inches: number) => Math.round(inches * PPI);
+
+  /**
+   * The caret's cell size, measured off the rendered table rather than the
+   * attributes: a column that has never been resized carries no `colwidth`,
+   * and Word still shows its real width.
+   */
+  const cellSize = (() => {
+    const cell = editor?.view.dom.querySelector('td.selectedCell, th.selectedCell')
+      ?? (() => {
+        const { from } = editor?.state.selection ?? { from: 0 };
+        const dom = editor ? (editor.view.domAtPos(from).node as HTMLElement) : null;
+        return dom?.nodeType === 1 ? dom.closest('td, th') : dom?.parentElement?.closest('td, th');
+      })();
+    const box = (cell as HTMLElement | null)?.getBoundingClientRect();
+    const row = (cell as HTMLElement | null)?.closest('tr')?.getBoundingClientRect();
+    return { width: box?.width ?? 0, height: row?.height ?? 0 };
+  })();
+
+  /** Applies a width to every cell in the caret's column. */
+  const setColumnWidth = (px: number) => {
+    if (!editor) return;
+    const rect = selectedRect(editor.view.state);
+    if (!rect) return;
+    const { tr } = editor.view.state;
+    for (let row = 0; row < rect.map.height; row += 1) {
+      const cellPos = rect.map.map[row * rect.map.width + rect.left];
+      const pos = rect.tableStart + cellPos;
+      const node = tr.doc.nodeAt(pos);
+      if (node) tr.setNodeMarkup(pos, undefined, { ...node.attrs, colwidth: [px] });
+    }
+    editor.view.dispatch(tr);
+  };
+
+  /** Applies a height to the caret's row, the attribute the drag resizer writes. */
+  const setRowHeight = (px: number) => {
+    if (!editor) return;
+    const rect = selectedRect(editor.view.state);
+    if (!rect) return;
+    const { tr } = editor.view.state;
+    const rowPos = rect.tableStart + rect.map.map[rect.top * rect.map.width] - 1;
+    const row = tr.doc.nodeAt(rowPos);
+    if (row?.type.name === 'tableRow') {
+      tr.setNodeMarkup(rowPos, undefined, { ...row.attrs, height: px || null });
+      editor.view.dispatch(tr);
+    }
+  };
+
+  /** Strips explicit widths so the browser lays the table out on content. */
+  const clearWidths = () => {
+    if (!editor) return;
+    const rect = selectedRect(editor.view.state);
+    if (!rect) return;
+    const { tr } = editor.view.state;
+    for (const cellPos of rect.map.map) {
+      const pos = rect.tableStart + cellPos;
+      const node = tr.doc.nodeAt(pos);
+      if (node) tr.setNodeMarkup(pos, undefined, { ...node.attrs, colwidth: null });
+    }
+    editor.view.dispatch(tr);
+  };
+
+  const distributeColumns = () => {
+    if (!editor) return;
+    const rect = selectedRect(editor.view.state);
+    if (!rect) return;
+    const table = editor.view.dom.querySelector('table');
+    const total = table?.getBoundingClientRect().width ?? 0;
+    if (!total) return;
+    const each = Math.floor(total / rect.map.width);
+    const { tr } = editor.view.state;
+    for (const cellPos of rect.map.map) {
+      const pos = rect.tableStart + cellPos;
+      const node = tr.doc.nodeAt(pos);
+      if (node) tr.setNodeMarkup(pos, undefined, { ...node.attrs, colwidth: [each] });
+    }
+    editor.view.dispatch(tr);
+  };
+
+  const distributeRows = () => {
+    if (!editor) return;
+    const rect = selectedRect(editor.view.state);
+    if (!rect) return;
+    const rows = editor.view.dom.querySelectorAll('table tr');
+    const tallest = Math.max(
+      0,
+      ...[...rows].map((row) => (row as HTMLElement).getBoundingClientRect().height),
+    );
+    if (!tallest) return;
+    const { tr } = editor.view.state;
+    const seen = new Set<number>();
+    for (let row = 0; row < rect.map.height; row += 1) {
+      const rowPos = rect.tableStart + rect.map.map[row * rect.map.width] - 1;
+      if (seen.has(rowPos)) continue;
+      seen.add(rowPos);
+      const node = tr.doc.nodeAt(rowPos);
+      if (node?.type.name === 'tableRow') {
+        tr.setNodeMarkup(rowPos, undefined, { ...node.attrs, height: Math.round(tallest) });
+      }
+    }
+    editor.view.dispatch(tr);
   };
 
   return (
@@ -164,6 +271,76 @@ export function TableLayoutTab({ editor, state, actions }: RibbonTabProps) {
             onClick={() => chain()?.splitCell().run()}
             testId="table-split-cell"
           />
+        </RibbonStack>
+      </RibbonGroup>
+
+      {/* Word's Cell Size group. There was no way to give a column a specific
+          width at all — only "Fix Columns", which resets them. Widths and
+          heights are the attributes the drag resizers already write, so the
+          boxes and the drag agree. */}
+      <RibbonGroup label="Cell Size">
+        <RibbonStack>
+          <RibbonSpin
+            label="Row height"
+            value={pxToIn(cellSize.height)}
+            step={0.1}
+            min={0}
+            max={22}
+            suffix='"'
+            testId="table-row-height"
+            onChange={(value) => setRowHeight(inToPx(value))}
+          />
+          <RibbonSpin
+            label="Column width"
+            value={pxToIn(cellSize.width)}
+            step={0.1}
+            min={0}
+            max={22}
+            suffix='"'
+            testId="table-column-width"
+            onChange={(value) => setColumnWidth(inToPx(value))}
+          />
+        </RibbonStack>
+        <RibbonStack>
+          <RibbonButton
+            icon={<Columns3 size={14} />}
+            label="Distribute Columns"
+            title="Give every column the same width"
+            onClick={distributeColumns}
+            testId="table-distribute-columns"
+          />
+          <RibbonButton
+            icon={<Rows3 size={14} />}
+            label="Distribute Rows"
+            title="Give every row the same height"
+            onClick={distributeRows}
+            testId="table-distribute-rows"
+          />
+          <RibbonMenuButton
+            icon={<Grid3x3 size={14} />}
+            label="AutoFit"
+            title="Fit the table to its contents or the window"
+            testId="table-autofit"
+          >
+            <RibbonMenuItem
+              label="AutoFit Contents"
+              onClick={() => {
+                clearWidths();
+                chain()?.fixTables().run();
+              }}
+              testId="table-autofit-contents"
+            />
+            <RibbonMenuItem
+              label="AutoFit Window"
+              onClick={distributeColumns}
+              testId="table-autofit-window"
+            />
+            <RibbonMenuItem
+              label="Fixed Column Width"
+              onClick={() => setColumnWidth(cellSize.width || 120)}
+              testId="table-autofit-fixed"
+            />
+          </RibbonMenuButton>
         </RibbonStack>
       </RibbonGroup>
 
