@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test';
 import {
   getHeadingFixtureJson,
-  getSampleDansword,
+  getSampleOfficewrite,
   getSampleDocxBase64,
   getSampleHtml,
   getSampleRtf,
@@ -13,7 +13,7 @@ import { buildRegressionDocumentContent } from '../fixtures/regressionDocument';
 
 export async function resetTestState(page: Page) {
   await page.goto('/test.html');
-  await page.evaluate(() => window.__DANSWORD_TEST__?.reset());
+  await page.evaluate(() => window.__OFFICEWRITE_TEST__?.reset());
 }
 
 export async function openBlankDocument(page: Page) {
@@ -21,7 +21,7 @@ export async function openBlankDocument(page: Page) {
   await page.getByTestId('word-editor').waitFor({ state: 'visible' });
   await page.getByTestId('ribbon').waitFor({ state: 'visible' });
   await page.waitForFunction(() => {
-    const json = window.__DANSWORD_TEST__?.getEditorJson() as { type?: string } | null;
+    const json = window.__OFFICEWRITE_TEST__?.getEditorJson() as { type?: string } | null;
     return json?.type === 'doc';
   });
 }
@@ -53,10 +53,10 @@ export async function grantClipboard(page: Page) {
 
 export async function insertMockImage(page: Page) {
   await page.evaluate((b64) => {
-    window.__DANSWORD_TEST__?.seedBinaryFile('C:\\DansWordTest\\photo.png', b64);
+    window.__OFFICEWRITE_TEST__?.seedBinaryFile('C:\\OfficewriteTest\\photo.png', b64);
   }, TINY_PNG_BASE64);
   await page.evaluate(() =>
-    window.__DANSWORD_TEST__?.setOpenImageFileResult('C:\\DansWordTest\\photo.png'),
+    window.__OFFICEWRITE_TEST__?.setOpenImageFileResult('C:\\OfficewriteTest\\photo.png'),
   );
   await switchRibbonTab(page, 'insert');
   await page.getByTestId('ribbon-pictures').click();
@@ -213,10 +213,10 @@ export async function seedAllSampleFiles(page: Page) {
   await page.evaluate(
     ({ files }) => {
       for (const file of files.text) {
-        window.__DANSWORD_TEST__?.seedFile(file.path, file.content);
+        window.__OFFICEWRITE_TEST__?.seedFile(file.path, file.content);
       }
       for (const file of files.binary) {
-        window.__DANSWORD_TEST__?.seedBinaryFile(file.path, file.content);
+        window.__OFFICEWRITE_TEST__?.seedBinaryFile(file.path, file.content);
       }
     },
     {
@@ -225,7 +225,7 @@ export async function seedAllSampleFiles(page: Page) {
           { path: PATHS.txt, content: getSampleTxt() },
           { path: PATHS.rtf, content: rtf },
           { path: PATHS.html, content: html },
-          { path: PATHS.dansword, content: getSampleDansword() },
+          { path: PATHS.officewrite, content: getSampleOfficewrite() },
           { path: PATHS.folderDoc1, content: 'Folder doc one' },
           { path: PATHS.folderDoc2, content: 'Folder doc two' },
         ],
@@ -239,14 +239,14 @@ export async function seedAllSampleFiles(page: Page) {
 }
 
 export async function saveToPath(page: Page, path: string) {
-  await page.evaluate((p) => window.__DANSWORD_TEST__?.setSaveFileResult(p), path);
+  await page.evaluate((p) => window.__OFFICEWRITE_TEST__?.setSaveFileResult(p), path);
   await page.keyboard.press('Control+s');
   await expect
     .poll(async () =>
       page.evaluate(
         (p) =>
-          window.__DANSWORD_TEST__?.readStoredBinaryBase64(p) ??
-          window.__DANSWORD_TEST__?.readStoredFile(p),
+          window.__OFFICEWRITE_TEST__?.readStoredBinaryBase64(p) ??
+          window.__OFFICEWRITE_TEST__?.readStoredFile(p),
         path,
       ),
     )
@@ -254,27 +254,27 @@ export async function saveToPath(page: Page, path: string) {
 }
 
 export async function openSeededFile(page: Page, path: string) {
-  await page.evaluate((p) => window.__DANSWORD_TEST__?.setOpenFileResult(p), path);
+  await page.evaluate((p) => window.__OFFICEWRITE_TEST__?.setOpenFileResult(p), path);
   await page.keyboard.press('Control+o');
   await page.getByTestId('word-editor').waitFor({ state: 'visible' });
 }
 
 export async function setAutoSaveInterval(page: Page, ms: number) {
-  await page.evaluate((interval) => window.__DANSWORD_TEST__?.setSettings({ autoSaveIntervalMs: interval }), ms);
+  await page.evaluate((interval) => window.__OFFICEWRITE_TEST__?.setSettings({ autoSaveIntervalMs: interval }), ms);
 }
 
 export async function loadRegressionFixture(page: Page) {
   await openBlankDocument(page);
   const content = buildRegressionDocumentContent();
   await page.evaluate((docContent) => {
-    window.__DANSWORD_TEST__?.loadEditorContent(docContent);
+    window.__OFFICEWRITE_TEST__?.loadEditorContent(docContent);
   }, content);
-  await page.getByText('DansWord Regression Test').waitFor({ state: 'visible' });
+  await page.getByText('Officewrite Regression Test').waitFor({ state: 'visible' });
 }
 
 export async function loadHeadingFixture(page: Page) {
   await openBlankDocument(page);
-  await page.evaluate((doc) => window.__DANSWORD_TEST__?.loadEditorContent(doc), getHeadingFixtureJson());
+  await page.evaluate((doc) => window.__OFFICEWRITE_TEST__?.loadEditorContent(doc), getHeadingFixtureJson());
 }
 
 export const visualMaskSelectors = [

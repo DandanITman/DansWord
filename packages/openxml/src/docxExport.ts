@@ -44,8 +44,8 @@ import type {
   HeaderFooterZones,
   PageSetup,
   Watermark,
-} from '@dansword/core';
-import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf, zonesEmpty } from '@dansword/core';
+} from '@officewrite/core';
+import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf, zonesEmpty } from '@officewrite/core';
 
 type TipTapNode = {
   type?: string;
@@ -66,8 +66,8 @@ export interface DocxExportOptions {
   comments?: DocumentComment[];
 }
 
-const BULLET_REFERENCE = 'dansword-bullet';
-const ORDERED_REFERENCE = 'dansword-ordered';
+const BULLET_REFERENCE = 'officewrite-bullet';
+const ORDERED_REFERENCE = 'officewrite-ordered';
 const MAX_LIST_DEPTH = 5;
 
 function pxToDxa(px: number) {
@@ -143,7 +143,7 @@ function shapeSvgData(attrs: Record<string, unknown>): Uint8Array {
   // restores an editable shape rather than a flat picture.
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"` +
-    ` data-dansword-shape="${shapeType}" data-fill="${fill}" data-stroke="${stroke}"` +
+    ` data-officewrite-shape="${shapeType}" data-fill="${fill}" data-stroke="${stroke}"` +
     ` data-stroke-width="${sw}">${body}</svg>`;
   return new TextEncoder().encode(svg);
 }
@@ -230,7 +230,7 @@ type CommentIndex = Map<string, number>;
  *
  * Hyperlinks become real `ExternalHyperlink` runs, tracked changes become real
  * `w:ins`/`w:del` revisions, and comment anchors open and close real comment
- * ranges — so a document reviewed in DansWord arrives in Word with its links,
+ * ranges — so a document reviewed in Officewrite arrives in Word with its links,
  * pending changes and comments intact. All three used to be dropped silently.
  */
 function inlineChildren(

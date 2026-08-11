@@ -16,8 +16,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@dansword/core": ["../../packages/core/src/index.ts"],
-      "@dansword/openxml": ["../../packages/openxml/src/index.ts"],
+      "@officewrite/core": ["../../packages/core/src/index.ts"],
+      "@officewrite/openxml": ["../../packages/openxml/src/index.ts"],
       "@tests/*": ["../../tests/*"]
     }
   },

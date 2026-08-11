@@ -17,10 +17,10 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@dansword/core": [
+      "@officewrite/core": [
         "packages/core/src/index.ts"
       ],
-      "@dansword/openxml": [
+      "@officewrite/openxml": [
         "packages/openxml/src/index.ts"
       ],
       "@tests/*": [

@@ -1,7 +1,7 @@
-import type { HeaderFooter, PageSetup } from '@dansword/core';
-import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf } from '@dansword/core';
+import type { HeaderFooter, PageSetup } from '@officewrite/core';
+import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf } from '@officewrite/core';
 
-const STYLE_ID = 'dansword-print-styles';
+const STYLE_ID = 'officewrite-print-styles';
 
 function escapeCss(text: string): string {
   return text.replace(/\\/g, '\\\\').replace(/"/g, '\\"');

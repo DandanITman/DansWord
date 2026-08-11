@@ -1,4 +1,4 @@
-export const REGRESSION_DOC_TITLE = 'DansWord Regression Test';
+export const REGRESSION_DOC_TITLE = 'Officewrite Regression Test';
 
 export const REGRESSION_PARAGRAPH =
   'This is a normal paragraph used for automated regression testing.';
@@ -10,8 +10,8 @@ export const REGRESSION_UNDERLINE = 'This sentence is underlined.';
 export const REGRESSION_BULLETS = ['First bullet item', 'Second bullet item'];
 export const REGRESSION_NUMBERS = ['First numbered item', 'Second numbered item'];
 
-export const REGRESSION_SAVE_PATH = 'C:\\DansWordTest\\regression.dansword';
-export const REGRESSION_SECOND_PATH = 'C:\\DansWordTest\\second.dansword';
+export const REGRESSION_SAVE_PATH = 'C:\\OfficewriteTest\\regression.officewrite';
+export const REGRESSION_SECOND_PATH = 'C:\\OfficewriteTest\\second.officewrite';
 
 /** Fixed timestamp for deterministic save/load metadata in unit tests. */
 export const REGRESSION_FIXED_ISO = '2026-01-15T12:00:00.000Z';

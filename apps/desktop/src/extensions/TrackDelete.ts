@@ -4,7 +4,7 @@ import { Mark, mergeAttributes } from '@tiptap/core';
  * Text the author deleted while track changes was on.
  *
  * Word keeps deleted text in the document so a reviewer can reject the change
- * and get it back. DansWord previously had no equivalent: only insertions were
+ * and get it back. Officewrite previously had no equivalent: only insertions were
  * marked, deletions really removed the text, and "Reject" could never restore
  * anything. This mark lets a deletion be shown struck through and either
  * removed for good (accept) or unmarked (reject).

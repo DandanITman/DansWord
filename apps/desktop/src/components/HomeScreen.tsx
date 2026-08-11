@@ -21,8 +21,8 @@ import {
   User,
   LayoutGrid,
 } from 'lucide-react';
-import { TEMPLATES } from '@dansword/core';
-import type { RecentFile, AppSettings } from '@dansword/core';
+import { TEMPLATES } from '@officewrite/core';
+import type { RecentFile, AppSettings } from '@officewrite/core';
 import { appIconUrl } from '../utils/assets';
 
 type HomeTab = 'recent' | 'favorites';
@@ -133,7 +133,7 @@ export function HomeScreen({
       {aboutOpen && (
         <div className="backdrop" onClick={() => setAboutOpen(false)}>
           <div className="dialog" onClick={(e) => e.stopPropagation()} data-testid="about-dialog">
-            <h2>About DansWord</h2>
+            <h2>About Officewrite</h2>
             <p className="muted">
               A free, open-source word processor. Local-first: documents stay on this
               machine and the app makes no network requests.
@@ -190,7 +190,7 @@ export function HomeScreen({
 
         <div className="home-sidebar-brand">
           <img src={appIconUrl} alt="" width={20} height={20} />
-          <span>DansWord</span>
+          <span>Officewrite</span>
         </div>
       </aside>
 

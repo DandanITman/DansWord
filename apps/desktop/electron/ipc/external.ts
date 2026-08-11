@@ -3,14 +3,14 @@ import { ipcMain, shell } from 'electron';
 /**
  * The only origin the app will ever hand to the user's browser.
  *
- * DansWord makes no network requests of its own, and the Help tab is the single
+ * Officewrite makes no network requests of its own, and the Help tab is the single
  * place that leaves the app at all. Rather than trust the renderer, the main
  * process re-parses the URL and refuses anything that is not this project's
  * repository over HTTPS — so a bug (or an injected string) in the renderer
  * cannot turn Help into a general-purpose "open any link" primitive.
  */
 const ALLOWED_HOST = 'github.com';
-const ALLOWED_PATH_PREFIX = '/DandanITman/DansWord';
+const ALLOWED_PATH_PREFIX = '/DandanITman/Officewrite';
 
 export function isAllowedExternalUrl(raw: string): boolean {
   let url: URL;
@@ -21,7 +21,7 @@ export function isAllowedExternalUrl(raw: string): boolean {
   }
   if (url.protocol !== 'https:') return false;
   if (url.hostname !== ALLOWED_HOST) return false;
-  // Guard the separator too, so /DandanITman/DansWordEvil is not a prefix match.
+  // Guard the separator too, so /DandanITman/OfficewriteEvil is not a prefix match.
   if (url.pathname !== ALLOWED_PATH_PREFIX && !url.pathname.startsWith(`${ALLOWED_PATH_PREFIX}/`)) {
     return false;
   }

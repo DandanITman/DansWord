@@ -31,11 +31,11 @@ const mockHarness = {
   getOpenedExternalUrls: () => [],
 };
 
-window.dansword = {
+window.officewrite = {
   openFile: async () => null,
   openImageFile: async () => null,
-  saveFile: async (defaultPath?: string) => defaultPath ?? 'C:\\DansWordTest\\Untitled.docx',
-  openFolder: async () => 'C:\\DansWordTest',
+  saveFile: async (defaultPath?: string) => defaultPath ?? 'C:\\OfficewriteTest\\Untitled.docx',
+  openFolder: async () => 'C:\\OfficewriteTest',
   readFile: async () => new Uint8Array(),
   readTextFile: async () => '',
   writeFile: async () => true,
@@ -48,13 +48,13 @@ window.dansword = {
   setSettings: async () => true,
   getRecents: async () => [],
   setRecents: async () => true,
-  getDefaultSaveDir: async () => 'C:\\DansWordTest',
+  getDefaultSaveDir: async () => 'C:\\OfficewriteTest',
   printDocument: async () => true,
   saveRevision: async () => ({
     id: 'rev-1',
     label: 'Saved',
     timestamp: Date.parse('2026-01-15T12:00:00.000Z'),
-    filePath: 'C:\\DansWordTest\\Untitled.docx',
+    filePath: 'C:\\OfficewriteTest\\Untitled.docx',
   }),
   listRevisions: async () => [],
   loadRevision: async () => ({}),
@@ -76,4 +76,4 @@ window.dansword = {
   onOpenFile: () => () => {},
 };
 
-window.__DANSWORD_TEST__ = mockHarness;
+window.__OFFICEWRITE_TEST__ = mockHarness;

@@ -1,5 +1,5 @@
 /**
- * The proofing languages DansWord ships dictionaries for.
+ * The proofing languages Officewrite ships dictionaries for.
  *
  * One list, three consumers: the Review tab's Language menu, the Backstage
  * Options picker and the status bar. `label` is what a menu shows; `shortLabel`

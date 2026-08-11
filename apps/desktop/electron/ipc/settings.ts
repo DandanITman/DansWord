@@ -20,7 +20,7 @@ export function registerSettingsIpc() {
   ipcMain.handle('app:getDefaultSaveDir', async () => {
     const settings = await readJson<{ defaultSaveLocation?: string } | null>(settingsPath, null);
     const configured = settings?.defaultSaveLocation?.trim();
-    const saveDir = configured || path.join(app.getPath('documents'), 'DansWord');
+    const saveDir = configured || path.join(app.getPath('documents'), 'Officewrite');
     ensureDir(saveDir);
     return saveDir;
   });

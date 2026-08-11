@@ -1,4 +1,4 @@
-const REPO = 'DandanITman/DansWord';
+const REPO = 'DandanITman/Officewrite';
 const FALLBACK_RELEASES = `https://github.com/${REPO}/releases/latest`;
 
 async function loadLatestRelease() {
@@ -68,7 +68,7 @@ function setUpTour() {
     const shot = tab.dataset.shot;
     tabs.forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
     image.src = `shots/${shot}.png`;
-    image.alt = `DansWord — ${tab.textContent.trim()}`;
+    image.alt = `Officewrite — ${tab.textContent.trim()}`;
     caption.textContent = SHOTS[shot] ?? '';
   };
 

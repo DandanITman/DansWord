@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Editor } from '@tiptap/react';
-import { THESAURUS_WORD_COUNT, lookupThesaurus } from '@dansword/core';
+import { THESAURUS_WORD_COUNT, lookupThesaurus } from '@officewrite/core';
 
 /**
  * Review > Thesaurus (Shift+F7).

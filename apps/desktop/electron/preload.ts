@@ -1,8 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { DocumentRevision } from '@dansword/core';
+import type { DocumentRevision } from '@officewrite/core';
 
-const OPEN_FILE_CHANNEL = 'dansword:open-file';
-const SAVE_AND_CLOSE_CHANNEL = 'dansword:save-and-close';
+const OPEN_FILE_CHANNEL = 'officewrite:open-file';
+const SAVE_AND_CLOSE_CHANNEL = 'officewrite:save-and-close';
 
 /**
  * Subscribe to a main-process push, returning an unsubscribe function.
@@ -16,7 +16,7 @@ function subscribe<T extends unknown[]>(channel: string, callback: (...args: T) 
   };
 }
 
-contextBridge.exposeInMainWorld('dansword', {
+contextBridge.exposeInMainWorld('officewrite', {
   openFile: () => ipcRenderer.invoke('dialog:openFile') as Promise<string | null>,
   openImageFile: () => ipcRenderer.invoke('dialog:openImageFile') as Promise<string | null>,
   saveFile: (defaultPath?: string) =>

@@ -1,7 +1,7 @@
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey, type EditorState } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
-import { checkGrammar, type ProofingIssueKind } from '@dansword/core';
+import { checkGrammar, type ProofingIssueKind } from '@officewrite/core';
 
 export const proofingKey = new PluginKey<DecorationSet>('proofing');
 
@@ -90,7 +90,7 @@ export function spellErrorAt(state: EditorState, pos: number): { from: number; t
  * Spelling and grammar checking.
  *
  * Spelling comes from the host's Hunspell dictionaries; grammar comes from the
- * rule set in @dansword/core. Both run on the same debounce and land in one
+ * rule set in @officewrite/core. Both run on the same debounce and land in one
  * decoration set, so a word cannot be underlined twice and the Editor pane can
  * walk the problems in document order.
  */

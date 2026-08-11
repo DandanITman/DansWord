@@ -1,4 +1,4 @@
-import type { Watermark } from '@dansword/core';
+import type { Watermark } from '@officewrite/core';
 
 interface WatermarkDialogProps {
   open: boolean;

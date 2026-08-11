@@ -6,7 +6,7 @@ import {
   fixLoneI,
   fixTwoInitialCapitals,
   smartQuote,
-} from '@dansword/core';
+} from '@officewrite/core';
 
 export const autoCorrectKey = new PluginKey('autoCorrect');
 

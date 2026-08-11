@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { RibbonTab } from '@dansword/core';
+import type { RibbonTab } from '@officewrite/core';
 import { buildCommands, searchCommands, RIBBON_GROUPS } from './commands';
 
 /**

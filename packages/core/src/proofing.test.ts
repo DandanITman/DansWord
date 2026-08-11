@@ -20,7 +20,7 @@ describe('AutoCorrect', () => {
 
   it('leaves words it does not know alone', () => {
     expect(autoCorrectWord('the')).toBeNull();
-    expect(autoCorrectWord('DansWord')).toBeNull();
+    expect(autoCorrectWord('Officewrite')).toBeNull();
   });
 
   it('fixes two initial capitals', () => {

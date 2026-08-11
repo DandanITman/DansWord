@@ -1,17 +1,17 @@
 ---
-name: dansword-add-regression-test
+name: officewrite-add-regression-test
 description: >-
-  Add regression tests for DansWord editor features. Use when implementing new
+  Add regression tests for Officewrite editor features. Use when implementing new
   word processor features, fixing formatting/persistence bugs, or extending the
   Playwright/Vitest test suite.
 ---
 
-# Add DansWord regression tests, fix editor bugs, or extend test coverage.
+# Add Officewrite regression tests, fix editor bugs, or extend test coverage.
 
 ## Project context
 
 - **Stack:** npm workspaces, Electron + React + TipTap, Vitest (unit), Playwright (e2e + visual)
-- **Harness:** Browser tests use `apps/desktop/test.html` with mock `window.dansword` — not real Electron IPC
+- **Harness:** Browser tests use `apps/desktop/test.html` with mock `window.officewrite` — not real Electron IPC
 - **Catalog:** Every scenario has an ID in `tests/catalog/test-catalog.json`
 - **Daniel preference:** Do not run tests, browser QA, visual checks, screenshots, builds, or other automated verification unless Daniel explicitly asks for it in the current turn.
 
@@ -34,7 +34,7 @@ description: >-
 | E2E | `tests/e2e/*.spec.ts` |
 | Visual | `tests/visual/*.spec.ts` |
 | Fixtures | `tests/fixtures/` |
-| Helpers | `tests/helpers/playwright.ts`, `tests/helpers/mock-dansword.ts` |
+| Helpers | `tests/helpers/playwright.ts`, `tests/helpers/mock-officewrite.ts` |
 
 ## E2E template
 

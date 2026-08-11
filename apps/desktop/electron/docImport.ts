@@ -40,7 +40,7 @@ function runLibreOfficeConvert(soffice: string, inputPath: string, outDir: strin
 async function tryLibreOfficeDocx(filePath: string): Promise<ArrayBuffer | null> {
   for (const soffice of SOFFICE_CANDIDATES) {
     if (soffice.includes('\\') && !existsSync(soffice)) continue;
-    const outDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dansword-doc-'));
+    const outDir = await fs.mkdtemp(path.join(os.tmpdir(), 'officewrite-doc-'));
     try {
       await runLibreOfficeConvert(soffice, filePath, outDir);
       const base = path.basename(filePath, path.extname(filePath));

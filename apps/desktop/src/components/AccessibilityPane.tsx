@@ -1,6 +1,6 @@
 import { AlertTriangle, CircleAlert, Info, X } from 'lucide-react';
 import type { Editor } from '@tiptap/react';
-import type { AccessibilityIssue } from '@dansword/core';
+import type { AccessibilityIssue } from '@officewrite/core';
 
 interface AccessibilityPaneProps {
   open: boolean;

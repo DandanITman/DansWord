@@ -6,9 +6,9 @@ import { defineConfig, devices } from '@playwright/test';
  * Overridable because `reuseExistingServer` will happily adopt whatever is
  * already listening on the default — including an unrelated project's dev
  * server, in which case every test runs against the wrong app and fails in a
- * way that looks nothing like a port clash. Set DANSWORD_TEST_PORT to move.
+ * way that looks nothing like a port clash. Set OFFICEWRITE_TEST_PORT to move.
  */
-const PORT = Number(process.env.DANSWORD_TEST_PORT ?? 5173);
+const PORT = Number(process.env.OFFICEWRITE_TEST_PORT ?? 5173);
 const BASE_URL = `http://localhost:${PORT}/test.html`;
 
 /**
@@ -16,7 +16,7 @@ const BASE_URL = `http://localhost:${PORT}/test.html`;
  * pinned Playwright version. Point at it explicitly rather than downloading a
  * second copy. Unset by default, so normal runs are unaffected.
  */
-const executablePath = process.env.DANSWORD_CHROMIUM_PATH || undefined;
+const executablePath = process.env.OFFICEWRITE_CHROMIUM_PATH || undefined;
 
 export default defineConfig({
   testIgnore: ['**/electron/**'],

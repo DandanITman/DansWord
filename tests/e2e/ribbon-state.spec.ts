@@ -121,11 +121,11 @@ test.describe('Ribbon tracks the caret', () => {
 
   test('TC-RIB-006: picture tools appear when an image is selected', async ({ page }) => {
     await page.evaluate(() => {
-      window.__DANSWORD_TEST__?.seedBinaryFile(
-        'C:\\DansWordTest\\photo.png',
+      window.__OFFICEWRITE_TEST__?.seedBinaryFile(
+        'C:\\OfficewriteTest\\photo.png',
         'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
       );
-      window.__DANSWORD_TEST__?.setOpenImageFileResult('C:\\DansWordTest\\photo.png');
+      window.__OFFICEWRITE_TEST__?.setOpenImageFileResult('C:\\OfficewriteTest\\photo.png');
     });
 
     await switchRibbonTab(page, 'insert');

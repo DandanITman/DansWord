@@ -40,7 +40,7 @@ export function InkDrawingView({ node, updateAttributes, selected, editor, getPo
     strokes?: InkStroke[];
   };
 
-  const settings = () => window.__DANSWORD_INK__ ?? { tool: 'pen' as InkTool, color: '#000000', width: 2 };
+  const settings = () => window.__OFFICEWRITE_INK__ ?? { tool: 'pen' as InkTool, color: '#000000', width: 2 };
 
   const pointFromEvent = (event: PointerEvent | React.PointerEvent) => {
     const rect = svgRef.current?.getBoundingClientRect();
@@ -125,8 +125,8 @@ export function InkDrawingView({ node, updateAttributes, selected, editor, getPo
   const [, forceRender] = useState(0);
   useEffect(() => {
     const onSettings = () => forceRender((value) => value + 1);
-    window.addEventListener('dansword:ink-settings', onSettings);
-    return () => window.removeEventListener('dansword:ink-settings', onSettings);
+    window.addEventListener('officewrite:ink-settings', onSettings);
+    return () => window.removeEventListener('officewrite:ink-settings', onSettings);
   }, []);
 
   const tool = settings().tool;

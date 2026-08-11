@@ -35,7 +35,7 @@ test.describe('Insert tab', () => {
     await openBlankDocument(page);
     await switchRibbonTab(page, 'insert');
     await page.getByTestId('ribbon-page-break').click();
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('pageBreak');
   });
 
@@ -44,7 +44,7 @@ test.describe('Insert tab', () => {
     await typeInEditor(page, 'Text with note');
     await switchRibbonTab(page, 'references');
     await page.getByTestId('ribbon-footnote').click();
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('footnoteRef');
     const footnoteText = page.getByTestId('doc-footnotes').locator('.doc-footnote-text');
     await expect(footnoteText).toBeVisible();
@@ -62,11 +62,11 @@ test.describe('Insert tab', () => {
 
   test('TC-INS-006: inserts image from mock file picker', async ({ page }) => {
     await page.evaluate((b64) => {
-      window.__DANSWORD_TEST__?.seedBinaryFile('C:\\DansWordTest\\photo.png', b64);
+      window.__OFFICEWRITE_TEST__?.seedBinaryFile('C:\\OfficewriteTest\\photo.png', b64);
     }, TINY_PNG_BASE64);
     await openBlankDocument(page);
     await page.evaluate(() =>
-      window.__DANSWORD_TEST__?.setOpenImageFileResult('C:\\DansWordTest\\photo.png'),
+      window.__OFFICEWRITE_TEST__?.setOpenImageFileResult('C:\\OfficewriteTest\\photo.png'),
     );
     await switchRibbonTab(page, 'insert');
     await page.getByTestId('ribbon-pictures').click();
@@ -86,7 +86,7 @@ test.describe('Insert tab', () => {
     await switchRibbonTab(page, 'insert');
     await page.getByTestId('ribbon-date').click();
     await page.getByRole('menuitem').first().click();
-    const text = await page.evaluate(() => window.__DANSWORD_TEST__?.getEditorText() ?? '');
+    const text = await page.evaluate(() => window.__OFFICEWRITE_TEST__?.getEditorText() ?? '');
     expect(text.length).toBeGreaterThan(5);
   });
 });
@@ -183,7 +183,7 @@ test.describe('Layout, review, and view', () => {
     await page.getByTestId('ribbon-track-changes').click();
     await expect(page.getByTestId('status-bar').locator('.status-track')).toBeVisible();
     await typeInEditor(page, 'Tracked edit');
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('trackInsert');
   });
 
@@ -231,8 +231,8 @@ test.describe('Layout, review, and view', () => {
 
   test('stores settings in mock persistence layer', async ({ page }) => {
     const settings = await page.evaluate(async () => {
-      window.__DANSWORD_TEST__?.setSettings({ theme: 'dark', spellCheckEnabled: false });
-      return window.dansword.getSettings();
+      window.__OFFICEWRITE_TEST__?.setSettings({ theme: 'dark', spellCheckEnabled: false });
+      return window.officewrite.getSettings();
     });
     expect(settings).not.toBeNull();
     expect(settings!.theme).toBe('dark');
@@ -249,7 +249,7 @@ test.describe('Settings and options', () => {
 
   test('TC-REV-003: underlines misspelled words when spell check is enabled', async ({ page }) => {
     await page.evaluate(() => {
-      window.__DANSWORD_TEST__?.setSpellCheckResults([false]);
+      window.__OFFICEWRITE_TEST__?.setSpellCheckResults([false]);
     });
     await typeInEditor(page, 'asdfgh');
     await expect.poll(async () => page.locator('.spell-error').count()).toBeGreaterThan(0);
@@ -259,17 +259,17 @@ test.describe('Settings and options', () => {
   test('disabling spell check stores setting', async ({ page }) => {
     await openBackstage(page, 'options');
     await page.getByLabel(/Enable spell check/i).uncheck();
-    const enabled = await page.evaluate(async () => (await window.dansword.getSettings())?.spellCheckEnabled);
+    const enabled = await page.evaluate(async () => (await window.officewrite.getSettings())?.spellCheckEnabled);
     expect(enabled).toBe(false);
   });
 
   test('auto-save interval zero disables auto-save', async ({ page }) => {
     await page.evaluate(() =>
-      window.__DANSWORD_TEST__?.setSettings({ autoSaveIntervalMs: 0 }),
+      window.__OFFICEWRITE_TEST__?.setSettings({ autoSaveIntervalMs: 0 }),
     );
     await saveToPath(page, PATHS.savedDocx);
     const baseline = await page.evaluate(
-      (path) => window.__DANSWORD_TEST__?.readStoredBinaryBase64(path),
+      (path) => window.__OFFICEWRITE_TEST__?.readStoredBinaryBase64(path),
       PATHS.savedDocx,
     );
     expect(baseline).not.toBeNull();
@@ -278,7 +278,7 @@ test.describe('Settings and options', () => {
       .poll(
         async () =>
           page.evaluate(
-            (path) => window.__DANSWORD_TEST__?.readStoredBinaryBase64(path),
+            (path) => window.__OFFICEWRITE_TEST__?.readStoredBinaryBase64(path),
             PATHS.savedDocx,
           ),
         { timeout: 3000 },

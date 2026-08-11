@@ -68,7 +68,7 @@ test.describe('Reworked features', () => {
     // Seed a document long enough to paginate. The feature under test is the
     // indicator following the caret, so the content is fixture data.
     await page.evaluate(() => {
-      window.__DANSWORD_TEST__?.loadEditorContent({
+      window.__OFFICEWRITE_TEST__?.loadEditorContent({
         type: 'doc',
         content: Array.from({ length: 80 }, (_, i) => ({
           type: 'paragraph',
@@ -152,7 +152,7 @@ test.describe('Reworked features', () => {
 
   test('TC-HOME-001: About opens and recent entries can be removed', async ({ page }) => {
     await openBlankDocument(page);
-    await saveToPath(page, PATHS.savedDansword);
+    await saveToPath(page, PATHS.savedOfficewrite);
 
     await page.getByTestId('editor-titlebar').getByTitle('Home screen').first().click();
     await expect(page.getByTestId('home-screen')).toBeVisible();
@@ -215,7 +215,7 @@ test.describe('Reworked features', () => {
 
   test('TC-EDIT-026: Ctrl+K links the selection', async ({ page }) => {
     await openBlankDocument(page);
-    await typeInEditor(page, 'DansWord site');
+    await typeInEditor(page, 'Officewrite site');
     await selectAllInEditor(page);
 
     // Insert > Link existed; the shortcut every word processor has did not.
@@ -231,22 +231,22 @@ test.describe('Reworked features', () => {
   test('TC-FILE-010: Ctrl+P prints and Ctrl+Shift+S saves under a new name', async ({ page }) => {
     await openBlankDocument(page);
     await typeInEditor(page, 'shortcut coverage');
-    await saveToPath(page, PATHS.savedDansword);
+    await saveToPath(page, PATHS.savedOfficewrite);
 
     await page.keyboard.press('Control+p');
     await expect
-      .poll(async () => page.evaluate(() => window.__DANSWORD_TEST__?.getPrintCallCount()))
+      .poll(async () => page.evaluate(() => window.__OFFICEWRITE_TEST__?.getPrintCallCount()))
       .toBe(1);
 
     // Ctrl+Shift+S must ask where to save rather than overwriting the open
     // file the way a plain Ctrl+S does.
-    const copyPath = 'C:\\DansWordTest\\copy.dansword';
-    await page.evaluate((p) => window.__DANSWORD_TEST__?.setSaveFileResult(p), copyPath);
+    const copyPath = 'C:\\OfficewriteTest\\copy.officewrite';
+    await page.evaluate((p) => window.__OFFICEWRITE_TEST__?.setSaveFileResult(p), copyPath);
     await page.keyboard.press('Control+Shift+S');
 
     await expect
       .poll(async () =>
-        page.evaluate((p) => window.__DANSWORD_TEST__?.readStoredFile(p), copyPath),
+        page.evaluate((p) => window.__OFFICEWRITE_TEST__?.readStoredFile(p), copyPath),
       )
       .not.toBeNull();
   });
@@ -323,11 +323,11 @@ test.describe('Reworked features', () => {
   /** Leaving an object used to dump you on Home wherever you had come from. */
   test('TC-RIB-009: leaving a picture returns to the tab you came from', async ({ page }) => {
     await page.evaluate(() => {
-      window.__DANSWORD_TEST__?.seedBinaryFile(
-        'C:\DansWordTest\photo.png',
+      window.__OFFICEWRITE_TEST__?.seedBinaryFile(
+        'C:\OfficewriteTest\photo.png',
         'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
       );
-      window.__DANSWORD_TEST__?.setOpenImageFileResult('C:\DansWordTest\photo.png');
+      window.__OFFICEWRITE_TEST__?.setOpenImageFileResult('C:\OfficewriteTest\photo.png');
     });
     await openBlankDocument(page);
     await switchRibbonTab(page, 'review');
@@ -406,7 +406,7 @@ test.describe('Reworked features', () => {
     await page.getByTestId('print-confirm').click();
 
     await expect
-      .poll(async () => page.evaluate(() => window.__DANSWORD_TEST__?.getLastPrintOptions()))
+      .poll(async () => page.evaluate(() => window.__OFFICEWRITE_TEST__?.getLastPrintOptions()))
       .toEqual({ copies: 3, pageRange: '1-2' });
   });
 
@@ -424,10 +424,10 @@ test.describe('Reworked features', () => {
 
   test('TC-REV-009: add to dictionary stops a word being flagged', async ({ page }) => {
     await page.evaluate(() => {
-      window.__DANSWORD_TEST__?.setSpellCheckResults([false]);
+      window.__OFFICEWRITE_TEST__?.setSpellCheckResults([false]);
     });
     await openBlankDocument(page);
-    await typeInEditor(page, 'danswordium');
+    await typeInEditor(page, 'officewriteium');
 
     await expect.poll(async () => page.locator('.spell-error').count()).toBeGreaterThan(0);
     await page.locator('.spell-error').click({ button: 'right' });
@@ -436,7 +436,7 @@ test.describe('Reworked features', () => {
     await page.getByRole('menuitem', { name: 'Add to dictionary' }).click();
 
     await expect
-      .poll(async () => page.evaluate(() => window.dansword.getUserDictionary()))
-      .toContain('danswordium');
+      .poll(async () => page.evaluate(() => window.officewrite.getUserDictionary()))
+      .toContain('officewriteium');
   });
 });

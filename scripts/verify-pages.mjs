@@ -24,7 +24,7 @@ if (failed) {
 
 console.log('\nLocal Pages files look good.');
 console.log('\nBefore the first GitHub Pages deploy succeeds, enable Pages once:');
-console.log('  1. Open https://github.com/DandanITman/DansWord/settings/pages');
+console.log('  1. Open https://github.com/DandanITman/Officewrite/settings/pages');
 console.log('  2. Build and deployment → Source → GitHub Actions');
 console.log('  3. Re-run the "Deploy GitHub Pages" workflow if a prior run failed');
-console.log('\nLive site (after deploy): https://dandanitman.github.io/DansWord/\n');
+console.log('\nLive site (after deploy): https://dandanitman.github.io/Officewrite/\n');

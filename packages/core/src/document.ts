@@ -1,4 +1,4 @@
-import type { DansWordDocument, DocumentMetadata } from './types';
+import type { OfficewriteDocument, DocumentMetadata } from './types';
 import {
   DEFAULT_HEADER_FOOTER,
   DEFAULT_PAGE_SETUP,
@@ -60,11 +60,11 @@ export function createDocumentEnvelope(
   };
 }
 
-export function parseDansWordFile(raw: unknown): DocumentEnvelope {
+export function parseOfficewriteFile(raw: unknown): DocumentEnvelope {
   if (!raw || typeof raw !== 'object') {
     return createDocumentEnvelope({ type: 'doc', content: [{ type: 'paragraph' }] });
   }
-  const file = raw as DansWordDocument;
+  const file = raw as OfficewriteDocument;
   return createDocumentEnvelope(file.content, {
     metadata: file.metadata,
     // Files written before page colour, borders, line numbers and hyphenation
@@ -84,7 +84,7 @@ export function parseDansWordFile(raw: unknown): DocumentEnvelope {
   });
 }
 
-export function serializeDansWordFile(envelope: DocumentEnvelope): DansWordDocument {
+export function serializeOfficewriteFile(envelope: DocumentEnvelope): OfficewriteDocument {
   return {
     version: 3,
     metadata: { ...envelope.metadata, modified: new Date().toISOString() },

@@ -1,6 +1,6 @@
 {
-  "name": "@dansword/openxml",
-  "version": "0.2.8",
+  "name": "@officewrite/openxml",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
@@ -13,7 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@dansword/core": "*",
+    "@officewrite/core": "*",
     "docx": "^9.5.0",
     "fast-xml-parser": "^4.5.7",
     "jszip": "^3.10.1"

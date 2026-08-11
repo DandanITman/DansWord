@@ -88,7 +88,7 @@ jobs:
           set -euo pipefail
           echo "Checking $PAGE_URL"
           for attempt in 1 2 3 4 5 6; do
-            if curl -fsSL "$PAGE_URL" | grep -qi "DansWord"; then
+            if curl -fsSL "$PAGE_URL" | grep -qi "Officewrite"; then
               echo "Deploy verified: $PAGE_URL"
               exit 0
             fi

@@ -1,12 +1,12 @@
 ---
-name: dansword-deploy
+name: officewrite-deploy
 description: >-
-  Deploy DansWord to GitHub Pages or create a Windows release. Respect Daniel's
+  Deploy Officewrite to GitHub Pages or create a Windows release. Respect Daniel's
   current-turn testing preference. Generate detailed GitHub release notes for
   accountability.
 ---
 
-# Deploy DansWord
+# Deploy Officewrite
 
 Use when the user asks to **deploy**, **release**, **publish**, **push to GitHub Pages**, or **ship a build**.
 
@@ -28,7 +28,7 @@ Do not run local tests, browser QA, visual checks, screenshots, builds, or other
 Local QA commands are Daniel-run unless he explicitly asks the agent to run them:
 
 ```bash
-cd c:\src\DansWord
+cd c:\src\Officewrite
 npm install
 npx playwright install chromium
 npm run pre-deploy
@@ -56,7 +56,7 @@ Warn the user that tests were skipped and list what was not verified.
 
 ## GitHub Pages
 
-URL: https://dandanitman.github.io/DansWord/
+URL: https://dandanitman.github.io/Officewrite/
 
 One-time setup: Repo -> Settings -> Pages -> Source -> GitHub Actions.
 
@@ -107,5 +107,5 @@ Suggest these for Daniel as needed:
 
 ## Related
 
-- Testing: `docs/testing.md`, skill `dansword-add-regression-test`
+- Testing: `docs/testing.md`, skill `officewrite-add-regression-test`
 - CI: `.github/workflows/regression.yml`, `pages.yml`, `release.yml`

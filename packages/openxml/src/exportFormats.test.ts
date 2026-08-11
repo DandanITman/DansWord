@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { exportToDocx, exportToHtml, exportToRtf, wrapDansWordFile, unwrapDansWordFile } from './index';
+import { exportToDocx, exportToHtml, exportToRtf, wrapOfficewriteFile, unwrapOfficewriteFile } from './index';
 
 const sampleDoc = {
   type: 'doc',
@@ -35,9 +35,9 @@ describe('openxml export formats', () => {
     expect(html).toContain('<strong>Hello world</strong>');
   });
 
-  it('round-trips dansword envelope', () => {
-    const wrapped = wrapDansWordFile(sampleDoc, { title: 'T', author: 'A' });
-    const parsed = unwrapDansWordFile(wrapped);
+  it('round-trips officewrite envelope', () => {
+    const wrapped = wrapOfficewriteFile(sampleDoc, { title: 'T', author: 'A' });
+    const parsed = unwrapOfficewriteFile(wrapped);
     expect(parsed.metadata.title).toBe('T');
     expect(parsed.content).toEqual(sampleDoc);
   });

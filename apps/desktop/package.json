@@ -1,8 +1,8 @@
 {
-  "name": "@dansword/desktop",
-  "version": "0.2.8",
+  "name": "@officewrite/desktop",
+  "version": "0.3.0",
   "private": true,
-  "description": "DansWord — non-profit educational word processor, free Word alternative for everyone, open source for anyone to edit",
+  "description": "Officewrite — non-profit educational word processor, free Word alternative for everyone, open source for anyone to edit",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -15,8 +15,8 @@
     "package": "npm run build && electron-builder --win"
   },
   "dependencies": {
-    "@dansword/core": "*",
-    "@dansword/openxml": "*",
+    "@officewrite/core": "*",
+    "@officewrite/openxml": "*",
     "@tiptap/extension-color": "^2.12.0",
     "@tiptap/extension-font-family": "^2.12.0",
     "@tiptap/extension-highlight": "^2.12.0",
@@ -62,8 +62,8 @@
     "vitest": "^4.1.8"
   },
   "build": {
-    "appId": "com.dansword.app",
-    "productName": "DansWord",
+    "appId": "com.officewrite.app",
+    "productName": "Officewrite",
     "electronVersion": "39.8.5",
     "icon": "build/icon.ico",
     "directories": {
@@ -93,8 +93,8 @@
       "icon": "build/icon.ico",
       "fileAssociations": [
         {
-          "ext": "dansword",
-          "name": "DansWord Document",
+          "ext": "officewrite",
+          "name": "Officewrite Document",
           "role": "Editor"
         },
         {

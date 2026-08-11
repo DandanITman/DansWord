@@ -1,6 +1,6 @@
 import { describe, expect, it, afterEach } from 'vitest';
 import { createTestEditor } from '../editor/testEditor';
-import { wrapDansWordFile, unwrapDansWordFile } from '@dansword/openxml';
+import { wrapOfficewriteFile, unwrapOfficewriteFile } from '@officewrite/openxml';
 import {
   buildRegressionDocumentContent,
   REGRESSION_BOLD,
@@ -26,8 +26,8 @@ describe('editor formatting behavior', () => {
   });
 
   it('types text into the editor', () => {
-    editor.commands.insertContent('Hello DansWord');
-    expect(editor.getText()).toBe('Hello DansWord');
+    editor.commands.insertContent('Hello Officewrite');
+    expect(editor.getText()).toBe('Hello Officewrite');
   });
 
   it('applies bold, italic, and underline marks', () => {
@@ -88,13 +88,13 @@ describe('editor formatting behavior', () => {
     expect(editor.getText()).toBe('Hello');
   });
 
-  it('round-trips formatted content through dansword file format', () => {
+  it('round-trips formatted content through officewrite file format', () => {
     const content = buildRegressionDocumentContent();
     editor.commands.setContent(content as object);
     const json = editor.getJSON();
 
-    const wrapped = wrapDansWordFile(json, { title: REGRESSION_DOC_TITLE, author: 'Tester' });
-    const restored = unwrapDansWordFile(wrapped);
+    const wrapped = wrapOfficewriteFile(json, { title: REGRESSION_DOC_TITLE, author: 'Tester' });
+    const restored = unwrapOfficewriteFile(wrapped);
 
     expect(restored.metadata.title).toBe(REGRESSION_DOC_TITLE);
     expect(restored.content).toEqual(json);

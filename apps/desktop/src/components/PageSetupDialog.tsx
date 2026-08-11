@@ -5,8 +5,8 @@ import type {
   LineNumberMode,
   HeaderFooter,
   HeaderFooterZones,
-} from '@dansword/core';
-import { MARGIN_PRESETS, PAGE_SIZE_LABELS, footerZonesOf, headerZonesOf } from '@dansword/core';
+} from '@officewrite/core';
+import { MARGIN_PRESETS, PAGE_SIZE_LABELS, footerZonesOf, headerZonesOf } from '@officewrite/core';
 
 interface PageSetupDialogProps {
   open: boolean;

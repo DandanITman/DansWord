@@ -1,8 +1,8 @@
 import { describe, expect, it, afterEach } from 'vitest';
 import {
   createDocumentEnvelope,
-  serializeDansWordFile,
-  parseDansWordFile,
+  serializeOfficewriteFile,
+  parseOfficewriteFile,
 } from './document';
 import { TEMPLATES } from './defaults';
 import {
@@ -22,7 +22,7 @@ describe('document envelope', () => {
     expect(envelope.trackChangesEnabled).toBe(false);
   });
 
-  it('TC-UNIT-001: serializes and parses a dansword file with formatting content', () => {
+  it('TC-UNIT-001: serializes and parses a officewrite file with formatting content', () => {
     const content = buildRegressionDocumentContent();
     const envelope = createDocumentEnvelope(content, {
       metadata: {
@@ -33,8 +33,8 @@ describe('document envelope', () => {
       },
     });
 
-    const serialized = serializeDansWordFile(envelope);
-    const restored = parseDansWordFile(serialized);
+    const serialized = serializeOfficewriteFile(envelope);
+    const restored = parseOfficewriteFile(serialized);
 
     expect(restored.metadata.title).toBe(REGRESSION_DOC_TITLE);
     expect(restored.metadata.author).toBe('Regression Bot');
@@ -44,7 +44,7 @@ describe('document envelope', () => {
   });
 
   it('returns a blank envelope for invalid file data', () => {
-    const restored = parseDansWordFile(null);
+    const restored = parseOfficewriteFile(null);
     expect(restored.content).toEqual({
       type: 'doc',
       content: [{ type: 'paragraph' }],

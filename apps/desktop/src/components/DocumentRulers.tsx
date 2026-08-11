@@ -1,6 +1,6 @@
 import { useRef, type ReactNode, type CSSProperties } from 'react';
-import type { PageMargins, PageSetup } from '@dansword/core';
-import { PAGE_DIMENSIONS } from '@dansword/core';
+import type { PageMargins, PageSetup } from '@officewrite/core';
+import { PAGE_DIMENSIONS } from '@officewrite/core';
 
 interface DocumentRulersProps {
   pageSetup: PageSetup;

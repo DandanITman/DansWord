@@ -21,7 +21,7 @@ test.describe('Edge cases and failure modes', () => {
     await openBlankDocument(page);
     await saveToPath(page, PATHS.savedDocx);
     const b64 = await page.evaluate(
-      (path) => window.__DANSWORD_TEST__?.readStoredBinaryBase64(path),
+      (path) => window.__OFFICEWRITE_TEST__?.readStoredBinaryBase64(path),
       PATHS.savedDocx,
     );
     expect(b64).toBeTruthy();
@@ -38,7 +38,7 @@ test.describe('Edge cases and failure modes', () => {
   test('mixed formatting in one paragraph', async ({ page }) => {
     await openBlankDocument(page);
     await page.evaluate(() =>
-      window.__DANSWORD_TEST__?.loadEditorContent({
+      window.__OFFICEWRITE_TEST__?.loadEditorContent({
         type: 'doc',
         content: [
           {
@@ -62,7 +62,7 @@ test.describe('Edge cases and failure modes', () => {
   test('nested bullet inside numbered list', async ({ page }) => {
     await openBlankDocument(page);
     await page.evaluate(() =>
-      window.__DANSWORD_TEST__?.loadEditorContent({
+      window.__OFFICEWRITE_TEST__?.loadEditorContent({
         type: 'doc',
         content: [
           {
@@ -123,7 +123,7 @@ test.describe('Edge cases and failure modes', () => {
     const unicodePath = `${PATHS.savedDocx.replace('saved.docx', '文档.docx')}`;
     await saveToPath(page, unicodePath);
     const b64 = await page.evaluate(
-      (path) => window.__DANSWORD_TEST__?.readStoredBinaryBase64(path),
+      (path) => window.__OFFICEWRITE_TEST__?.readStoredBinaryBase64(path),
       unicodePath,
     );
     expect(b64).toBeTruthy();

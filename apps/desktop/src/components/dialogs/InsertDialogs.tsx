@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Editor } from '@tiptap/react';
-import { CROSS_REFERENCE_LABELS, type CrossReferenceKind } from '@dansword/core';
+import { CROSS_REFERENCE_LABELS, type CrossReferenceKind } from '@officewrite/core';
 import { SYMBOL_SUBSETS } from '../../constants/symbols';
 import { ALL_EMOJI, EMOJI_GROUPS } from '../../constants/emoji';
 import { collectBookmarks, collectCaptions } from '../../utils/documentIndex';

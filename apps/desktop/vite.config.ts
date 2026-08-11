@@ -36,8 +36,8 @@ export default defineConfig(({ mode }) => ({
   },
   resolve: {
     alias: {
-      '@dansword/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),
-      '@dansword/openxml': path.resolve(__dirname, '../../packages/openxml/src/index.ts'),
+      '@officewrite/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),
+      '@officewrite/openxml': path.resolve(__dirname, '../../packages/openxml/src/index.ts'),
     },
   },
   build: {

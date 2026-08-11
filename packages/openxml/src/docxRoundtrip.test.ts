@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exportToDocx, exportToRtf, exportToHtml, importFromDocx } from './index';
-import { DEFAULT_PAGE_SETUP } from '@dansword/core';
+import { DEFAULT_PAGE_SETUP } from '@officewrite/core';
 
 const richDoc = {
   type: 'doc',

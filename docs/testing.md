@@ -1,6 +1,6 @@
-# DansWord testing guide
+# Officewrite testing guide
 
-DansWord uses a layered regression suite:
+Officewrite uses a layered regression suite:
 
 1. **Typecheck + build** — compile the Electron/React app and shared packages
 2. **Unit/component tests** — Vitest for document logic, OpenXML, and TipTap editor behavior
@@ -59,10 +59,10 @@ in-app one. Use `answerPrompt` and `dismissAlert` instead.
 
 Electron IPC is not available in CI, so Playwright tests load `apps/desktop/test.html`, which:
 
-- installs an in-memory `window.dansword` mock (`tests/helpers/mock-dansword.ts`)
+- installs an in-memory `window.officewrite` mock (`tests/helpers/mock-officewrite.ts`)
 - persists mock files in `localStorage` for save/reload scenarios
 - disables animations via `[data-test-mode]`
-- exposes `window.__DANSWORD_TEST__` helpers for deterministic file dialogs and editor content injection
+- exposes `window.__OFFICEWRITE_TEST__` helpers for deterministic file dialogs and editor content injection
 - stubs `window.prompt` / `window.alert` where tests need them (the packaged Electron app uses in-app dialogs instead — native browser prompts freeze in Electron)
 
 This keeps tests local, deterministic, and free of production services.
@@ -100,7 +100,7 @@ In GitHub Actions, download the `visual-snapshot-diffs` artifact from a failed r
 
 ## Adding a new regression test
 
-Tests must exercise the feature through the UI a user actually touches. A test that drives the editor directly proves TipTap works, not that DansWord's controls are wired to it.
+Tests must exercise the feature through the UI a user actually touches. A test that drives the editor directly proves TipTap works, not that Officewrite's controls are wired to it.
 
 ### Unit/component
 
@@ -115,7 +115,7 @@ Desktop editor behavior tests live in `apps/desktop/src/editor/editorBehavior.te
 1. Add a spec under `tests/e2e/`.
 2. Prefer `data-testid` selectors already on ribbon/editor/home elements.
 3. Use helpers in `tests/helpers/playwright.ts`.
-4. Seed files through `window.__DANSWORD_TEST__` rather than real disk paths.
+4. Seed files through `window.__OFFICEWRITE_TEST__` rather than real disk paths.
 
 ### Visual
 
@@ -141,7 +141,7 @@ Visual snapshots catch differences from the committed baseline. If a bad layout 
 - Visual baselines: home, empty editor, formatted document, ribbon, canvas, backstage, narrow viewport, dark theme home
 - Layout guard for primary app controls being visible and unclipped
 - Document envelope create/serialize/parse
-- OpenXML export + `.dansword` round-trip (existing package tests)
+- OpenXML export + `.officewrite` round-trip (existing package tests)
 
 ### Known coverage gaps
 
@@ -195,4 +195,4 @@ On Linux it needs a display: `xvfb-run -a npm run test:electron`.
 
 If your machine has a pre-provisioned browser at a revision that does not match
 the pinned Playwright, point the browser suite at it with
-`DANSWORD_CHROMIUM_PATH=/path/to/chrome npm run test:e2e`.
+`OFFICEWRITE_CHROMIUM_PATH=/path/to/chrome npm run test:e2e`.

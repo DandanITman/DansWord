@@ -2,7 +2,7 @@ import { dialog, ipcMain, type BrowserWindow } from 'electron';
 import { takePendingFile } from '../fileOpenQueue';
 
 /** Channel asking the renderer to save before the window closes. */
-export const SAVE_AND_CLOSE_CHANNEL = 'dansword:save-and-close';
+export const SAVE_AND_CLOSE_CHANNEL = 'officewrite:save-and-close';
 
 interface CloseGuardState {
   /** Mirrors the renderer's unsaved-changes flag. */

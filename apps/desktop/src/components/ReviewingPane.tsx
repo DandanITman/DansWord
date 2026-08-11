@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { Editor } from '@tiptap/react';
-import type { DocumentComment } from '@dansword/core';
+import type { DocumentComment } from '@officewrite/core';
 
 interface Revision {
   kind: 'insert' | 'delete';

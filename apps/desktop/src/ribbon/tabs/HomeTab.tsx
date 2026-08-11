@@ -28,7 +28,7 @@ import {
   Type,
   Underline,
 } from 'lucide-react';
-import { BUILTIN_STYLES, STYLE_SETS } from '@dansword/core';
+import { BUILTIN_STYLES, STYLE_SETS } from '@officewrite/core';
 import { ColorPickerButton } from '../../components/ColorPickerButton';
 import {
   BORDER_COLORS,

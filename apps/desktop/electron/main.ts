@@ -1,7 +1,7 @@
 import { app, BrowserWindow, Menu, nativeImage } from 'electron';
 import path from 'node:path';
 import { existsSync } from 'node:fs';
-import { ensureDataDir } from './store';
+import { ensureDataDir, migrateLegacyUserData } from './store';
 import { loadWindowState, trackWindowState } from './windowState';
 import { attachWindow, documentFromArgv, queueFileOpen } from './fileOpenQueue';
 import { registerFileIpc } from './ipc/files';
@@ -41,7 +41,7 @@ async function createWindow() {
     ...options,
     minWidth: 900,
     minHeight: 600,
-    title: 'DansWord',
+    title: 'Officewrite',
     icon: resolveAppIcon(),
     backgroundColor: '#f3f4f6',
     autoHideMenuBar: true,
@@ -91,6 +91,9 @@ if (!gotLock) {
   });
 
   app.whenReady().then(async () => {
+    // Before anything reads settings or recents: bring across the folder the
+    // app used under its old name, or the rename looks like data loss.
+    migrateLegacyUserData();
     ensureDataDir();
     Menu.setApplicationMenu(null);
 

@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ensureDir } from '../store';
 
-const DOCUMENT_EXTENSIONS = ['docx', 'dansword', 'doc', 'txt', 'rtf', 'html', 'htm'];
+const DOCUMENT_EXTENSIONS = ['docx', 'officewrite', 'doc', 'txt', 'rtf', 'html', 'htm'];
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'];
 
 export function registerFileIpc(getWindow: () => BrowserWindow | null) {
@@ -40,7 +40,7 @@ export function registerFileIpc(getWindow: () => BrowserWindow | null) {
       defaultPath: defaultPath ?? 'Untitled.docx',
       filters: [
         { name: 'Word Document', extensions: ['docx'] },
-        { name: 'DansWord Native (.dansword)', extensions: ['dansword'] },
+        { name: 'Officewrite Native (.officewrite)', extensions: ['officewrite'] },
         { name: 'Rich Text', extensions: ['rtf'] },
         { name: 'HTML', extensions: ['html', 'htm'] },
         { name: 'PDF', extensions: ['pdf'] },

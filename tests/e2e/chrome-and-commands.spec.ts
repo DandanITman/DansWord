@@ -17,7 +17,7 @@ import {
 import { PATHS } from '../fixtures/fileFixtures';
 
 const editorJson = (page: import('@playwright/test').Page) =>
-  page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+  page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
 
 test.describe('Ribbon tab strip', () => {
   test.beforeEach(async ({ page }) => {
@@ -80,7 +80,7 @@ test.describe('File operations', () => {
 
     await expect(page.getByTestId('editor-filename')).toContainText('Renamed.docx');
     const stored = await page.evaluate(
-      () => Object.keys(JSON.parse(localStorage.getItem('dansword-test-fs') ?? '{}')),
+      () => Object.keys(JSON.parse(localStorage.getItem('officewrite-test-fs') ?? '{}')),
     );
     expect(stored.some((path) => path.endsWith('Renamed.docx'))).toBe(true);
     expect(stored.some((path) => path.endsWith('saved.docx'))).toBe(false);
@@ -95,7 +95,7 @@ test.describe('File operations', () => {
     await dismissAlert(page, /Copied to/i);
 
     const stored = await page.evaluate(
-      () => Object.keys(JSON.parse(localStorage.getItem('dansword-test-fs') ?? '{}')),
+      () => Object.keys(JSON.parse(localStorage.getItem('officewrite-test-fs') ?? '{}')),
     );
     expect(stored.some((path) => path.endsWith('saved (1).docx'))).toBe(true);
     // The original stays open and on disk.
@@ -112,7 +112,7 @@ test.describe('File operations', () => {
 
     await expect(page.getByTestId('home-screen')).toBeVisible();
     const stored = await page.evaluate(
-      () => Object.keys(JSON.parse(localStorage.getItem('dansword-test-fs') ?? '{}')),
+      () => Object.keys(JSON.parse(localStorage.getItem('officewrite-test-fs') ?? '{}')),
     );
     expect(stored.some((path) => path.endsWith('saved.docx'))).toBe(false);
   });
@@ -127,7 +127,7 @@ test.describe('File operations', () => {
 
     await expect(page.getByTestId('word-editor')).toBeVisible();
     const stored = await page.evaluate(
-      () => Object.keys(JSON.parse(localStorage.getItem('dansword-test-fs') ?? '{}')),
+      () => Object.keys(JSON.parse(localStorage.getItem('officewrite-test-fs') ?? '{}')),
     );
     expect(stored.some((path) => path.endsWith('saved.docx'))).toBe(true);
   });
@@ -236,9 +236,9 @@ test.describe('Help tab', () => {
     await page.getByTestId('help-support').click();
 
     const opened = await page.evaluate(
-      () => window.__DANSWORD_TEST__?.getOpenedExternalUrls() ?? [],
+      () => window.__OFFICEWRITE_TEST__?.getOpenedExternalUrls() ?? [],
     );
-    expect(opened).toContain('https://github.com/DandanITman/DansWord/issues');
+    expect(opened).toContain('https://github.com/DandanITman/Officewrite/issues');
   });
 
   test('TC-HELP-002: shows the keyboard shortcuts', async ({ page }) => {
@@ -297,7 +297,7 @@ test.describe('New editor features', () => {
   test('TC-NEW-004: reports accessibility problems and selects the offender', async ({ page }) => {
     await openBlankDocument(page);
     await page.evaluate(() =>
-      window.__DANSWORD_TEST__?.loadEditorContent({
+      window.__OFFICEWRITE_TEST__?.loadEditorContent({
         type: 'doc',
         content: [
           { type: 'paragraph' },

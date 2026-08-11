@@ -20,7 +20,7 @@ export interface LaunchedApp {
  * touch the developer's own profile.
  */
 export async function launchApp(args: string[] = []): Promise<LaunchedApp> {
-  const userDataDir = mkdtempSync(path.join(tmpdir(), 'dansword-e2e-'));
+  const userDataDir = mkdtempSync(path.join(tmpdir(), 'officewrite-e2e-'));
 
   const app = await electron.launch({
     args: [path.join(desktopRoot, 'dist-electron/main.js'), `--user-data-dir=${userDataDir}`, ...args],
@@ -31,7 +31,7 @@ export async function launchApp(args: string[] = []): Promise<LaunchedApp> {
   const window = await app.firstWindow();
   await window.waitForLoadState('domcontentloaded');
   // The bridge is what the whole suite exists to exercise.
-  await window.waitForFunction(() => typeof (globalThis as { dansword?: unknown }).dansword === 'object');
+  await window.waitForFunction(() => typeof (globalThis as { officewrite?: unknown }).officewrite === 'object');
 
   return {
     app,
@@ -42,7 +42,7 @@ export async function launchApp(args: string[] = []): Promise<LaunchedApp> {
       // "Save changes?" box would block the main process during teardown.
       // The guard itself is covered by its own test below.
       await window
-        .evaluate(() => (globalThis as { dansword?: { setDirty(v: boolean): Promise<boolean> } }).dansword?.setDirty(false))
+        .evaluate(() => (globalThis as { officewrite?: { setDirty(v: boolean): Promise<boolean> } }).officewrite?.setDirty(false))
         .catch(() => undefined);
       await app.close().catch(() => undefined);
       rmSync(userDataDir, { recursive: true, force: true });

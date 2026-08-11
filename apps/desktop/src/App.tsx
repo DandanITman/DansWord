@@ -21,7 +21,7 @@ import {
   type DocumentEnvelope,
   type AccessibilityIssue,
   checkAccessibility,
-} from '@dansword/core';
+} from '@officewrite/core';
 import {
   exportToDocx,
   importDocxEnvelope,
@@ -30,10 +30,10 @@ import {
   exportToHtml,
   importFromHtml,
   importFromDocText,
-  wrapDansWordFile,
-  unwrapDansWordFile,
+  wrapOfficewriteFile,
+  unwrapOfficewriteFile,
   type DocxExportOptions,
-} from '@dansword/openxml';
+} from '@officewrite/openxml';
 import { PanelLeft } from 'lucide-react';
 import { applyPrintPageSetup } from './utils/printStyles';
 import { StyleEditorDialog } from './components/StyleEditorDialog';
@@ -123,13 +123,13 @@ import {
 const CONTENT_MIRROR_DELAY_MS = 300;
 
 /** The only site the Help tab links to; the host re-checks this allowlist. */
-const REPO_URL = 'https://github.com/DandanITman/DansWord';
+const REPO_URL = 'https://github.com/DandanITman/Officewrite';
 
 /**
  * Hand a project URL to the user's browser.
  *
  * The app itself still makes no network requests — this opens the OS browser
- * and nothing is loaded in a DansWord window. A refusal means the main-process
+ * and nothing is loaded in a Officewrite window. A refusal means the main-process
  * allowlist rejected the URL, which is worth surfacing rather than swallowing.
  */
 async function openProjectUrl(url: string) {
@@ -138,7 +138,7 @@ async function openProjectUrl(url: string) {
     return;
   }
   const opened = await getPlatform().openExternal(url);
-  if (!opened) await uiAlert(`DansWord would not open ${url}.`);
+  if (!opened) await uiAlert(`Officewrite would not open ${url}.`);
 }
 
 function suggestedSavePath(defaultDir: string, name: string, ext = 'docx') {
@@ -271,8 +271,8 @@ export default function App() {
   // The ink pen is a property of the tool, not of each drawing, so the canvases
   // read it from here rather than from their own attributes.
   useEffect(() => {
-    window.__DANSWORD_INK__ = ink;
-    window.dispatchEvent(new Event('dansword:ink-settings'));
+    window.__OFFICEWRITE_INK__ = ink;
+    window.dispatchEvent(new Event('officewrite:ink-settings'));
   }, [ink]);
 
   const cancelContentMirror = useCallback(() => {
@@ -394,12 +394,12 @@ export default function App() {
   /** Read a document file into an envelope, for Open and for Compare. */
   const readDocumentAt = useCallback(async (path: string): Promise<DocumentEnvelope | null> => {
     const ext = extOf(path);
-    if (ext === 'dansword') {
+    if (ext === 'officewrite') {
       const raw = await getPlatform().readTextFile(path);
       try {
-        return unwrapDansWordFile(JSON.parse(raw));
+        return unwrapOfficewriteFile(JSON.parse(raw));
       } catch {
-        await uiAlert('That .dansword file is corrupted and could not be opened.');
+        await uiAlert('That .officewrite file is corrupted and could not be opened.');
         return null;
       }
     }
@@ -483,8 +483,8 @@ export default function App() {
             subject: doc.metadata.subject,
           }),
         );
-      } else if (ext === 'dansword') {
-        const wrapped = wrapDansWordFile(doc.content, doc.metadata, {
+      } else if (ext === 'officewrite') {
+        const wrapped = wrapOfficewriteFile(doc.content, doc.metadata, {
           pageSetup: doc.pageSetup,
           headerFooter: doc.headerFooter,
           comments: doc.comments,
@@ -496,14 +496,14 @@ export default function App() {
         await getPlatform().writeFile(targetPath, JSON.stringify(wrapped, null, 2));
       } else {
         // Previously the fallback branch: typing "Report.pdf" in the save
-        // dialog silently wrote a .dansword JSON blob under that name.
+        // dialog silently wrote a .officewrite JSON blob under that name.
         await uiAlert(
-          `Cannot save as ".${ext || 'unknown'}". Choose .docx, .dansword, .rtf, .html or .txt.`,
+          `Cannot save as ".${ext || 'unknown'}". Choose .docx, .officewrite, .rtf, .html or .txt.`,
         );
         return false;
       }
 
-      // A version snapshot for every format, not just .dansword. Since .docx is
+      // A version snapshot for every format, not just .officewrite. Since .docx is
       // the default save format, Version History was empty for normal users.
       await getPlatform()
         .saveRevision(targetPath, doc, `Saved ${new Date().toLocaleString()}`)
@@ -555,7 +555,7 @@ export default function App() {
   // title bar names the open document instead of just repeating the app name.
   useEffect(() => {
     document.title =
-      view === 'editor' ? `${fileName}${isDirty ? ' *' : ''} — DansWord` : 'DansWord';
+      view === 'editor' ? `${fileName}${isDirty ? ' *' : ''} — Officewrite` : 'Officewrite';
   }, [view, fileName, isDirty]);
 
   // The host paused a close so we could save; finish, then let it proceed.
@@ -783,7 +783,7 @@ export default function App() {
     if (isDirty) await saveDocument();
     const copyPath = await getPlatform().copyFile(filePath);
     if (!copyPath) {
-      await uiAlert('DansWord could not create a copy.');
+      await uiAlert('Officewrite could not create a copy.');
       return;
     }
     await uiAlert(`Copied to ${getFileName(copyPath)}.`);
@@ -1764,8 +1764,8 @@ export default function App() {
             await exportDocumentAs('docx');
             setBackstageOpen(false);
           }}
-          onExportDansword={async () => {
-            await exportDocumentAs('dansword');
+          onExportOfficewrite={async () => {
+            await exportDocumentAs('officewrite');
             setBackstageOpen(false);
           }}
           onExportPdf={() => {

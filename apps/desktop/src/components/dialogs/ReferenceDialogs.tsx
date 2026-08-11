@@ -6,7 +6,7 @@ import {
   type CitationSource,
   type CitationStyle,
   type SourceType,
-} from '@dansword/core';
+} from '@officewrite/core';
 
 /** References > Manage Sources: the source list plus the Create Source form. */
 export function SourcesDialog({

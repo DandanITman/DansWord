@@ -123,16 +123,16 @@ function changelogSections(tag, sinceTag) {
 const highlights = changelogSections(version, previousTag);
 
 const compareUrl = previousTag
-  ? `https://github.com/DandanITman/DansWord/compare/${previousTag}...${version}`
-  : `https://github.com/DandanITman/DansWord/commits/main`;
+  ? `https://github.com/DandanITman/Officewrite/compare/${previousTag}...${version}`
+  : `https://github.com/DandanITman/Officewrite/commits/main`;
 
 const body = [
-  `# DansWord ${version}`,
+  `# Officewrite ${version}`,
   '',
   'Non-profit educational word processor — free Word alternative for everyone.',
   '',
   previousTag
-    ? `Changes since [${previousTag}](https://github.com/DandanITman/DansWord/releases/tag/${previousTag}).`
+    ? `Changes since [${previousTag}](https://github.com/DandanITman/Officewrite/releases/tag/${previousTag}).`
     : 'Initial tracked release notes for this version.',
   '',
   `[Full commit compare](${compareUrl})`,
@@ -163,7 +163,7 @@ const body = [
   '## Downloads',
   '',
   '- Windows installer (`.exe`) attached to this release',
-  '- Project site: https://dandanitman.github.io/DansWord/',
+  '- Project site: https://dandanitman.github.io/Officewrite/',
 ].join('\n');
 
 if (outputPath) {

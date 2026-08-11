@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Editor } from '@tiptap/react';
-import type { PageSetup, PageBorderStyle } from '@dansword/core';
+import type { PageSetup, PageBorderStyle } from '@officewrite/core';
 import { Dialog } from './Dialog';
 import { availableFonts } from '../../constants/fonts';
 import { FONT_SIZES, TEXT_EFFECTS, UNDERLINE_STYLES } from '../../extensions/CharacterFormatting';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { exportToDocx } from './docxExport';
-import { DEFAULT_PAGE_SETUP } from '@dansword/core';
+import { DEFAULT_PAGE_SETUP } from '@officewrite/core';
 
 const sampleWithRichContent = {
   type: 'doc',

@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/react';
-import type { DocumentComment } from '@dansword/core';
+import type { DocumentComment } from '@officewrite/core';
 import { findCommentAnchorPos, getCommentAnchorText, removeCommentAnchor } from '../utils/headings';
 import { uiAlert, uiPrompt } from '../utils/uiPrompt';
 

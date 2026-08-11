@@ -1,26 +1,26 @@
-import type { DansWordAPI } from './api';
+import type { OfficewriteAPI } from './api';
 
-export type { DansWordAPI, ListedDocument, ImportDocResult } from './api';
+export type { OfficewriteAPI, ListedDocument, ImportDocResult } from './api';
 
 /**
- * DansWord's file, print and spell-check features are provided by the Electron
+ * Officewrite's file, print and spell-check features are provided by the Electron
  * host process. Opened as a plain web page there is no bridge, and every one of
  * those calls would throw — previously as an unguarded `TypeError` during the
  * first mount effect, which blanked the screen. Resolve it once, here, and let
  * callers ask before reaching.
  */
 export function isPlatformAvailable(): boolean {
-  return typeof window !== 'undefined' && typeof window.dansword === 'object' && window.dansword !== null;
+  return typeof window !== 'undefined' && typeof window.officewrite === 'object' && window.officewrite !== null;
 }
 
-export function getPlatform(): DansWordAPI {
+export function getPlatform(): OfficewriteAPI {
   if (!isPlatformAvailable()) {
     throw new Error(
-      'DansWord desktop features are unavailable: the Electron bridge is not present. ' +
+      'Officewrite desktop features are unavailable: the Electron bridge is not present. ' +
         'Run the packaged app or `npm run dev` rather than opening the page directly.',
     );
   }
-  return window.dansword;
+  return window.officewrite;
 }
 
 /**

@@ -2,10 +2,10 @@ import { app, type BrowserWindow } from 'electron';
 import path from 'node:path';
 import { existsSync } from 'node:fs';
 
-const SUPPORTED = new Set(['.dansword', '.docx', '.doc', '.rtf', '.txt', '.html', '.htm']);
+const SUPPORTED = new Set(['.officewrite', '.docx', '.doc', '.rtf', '.txt', '.html', '.htm']);
 
 /** Channel the main process uses to hand a file path to the renderer. */
-export const OPEN_FILE_CHANNEL = 'dansword:open-file';
+export const OPEN_FILE_CHANNEL = 'officewrite:open-file';
 
 let pending: string | null = null;
 let targetWindow: BrowserWindow | null = null;
@@ -19,8 +19,8 @@ function isSupportedDocument(candidate: string): boolean {
 /**
  * Pull a document path out of a process argv vector.
  *
- * The installer registers .docx and .dansword file associations, but nothing
- * ever read argv, so double-clicking an associated document opened DansWord
+ * The installer registers .docx and .officewrite file associations, but nothing
+ * ever read argv, so double-clicking an associated document opened Officewrite
  * to a blank home screen.
  */
 export function documentFromArgv(argv: string[]): string | null {

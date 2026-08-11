@@ -8,7 +8,7 @@ import {
   type HeaderFooterZones,
   type PageSetup,
   type PageSizePreset,
-} from '@dansword/core';
+} from '@officewrite/core';
 import { DocxPackage } from './package';
 import {
   attr,
@@ -176,7 +176,7 @@ function shapeFromSvg(svgDataUri: string, width: number, height: number): TipTap
     return null;
   }
 
-  const shapeType = svg.match(/data-dansword-shape="([^"]+)"/)?.[1];
+  const shapeType = svg.match(/data-officewrite-shape="([^"]+)"/)?.[1];
   if (!shapeType) return null;
 
   const attrs: Record<string, unknown> = { shapeType };
@@ -568,7 +568,7 @@ function headerFooterText(part: XmlNode | undefined): {
  * Read `word/comments.xml`.
  *
  * Nothing read this part before, so a document reviewed in Word arrived in
- * DansWord with every comment silently missing.
+ * Officewrite with every comment silently missing.
  */
 function commentsFrom(commentsXml: XmlNode | undefined): {
   list: DocumentComment[];

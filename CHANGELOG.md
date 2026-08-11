@@ -1,10 +1,46 @@
 # Changelog
 
-All notable changes to DansWord are recorded here. Help > What's New shows this
+All notable changes to Officewrite are recorded here. Help > What's New shows this
 file inside the app.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
-DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
+Officewrite uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
+
+The project was called **DansWord** until 0.3.0. Entries below that version have
+been rewritten to use the current name, so they describe the same application
+under the name it now has rather than the one it shipped with at the time.
+
+## [0.3.0]
+
+**The project is now Officewrite.** Same application, new name — everywhere:
+the window and start screen, the installer and Start menu entry, the file
+association, the package names, the repository, and the project site.
+
+### Changed
+
+- **Renamed throughout** — 546 references across 110 files, covering the app
+  itself, the `@officewrite/*` package scope, the `window.officewrite` host
+  bridge, the `com.officewrite.app` application id, and every URL.
+- **The native document format is now `.officewrite`.** This is a breaking
+  change: files previously saved as `.dansword` will not open. The installer
+  no longer registers the old extension. Documents saved as `.docx`, `.rtf`,
+  `.html` or `.txt` are unaffected, as those formats never carried the name.
+
+### Migration
+
+- **Your settings, recent files and version history carry over.** Electron
+  derives its data folder from the application name, so the rename moved it
+  from `%APPDATA%\DansWord` to `%APPDATA%\Officewrite`. On first launch the
+  app imports the old folder if the new one does not exist yet, which is what
+  keeps the rename from looking like data loss. Nothing is ever copied over an
+  existing folder, and a failed import never blocks startup.
+
+### Notes
+
+- The repository moved to `DandanITman/Officewrite`. GitHub redirects the old
+  URL, and existing clones keep working, but `git remote set-url` is worth
+  running.
+- The site moved to <https://dandanitman.github.io/Officewrite/>.
 
 ## [0.2.8]
 
@@ -18,7 +54,7 @@ Documentation and the project website. No behaviour changes in the app.
   merge, which was removed from the codebase some time ago. Every screenshot
   is now a real render, generated from the app by a Playwright spec so they
   can be refreshed rather than going stale:
-  `DANSWORD_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts`.
+  `OFFICEWRITE_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts`.
 - **The site uses Word's own palette** — the #2B579A brand blue, Office's warm
   grey surfaces and Segoe UI — so it looks like it belongs to the application
   it advertises. The gradient headline and the emoji bullet list are gone.
@@ -212,7 +248,7 @@ fixes were incomplete. This closes them.
 ## [0.2.2]
 
 Second Word-parity pass, taking the four remaining gaps where a command Word
-has had no route in DansWord at all.
+has had no route in Officewrite at all.
 
 ### Added
 
@@ -365,7 +401,7 @@ First release.
 
 - A Word-style ribbon with File, Home, Insert, Draw, Design, Layout, References,
   Mailings, Review and View, plus contextual Picture Format and Table Layout.
-- Open and save `.dansword`, `.docx`, `.doc`, `.rtf`, `.html` and `.txt`; export
+- Open and save `.officewrite`, `.docx`, `.doc`, `.rtf`, `.html` and `.txt`; export
   to PDF; print through the system dialog.
 - Track changes, comments, a reviewing pane and document compare.
 - Hunspell spell check in English, German, Spanish and French, a grammar

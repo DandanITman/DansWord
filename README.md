@@ -2,7 +2,7 @@
   <img src="docs/logo.png" alt="" width="112" height="112" />
 </p>
 
-<h1 align="center">DansWord</h1>
+<h1 align="center">Officewrite</h1>
 
 <p align="center">
   <strong>A word processor that doesn't ask for your card.</strong><br />
@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://dandanitman.github.io/DansWord/">Website</a> ·
-  <a href="https://github.com/DandanITman/DansWord/releases/latest">Download</a> ·
+  <a href="https://dandanitman.github.io/Officewrite/">Website</a> ·
+  <a href="https://github.com/DandanITman/Officewrite/releases/latest">Download</a> ·
   <a href="docs/FEATURES.md">Features</a> ·
   <a href="CHANGELOG.md">Changelog</a> ·
   <a href="CONTRIBUTING.md">Contributing</a>
@@ -19,27 +19,27 @@
 
 ---
 
-DansWord writes essays, letters, reports and CVs — with the ribbon, the styles and the `.docx`
+Officewrite writes essays, letters, reports and CVs — with the ribbon, the styles and the `.docx`
 files you already know. It runs on your own Windows PC, works offline, and costs nothing.
 
 There is **no account, no cloud, and no telemetry.** Your documents stay on your machine, and the
 app makes no network requests of its own.
 
 <p align="center">
-  <img src="docs/shots/editor.png" alt="DansWord editing a document, showing the Home ribbon" width="820" />
+  <img src="docs/shots/editor.png" alt="Officewrite editing a document, showing the Home ribbon" width="820" />
 </p>
 
 ## Try it
 
 **Just want to use it?** Grab the
-[latest Windows build](https://github.com/DandanITman/DansWord/releases/latest), install, and open
+[latest Windows build](https://github.com/DandanITman/Officewrite/releases/latest), install, and open
 it. That's the whole process.
 
 **Want to run the code?**
 
 ```bash
-git clone https://github.com/DandanITman/DansWord.git
-cd DansWord
+git clone https://github.com/DandanITman/Officewrite.git
+cd Officewrite
 npm install
 npm run dev
 ```
@@ -52,7 +52,7 @@ npm run dev
 | **Structure** | A live styles gallery and style sets · a table of contents that keeps itself current · footnotes and endnotes · captions, cross-references and an index · citations in APA, MLA, Chicago or IEEE |
 | **Check** | Spell check in English, German, Spanish and French · grammar checking · AutoCorrect · an offline thesaurus · word count with readability · an accessibility checker for alt text, headings and contrast |
 | **Review** | Track changes with insertions *and* deletions · a reviewing pane · document compare · comments anchored to the text · Editing / Reviewing / Viewing modes |
-| **Share** | Open and save `.docx`, `.rtf`, `.html`, `.txt` and the native `.dansword` · export PDF · print with a preview so you see the page breaks first |
+| **Share** | Open and save `.docx`, `.rtf`, `.html`, `.txt` and the native `.officewrite` · export PDF · print with a preview so you see the page breaks first |
 | **Keep safe** | Auto-save · up to twenty versions kept per document · delete goes to the recycle bin |
 
 The ribbon is fully keyboard-operable — arrow along the tabs, open a menu and walk it without
@@ -64,7 +64,7 @@ doesn't, including the known limitations.
 
 ## Why it exists
 
-Writing a school essay shouldn't need a subscription. DansWord is a non-profit educational
+Writing a school essay shouldn't need a subscription. Officewrite is a non-profit educational
 project, built so students, teachers, families and anyone else who needs to write can do it
 without paying for office software — and so that people learning to program have a real, working
 application they can read end to end.
@@ -93,7 +93,7 @@ feature is testing the wrong thing. [docs/testing.md](docs/testing.md) explains 
 Screenshots on the website are regenerated from the real app, never mocked up:
 
 ```bash
-DANSWORD_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts
+OFFICEWRITE_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts
 ```
 
 ## How the code is laid out

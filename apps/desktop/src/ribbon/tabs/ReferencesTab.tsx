@@ -10,7 +10,7 @@ import {
   Superscript,
   Tag,
 } from 'lucide-react';
-import { CAPTION_LABELS, CITATION_STYLE_LABELS, type CitationStyle } from '@dansword/core';
+import { CAPTION_LABELS, CITATION_STYLE_LABELS, type CitationStyle } from '@officewrite/core';
 import {
   RibbonButton,
   RibbonGroup,

@@ -3,7 +3,7 @@ import { ChevronDown, Eye, MessageSquare, Pencil, GitCompare } from 'lucide-reac
 import { RibbonPopover, RibbonMenuHeader, RibbonMenuItem, RibbonMenuSeparator } from '../ribbon/RibbonKit';
 
 /**
- * Word for the web's editing modes, mapped onto what DansWord already has.
+ * Word for the web's editing modes, mapped onto what Officewrite already has.
  *
  * Editing is the normal state. Reviewing turns track changes on so edits are
  * recorded rather than applied silently. Viewing sets the document read-only,

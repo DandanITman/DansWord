@@ -7,7 +7,7 @@ import {
   visualMaskLocators,
 } from '../helpers/playwright';
 
-test.describe('DansWord visual regression', () => {
+test.describe('Officewrite visual regression', () => {
   test.beforeEach(async ({ page }) => {
     await resetTestState(page);
   });

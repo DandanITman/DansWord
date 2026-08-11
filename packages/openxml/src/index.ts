@@ -1,10 +1,10 @@
 import {
   createDocumentEnvelope,
-  parseDansWordFile,
-  serializeDansWordFile,
+  parseOfficewriteFile,
+  serializeOfficewriteFile,
   type DocumentEnvelope,
   type DocumentMetadata,
-} from '@dansword/core';
+} from '@officewrite/core';
 import { exportToDocx, type DocxExportOptions } from './docxExport';
 import { importDocx, type DocxImportResult, type TipTapNode } from './ooxml/docxImport';
 
@@ -33,13 +33,13 @@ export async function importDocxEnvelope(
   });
 }
 
-export function wrapDansWordFile(
+export function wrapOfficewriteFile(
   content: unknown,
   metadata?: Partial<DocumentMetadata>,
   extras?: Partial<Omit<DocumentEnvelope, 'content' | 'metadata'>>,
 ) {
   const now = new Date().toISOString();
-  return serializeDansWordFile(
+  return serializeOfficewriteFile(
     createDocumentEnvelope(content, {
       metadata: metadata
         ? {
@@ -57,8 +57,8 @@ export function wrapDansWordFile(
   );
 }
 
-export function unwrapDansWordFile(file: unknown): DocumentEnvelope {
-  return parseDansWordFile(file);
+export function unwrapOfficewriteFile(file: unknown): DocumentEnvelope {
+  return parseOfficewriteFile(file);
 }
 
 export type { DocxImportResult, TipTapNode };

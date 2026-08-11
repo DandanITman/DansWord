@@ -40,7 +40,7 @@ export interface DocumentMetadata {
   company?: string;
 }
 
-export interface DansWordDocument {
+export interface OfficewriteDocument {
   version: 1 | 2 | 3;
   metadata: DocumentMetadata;
   content: unknown;

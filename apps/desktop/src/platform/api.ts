@@ -1,4 +1,4 @@
-import type { AppSettings, RecentFile, DocumentRevision } from '@dansword/core';
+import type { AppSettings, RecentFile, DocumentRevision } from '@officewrite/core';
 
 export interface ListedDocument {
   path: string;
@@ -16,10 +16,10 @@ export type ImportDocResult =
  *
  * Every member here must have a matching `ipcMain.handle` in `electron/` and a
  * matching stub in the test harness. Nothing in `src/` may reach for
- * `window.dansword` directly — go through `platform` in ./index.ts so the
+ * `window.officewrite` directly — go through `platform` in ./index.ts so the
  * missing-bridge case stays handled in exactly one place.
  */
-export interface DansWordAPI {
+export interface OfficewriteAPI {
   openFile: () => Promise<string | null>;
   openImageFile: () => Promise<string | null>;
   saveFile: (defaultPath?: string) => Promise<string | null>;

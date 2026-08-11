@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { AppSettings, DocumentMetadata, DocumentRevision, RecentFile } from '@dansword/core';
-import { DEFAULT_SETTINGS, TEMPLATES } from '@dansword/core';
+import type { AppSettings, DocumentMetadata, DocumentRevision, RecentFile } from '@officewrite/core';
+import { DEFAULT_SETTINGS, TEMPLATES } from '@officewrite/core';
 import { RevisionHistoryPanel } from './RevisionHistoryPanel';
 import { PROOFING_LANGUAGES } from '../constants/languages';
 
@@ -15,7 +15,7 @@ interface BackstageProps {
   onSave: () => void;
   onSaveAs: () => void;
   onExportDocx: () => void;
-  onExportDansword: () => void;
+  onExportOfficewrite: () => void;
   onExportPdf: () => void;
   onPrint: (options?: { copies?: number; pageRange?: string }) => void;
   /** Renders the paginated document for the Print pane's preview. */
@@ -49,7 +49,7 @@ const NAV: { id: BackstageSection; label: string }[] = [
 
 const EXPORT_FORMATS = [
   { label: 'DOCX', desc: 'Default — Microsoft Word format', action: 'docx' as const },
-  { label: '.dansword', desc: 'DansWord native format with version history', action: 'dansword' as const },
+  { label: '.officewrite', desc: 'Officewrite native format with version history', action: 'officewrite' as const },
   { label: 'RTF', desc: 'Rich Text Format', action: 'rtf' as const },
   { label: 'HTML', desc: 'Web page with styling', action: 'html' as const },
   { label: 'PDF', desc: 'Print to PDF', action: 'pdf' as const },
@@ -64,7 +64,7 @@ export function Backstage({
   onSave,
   onSaveAs,
   onExportDocx,
-  onExportDansword,
+  onExportOfficewrite,
   onExportPdf,
   onPrint,
   settings,
@@ -123,7 +123,7 @@ export function Backstage({
 
   const exportHandlers = {
     docx: onExportDocx,
-    dansword: onExportDansword,
+    officewrite: onExportOfficewrite,
     rtf: onExportRtf,
     html: onExportHtml,
     pdf: onExportPdf,
@@ -290,8 +290,8 @@ export function Backstage({
             <>
               <h2>Export</h2>
               <p className="backstage-subtitle">
-                Save a copy in another format. Try the native .dansword format for version history and
-                full DansWord features.
+                Save a copy in another format. Try the native .officewrite format for version history and
+                full Officewrite features.
               </p>
               <div className="export-grid">
                 {EXPORT_FORMATS.map((fmt) => (
@@ -426,7 +426,7 @@ export function Backstage({
                     onChange={(e) =>
                       onSettingsChange({ ...settings, defaultSaveLocation: e.target.value })
                     }
-                    placeholder="Leave blank for Documents\\DansWord"
+                    placeholder="Leave blank for Documents\\Officewrite"
                   />
                 </label>
                 <label>

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { resetTestState, openBlankDocument, visualMaskLocators } from '../helpers/playwright';
 
-test.describe('DansWord narrow viewport', () => {
+test.describe('Officewrite narrow viewport', () => {
   test.beforeEach(async ({ page }) => {
     await resetTestState(page);
   });

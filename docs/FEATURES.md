@@ -1,4 +1,4 @@
-# DansWord features
+# Officewrite features
 
 What the app does today. Anything not listed here is not built — this file is
 maintained by hand against the actual code, and nothing generates a coverage
@@ -25,11 +25,11 @@ the ribbon layout menu.
 
 - New document from a blank page or the letter, report and resume templates,
   from the start screen or the backstage New pane
-- Open `.dansword`, `.docx`, `.doc`, `.rtf`, `.html`, `.txt`
+- Open `.officewrite`, `.docx`, `.doc`, `.rtf`, `.html`, `.txt`
 - Save and Save As; the format follows the file extension
 - Rename the open document, and Create a Copy alongside it
 - Delete, which sends the file to the recycle bin rather than erasing it
-- Export a copy as DOCX, `.dansword`, RTF, HTML, PDF or TXT without changing
+- Export a copy as DOCX, `.officewrite`, RTF, HTML, PDF or TXT without changing
   which document is open
 - Print with a preview of the paginated document, copies and a page range,
   then the system dialog
@@ -37,7 +37,7 @@ the ribbon layout menu.
   lists them too
 - Auto-save on an interval once the document has a path
 - Version history — up to 20 snapshots per document, for every save format
-- Windows file associations: double-clicking a `.docx` or `.dansword` opens it
+- Windows file associations: double-clicking a `.docx` or `.officewrite` opens it
 - Prompts to save when closing with unsaved changes
 - Document properties: title, author, subject, keywords, company
 
@@ -229,7 +229,7 @@ marks, links, tables, lists and images.
 - `.doc` (the pre-2007 binary format) is imported by shelling out to
   LibreOffice when it is installed, with a plain-text fallback when it is not
 - Ink drawings, text boxes, endnotes, bookmarks, index entries, checklists and
-  the generated bibliography/index blocks round-trip through `.dansword` and
+  the generated bibliography/index blocks round-trip through `.officewrite` and
   HTML, but DOCX export writes them as ordinary paragraphs
 - Compare works at paragraph level, not word level
 - The thesaurus is a built-in offline word list, not a licensed data set
@@ -251,7 +251,7 @@ marks, links, tables, lists and images.
 
 ## Not in scope
 
-DansWord is local-first. It has no accounts, no cloud sync, no collaboration, no
+Officewrite is local-first. It has no accounts, no cloud sync, no collaboration, no
 AI features and no telemetry, and it makes no network requests of its own — the
 Help tab hands a GitHub URL to your browser, and the main process refuses any
 address outside this project's repository.

@@ -11,7 +11,7 @@ import {
   selectAllInEditor,
 } from '../helpers/playwright';
 
-test.describe('DansWord editor e2e', () => {
+test.describe('Officewrite editor e2e', () => {
   test.beforeEach(async ({ page }) => {
     await resetTestState(page);
   });
@@ -61,7 +61,7 @@ test.describe('DansWord editor e2e', () => {
     await page.getByTestId('ribbon-font-size').press('Enter');
     await clickRibbon(page, 'home', 'ribbon-align-center');
 
-    const editorJson = await page.evaluate(() => window.__DANSWORD_TEST__?.getEditorJson());
+    const editorJson = await page.evaluate(() => window.__OFFICEWRITE_TEST__?.getEditorJson());
     expect(JSON.stringify(editorJson)).toContain('"textAlign":"center"');
     await expect(page.getByTestId('word-editor')).toContainText('Sized and aligned text');
   });
@@ -105,20 +105,20 @@ test.describe('DansWord editor e2e', () => {
     await page.keyboard.press('Control+b');
 
     await page.evaluate((path) => {
-      window.__DANSWORD_TEST__?.setSaveFileResult(path);
+      window.__OFFICEWRITE_TEST__?.setSaveFileResult(path);
     }, REGRESSION_SAVE_PATH);
     await fileMenu(page, 'save');
     await expect
       .poll(async () =>
         page.evaluate(
-          (path) => window.__DANSWORD_TEST__?.readStoredFile(path) ?? null,
+          (path) => window.__OFFICEWRITE_TEST__?.readStoredFile(path) ?? null,
           REGRESSION_SAVE_PATH,
         ),
       )
       .not.toBeNull();
 
     const saved = await page.evaluate(
-      (path) => window.__DANSWORD_TEST__?.readStoredFile(path) ?? '',
+      (path) => window.__OFFICEWRITE_TEST__?.readStoredFile(path) ?? '',
       REGRESSION_SAVE_PATH,
     );
     expect(saved).toContain('Persist me');
@@ -127,9 +127,9 @@ test.describe('DansWord editor e2e', () => {
     await page.reload();
     await page.evaluate(
       ({ path, fileContent }) => {
-        window.__DANSWORD_TEST__?.reset();
-        window.__DANSWORD_TEST__?.seedFile(path, fileContent);
-        window.__DANSWORD_TEST__?.setOpenFileResult(path);
+        window.__OFFICEWRITE_TEST__?.reset();
+        window.__OFFICEWRITE_TEST__?.seedFile(path, fileContent);
+        window.__OFFICEWRITE_TEST__?.setOpenFileResult(path);
       },
       { path: REGRESSION_SAVE_PATH, fileContent: saved },
     );

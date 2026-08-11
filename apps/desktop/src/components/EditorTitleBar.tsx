@@ -22,7 +22,7 @@ interface EditorTitleBarProps {
  * name, then the command search box in the middle.
  *
  * Two deliberate departures from the mockup. There is no account picture,
- * because DansWord has no account — and no cloud-save tick, because it saves to
+ * because Officewrite has no account — and no cloud-save tick, because it saves to
  * disk. The quick-access buttons stay, for the same reason: nothing here
  * autosaves to a server, so Save has to be reachable without opening a menu.
  */
@@ -44,12 +44,12 @@ export function EditorTitleBar({
     <div className="editor-titlebar" data-testid="editor-titlebar">
       <div className="editor-titlebar-qat">
         {/* Word's waffle opens Microsoft's app launcher. There is nothing to
-            launch here, so it goes to the DansWord home screen instead. */}
+            launch here, so it goes to the Officewrite home screen instead. */}
         <button className="qat-btn qat-menu" onClick={onHome} title="Home screen">
           <Grid3x3 size={18} />
         </button>
         <img className="editor-titlebar-icon" src={appIconUrl} alt="" width={22} height={22} />
-        <span className="editor-titlebar-product">DansWord</span>
+        <span className="editor-titlebar-product">Officewrite</span>
 
         <button
           className="editor-titlebar-name"

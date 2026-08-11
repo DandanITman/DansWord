@@ -1,18 +1,18 @@
 import type { Editor } from '@tiptap/react';
-import type { AppSettings, DocumentRevision, RecentFile } from '@dansword/core';
-import { DEFAULT_SETTINGS } from '@dansword/core';
+import type { AppSettings, DocumentRevision, RecentFile } from '@officewrite/core';
+import { DEFAULT_SETTINGS } from '@officewrite/core';
 
-const FS_KEY = 'dansword-test-fs';
-const SETTINGS_KEY = 'dansword-test-settings';
-const RECENTS_KEY = 'dansword-test-recents';
-const REVISIONS_KEY = 'dansword-test-revisions';
+const FS_KEY = 'officewrite-test-fs';
+const SETTINGS_KEY = 'officewrite-test-settings';
+const RECENTS_KEY = 'officewrite-test-recents';
+const REVISIONS_KEY = 'officewrite-test-revisions';
 const BINARY_PREFIX = '__B64__:';
 
 export type ImportDocResult =
   | { format: 'docx'; data: ArrayBuffer; source: 'libreoffice' }
   | { format: 'text'; data: string; source: 'extractor'; warning: string };
 
-export interface DansWordTestHarness {
+export interface OfficewriteTestHarness {
   reset: () => void;
   setOpenFileResult: (path: string | null) => void;
   setOpenImageFileResult: (path: string | null) => void;
@@ -74,7 +74,7 @@ function bytesToBase64(bytes: Uint8Array) {
   return btoa(binary);
 }
 
-export function installMockDansword(target: Window & typeof globalThis): DansWordTestHarness {
+export function installMockOfficewrite(target: Window & typeof globalThis): OfficewriteTestHarness {
   let nextOpenFile: string | null = null;
   let nextOpenImageFile: string | null = null;
   let nextSaveFile: string | null | undefined = undefined;
@@ -122,11 +122,11 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
         nextSaveFile = undefined;
         return null;
       }
-      const path = nextSaveFile ?? defaultPath ?? 'C:\\DansWordTest\\Untitled.docx';
+      const path = nextSaveFile ?? defaultPath ?? 'C:\\OfficewriteTest\\Untitled.docx';
       nextSaveFile = undefined;
       return normalizePath(path);
     },
-    openFolder: async () => 'C:\\DansWordTest\\folder',
+    openFolder: async () => 'C:\\OfficewriteTest\\folder',
     readFile: async (filePath: string) => {
       const content = getFs()[normalizePath(filePath)];
       if (content == null) throw new Error(`Missing test file: ${filePath}`);
@@ -214,7 +214,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       writeJson(RECENTS_KEY, recents);
       return true;
     },
-    getDefaultSaveDir: async () => 'C:\\DansWordTest',
+    getDefaultSaveDir: async () => 'C:\\OfficewriteTest',
     printDocument: async (options?: { copies?: number; pageRange?: string }) => {
       printCalls += 1;
       lastPrintOptions = options ?? null;
@@ -223,7 +223,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
     // Mirrors the main process's allowlist so a test cannot pass here and fail
     // in the real app; the authoritative copy is electron/ipc/external.ts.
     openExternal: async (url: string) => {
-      if (!/^https:\/\/github\.com\/DandanITman\/DansWord(\/|$)/.test(url)) return false;
+      if (!/^https:\/\/github\.com\/DandanITman\/Officewrite(\/|$)/.test(url)) return false;
       openedExternalUrls.push(url);
       return true;
     },
@@ -288,7 +288,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
     },
   };
 
-  const harness: DansWordTestHarness = {
+  const harness: OfficewriteTestHarness = {
     reset: () => {
       nextOpenFile = null;
       nextOpenImageFile = null;
@@ -385,7 +385,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
     getOpenedExternalUrls: () => [...openedExternalUrls],
   };
 
-  target.dansword = api as Window['dansword'];
-  target.__DANSWORD_TEST__ = harness;
+  target.officewrite = api as Window['officewrite'];
+  target.__OFFICEWRITE_TEST__ = harness;
   return harness;
 }

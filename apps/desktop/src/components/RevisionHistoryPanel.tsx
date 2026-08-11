@@ -1,4 +1,4 @@
-import type { DocumentRevision } from '@dansword/core';
+import type { DocumentRevision } from '@officewrite/core';
 
 interface RevisionHistoryPanelProps {
   revisions: DocumentRevision[];

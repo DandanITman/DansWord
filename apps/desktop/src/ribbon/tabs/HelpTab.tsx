@@ -5,7 +5,7 @@ import type { RibbonTabProps } from '../types';
 /**
  * Help.
  *
- * Word for the web points these at Microsoft's support site; DansWord points
+ * Word for the web points these at Microsoft's support site; Officewrite points
  * them at its own repository, opened in the user's browser rather than in a
  * window here. What's New shows the bundled changelog, so it works offline.
  */
@@ -16,7 +16,7 @@ export function HelpTab({ actions }: RibbonTabProps) {
         <RibbonButton
           icon={<CircleHelp size={20} />}
           label="Help"
-          title="Open the DansWord project on GitHub"
+          title="Open the Officewrite project on GitHub"
           size="large"
           onClick={actions.onOpenHelp}
           testId="help-open"
@@ -40,7 +40,7 @@ export function HelpTab({ actions }: RibbonTabProps) {
         <RibbonButton
           icon={<Keyboard size={20} />}
           label="Keyboard Shortcuts"
-          title="Every shortcut DansWord binds"
+          title="Every shortcut Officewrite binds"
           size="large"
           onClick={actions.onOpenShortcuts}
           testId="help-shortcuts"

@@ -34,7 +34,7 @@ test.describe('Edit ribbon and text operations', () => {
     await focusEditor(page);
     await page.keyboard.press('Control+A');
     await clickRibbon(page, 'home', 'ribbon-superscript');
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('superscript');
   });
 
@@ -46,7 +46,7 @@ test.describe('Edit ribbon and text operations', () => {
     // The font box is an editable combo (input + datalist), not a <select>.
     await page.getByTestId('ribbon-font-family').fill('Georgia');
     await page.getByTestId('ribbon-font-family').press('Enter');
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('Georgia');
   });
 
@@ -54,7 +54,7 @@ test.describe('Edit ribbon and text operations', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'Justified paragraph');
     await clickRibbon(page, 'home', 'ribbon-align-justify');
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('"textAlign":"justify"');
   });
 
@@ -81,7 +81,7 @@ test.describe('Edit ribbon and text operations', () => {
   test('TC-EDIT-015: format painter copies and applies bold', async ({ page }) => {
     await openBlankDocument(page);
     await page.evaluate(() =>
-      window.__DANSWORD_TEST__?.loadEditorContent({
+      window.__OFFICEWRITE_TEST__?.loadEditorContent({
         type: 'doc',
         content: [
           {
@@ -96,7 +96,7 @@ test.describe('Edit ribbon and text operations', () => {
     await page.getByTestId('ribbon-format-painter').click();
     await page.getByTestId('word-editor').getByText('Plain').click();
     await page.getByTestId('ribbon-format-painter').click();
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('"type":"bold"');
   });
 
@@ -106,7 +106,7 @@ test.describe('Edit ribbon and text operations', () => {
     await switchRibbonTab(page, 'home');
     await page.getByRole('button', { name: 'Select' }).click();
     await page.getByTestId('ribbon-select-all').click();
-    const text = await page.evaluate(() => window.__DANSWORD_TEST__?.getEditorText());
+    const text = await page.evaluate(() => window.__OFFICEWRITE_TEST__?.getEditorText());
     expect(text).toBe('Select all me');
   });
 
@@ -118,7 +118,7 @@ test.describe('Edit ribbon and text operations', () => {
     await page.getByTestId('find-next').click();
     await expect
       .poll(async () =>
-        page.evaluate(() => window.__DANSWORD_TEST__?.getEditorSelectionText() ?? ''),
+        page.evaluate(() => window.__OFFICEWRITE_TEST__?.getEditorSelectionText() ?? ''),
       )
       .toMatch(/needle/i);
   });
@@ -146,7 +146,7 @@ test.describe('Edit ribbon and text operations', () => {
     await switchRibbonTab(page, 'home');
     await page.getByTestId('ribbon-line-spacing').click();
     await page.getByRole('menuitem', { name: '2.0' }).click();
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('lineHeight');
   });
 
@@ -156,7 +156,7 @@ test.describe('Edit ribbon and text operations', () => {
     await selectAllInEditor(page);
     await switchRibbonTab(page, 'home');
     await page.getByTestId('ribbon-increase-indent').click();
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toMatch(/indent|margin/i);
   });
 
@@ -167,7 +167,7 @@ test.describe('Edit ribbon and text operations', () => {
     await switchRibbonTab(page, 'home');
     await page.getByTitle('Font Color').click();
     await pickColorSwatch(page, '#ff0000');
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('#ff0000');
   });
 

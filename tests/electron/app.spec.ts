@@ -51,7 +51,7 @@ test.describe('Electron main process', () => {
         'takePendingFile',
         'onOpenFile',
       ];
-      const api = window.dansword as unknown as Record<string, unknown>;
+      const api = window.officewrite as unknown as Record<string, unknown>;
       return required.filter((name) => typeof api?.[name] !== 'function');
     });
 
@@ -63,13 +63,13 @@ test.describe('Electron main process', () => {
     const page = launched.window;
 
     const results = await page.evaluate(() =>
-      window.dansword.spellCheckWords(['keyboard', 'zzzqqxwv'], 'en-US'),
+      window.officewrite.spellCheckWords(['keyboard', 'zzzqqxwv'], 'en-US'),
     );
     expect(results[0]).toBe(true);
     expect(results[1]).toBe(false);
 
     const suggestions = await page.evaluate(() =>
-      window.dansword.spellSuggest('keyboatd', 'en-US'),
+      window.officewrite.spellSuggest('keyboatd', 'en-US'),
     );
     expect(suggestions.length).toBeGreaterThan(0);
   });
@@ -81,7 +81,7 @@ test.describe('Electron main process', () => {
     const page = launched.window;
 
     const german = await page.evaluate(() =>
-      window.dansword.spellCheckWords(['Straße'], 'de-DE'),
+      window.officewrite.spellCheckWords(['Straße'], 'de-DE'),
     );
     expect(german[0]).toBe(true);
   });
@@ -91,14 +91,14 @@ test.describe('Electron main process', () => {
     const page = launched.window;
 
     const before = await page.evaluate(() =>
-      window.dansword.spellCheckWords(['danswordium'], 'en-US'),
+      window.officewrite.spellCheckWords(['officewriteium'], 'en-US'),
     );
     expect(before[0]).toBe(false);
 
-    await page.evaluate(() => window.dansword.addWordToDictionary('danswordium'));
+    await page.evaluate(() => window.officewrite.addWordToDictionary('officewriteium'));
 
     const after = await page.evaluate(() =>
-      window.dansword.spellCheckWords(['danswordium'], 'en-US'),
+      window.officewrite.spellCheckWords(['officewriteium'], 'en-US'),
     );
     expect(after[0]).toBe(true);
   });
@@ -107,13 +107,13 @@ test.describe('Electron main process', () => {
     launched = await launchApp();
     const page = launched.window;
 
-    const dir = mkdtempSync(path.join(tmpdir(), 'dansword-files-'));
+    const dir = mkdtempSync(path.join(tmpdir(), 'officewrite-files-'));
     const target = path.join(dir, 'note.txt');
 
-    await page.evaluate((p) => window.dansword.writeFile(p, 'written by the real host'), target);
+    await page.evaluate((p) => window.officewrite.writeFile(p, 'written by the real host'), target);
     expect(readFileSync(target, 'utf-8')).toBe('written by the real host');
 
-    const readBack = await page.evaluate((p) => window.dansword.readTextFile(p), target);
+    const readBack = await page.evaluate((p) => window.officewrite.readTextFile(p), target);
     expect(readBack).toBe('written by the real host');
   });
 
@@ -121,19 +121,19 @@ test.describe('Electron main process', () => {
     launched = await launchApp();
     const page = launched.window;
 
-    const docPath = path.join(mkdtempSync(path.join(tmpdir(), 'dansword-rev-')), 'doc.docx');
+    const docPath = path.join(mkdtempSync(path.join(tmpdir(), 'officewrite-rev-')), 'doc.docx');
 
     await page.evaluate(
-      (p) => window.dansword.saveRevision(p, { marker: 'snapshot-one' }, 'First save'),
+      (p) => window.officewrite.saveRevision(p, { marker: 'snapshot-one' }, 'First save'),
       docPath,
     );
 
-    const revisions = await page.evaluate((p) => window.dansword.listRevisions(p), docPath);
+    const revisions = await page.evaluate((p) => window.officewrite.listRevisions(p), docPath);
     expect(revisions).toHaveLength(1);
     expect(revisions[0].label).toBe('First save');
 
     const restored = await page.evaluate(
-      ({ p, id }) => window.dansword.loadRevision(p, id),
+      ({ p, id }) => window.officewrite.loadRevision(p, id),
       { p: docPath, id: revisions[0].id },
     );
     expect(restored).toEqual({ marker: 'snapshot-one' });
@@ -146,8 +146,8 @@ test.describe('Electron main process', () => {
     await openBlankDocument(page);
     await typeInEditor(page, 'PDF export smoke test');
 
-    const target = path.join(mkdtempSync(path.join(tmpdir(), 'dansword-pdf-')), 'out.pdf');
-    await page.evaluate((p) => window.dansword.exportPdf(p, 'Letter'), target);
+    const target = path.join(mkdtempSync(path.join(tmpdir(), 'officewrite-pdf-')), 'out.pdf');
+    await page.evaluate((p) => window.officewrite.exportPdf(p, 'Letter'), target);
 
     const bytes = readFileSync(target);
     expect(bytes.byteLength).toBeGreaterThan(1000);
@@ -160,7 +160,7 @@ test.describe('Electron main process', () => {
     const userDataDir = launched.userDataDir;
 
     await launched.window.evaluate(() =>
-      window.dansword.setRecents([
+      window.officewrite.setRecents([
         { path: 'C:/docs/report.docx', name: 'report.docx', lastOpened: 1, pinned: true },
       ]),
     );
@@ -169,7 +169,7 @@ test.describe('Electron main process', () => {
     // Relaunch against the same profile directory.
     const again = await launchApp([`--user-data-dir=${userDataDir}`]);
     try {
-      const recents = await again.window.evaluate(() => window.dansword.getRecents());
+      const recents = await again.window.evaluate(() => window.officewrite.getRecents());
       expect(recents.some((r: { name: string }) => r.name === 'report.docx')).toBe(true);
     } finally {
       await again.app.close();
@@ -187,7 +187,7 @@ test.describe('Electron main process', () => {
 
     // The renderer mirrors its dirty flag to the main process.
     await expect
-      .poll(async () => page.evaluate(() => window.dansword.setDirty(true)))
+      .poll(async () => page.evaluate(() => window.officewrite.setDirty(true)))
       .toBe(true);
 
     // With the guard armed the window survives a close request; the modal is
@@ -195,11 +195,11 @@ test.describe('Electron main process', () => {
     expect(launched.app.windows().length).toBe(1);
   });
 
-  // The installer declares .docx and .dansword associations, but main.ts never
+  // The installer declares .docx and .officewrite associations, but main.ts never
   // read argv and there was no channel to reach the renderer, so a
   // double-clicked document opened to a blank home screen.
   test('opens a document passed on the command line', async () => {
-    const dir = mkdtempSync(path.join(tmpdir(), 'dansword-assoc-'));
+    const dir = mkdtempSync(path.join(tmpdir(), 'officewrite-assoc-'));
     const docPath = path.join(dir, 'launched.txt');
     writeFileSync(docPath, 'Opened from a file association', 'utf-8');
 

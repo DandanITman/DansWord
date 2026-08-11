@@ -1,15 +1,15 @@
-import { createDocumentEnvelope } from '@dansword/core';
+import { createDocumentEnvelope } from '@officewrite/core';
 import {
   exportToDocx,
   exportToHtml,
   exportToRtf,
-  wrapDansWordFile,
-} from '@dansword/openxml';
+  wrapOfficewriteFile,
+} from '@officewrite/openxml';
 
-export const TEST_DIR = 'C:/DansWordTest';
+export const TEST_DIR = 'C:/OfficewriteTest';
 export const PATHS = {
   docx: `${TEST_DIR}/sample.docx`,
-  dansword: `${TEST_DIR}/sample.dansword`,
+  officewrite: `${TEST_DIR}/sample.officewrite`,
   txt: `${TEST_DIR}/sample.txt`,
   rtf: `${TEST_DIR}/sample.rtf`,
   html: `${TEST_DIR}/sample.html`,
@@ -18,9 +18,9 @@ export const PATHS = {
   savedTxt: `${TEST_DIR}/saved.txt`,
   savedRtf: `${TEST_DIR}/saved.rtf`,
   savedHtml: `${TEST_DIR}/saved.html`,
-  savedDansword: `${TEST_DIR}/saved.dansword`,
+  savedOfficewrite: `${TEST_DIR}/saved.officewrite`,
   recentDoc: `${TEST_DIR}/recent.docx`,
-  pinnedDoc: `${TEST_DIR}/pinned.dansword`,
+  pinnedDoc: `${TEST_DIR}/pinned.officewrite`,
   folderDoc1: `${TEST_DIR}/folder/doc-one.txt`,
   folderDoc2: `${TEST_DIR}/folder/doc-two.txt`,
   imagePng: `${TEST_DIR}/photo.png`,
@@ -91,17 +91,17 @@ export async function getSampleHtml() {
   return exportToHtml(sampleContent, 'Sample', { author: 'Tester' });
 }
 
-export function getSampleDansword() {
+export function getSampleOfficewrite() {
   const envelope = createDocumentEnvelope(sampleContent, {
     metadata: {
-      title: 'Sample DansWord',
+      title: 'Sample Officewrite',
       author: 'Tester',
       created: '2026-01-15T12:00:00.000Z',
       modified: '2026-01-15T12:00:00.000Z',
     },
   });
   return JSON.stringify(
-    wrapDansWordFile(envelope.content, envelope.metadata, {
+    wrapOfficewriteFile(envelope.content, envelope.metadata, {
       pageSetup: envelope.pageSetup,
       headerFooter: envelope.headerFooter,
       comments: envelope.comments,

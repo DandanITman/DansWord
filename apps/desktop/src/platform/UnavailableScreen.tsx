@@ -1,14 +1,14 @@
 /**
  * Shown instead of the editor when the Electron bridge is missing. Without this
- * the first mount effect calls into `window.dansword`, throws, and React
+ * the first mount effect calls into `window.officewrite`, throws, and React
  * unmounts the tree — leaving a blank white window with no explanation.
  */
 export function UnavailableScreen() {
   return (
     <div className="platform-unavailable" role="alert">
-      <h1>DansWord needs the desktop app</h1>
+      <h1>Officewrite needs the desktop app</h1>
       <p>
-        This page is running without the DansWord desktop bridge, so opening, saving,
+        This page is running without the Officewrite desktop bridge, so opening, saving,
         printing and spell check are unavailable.
       </p>
       <p>

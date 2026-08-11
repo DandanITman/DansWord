@@ -8,7 +8,7 @@ import type {
   PageOrientation,
   LineNumberMode,
   CaptionLabel,
-} from '@dansword/core';
+} from '@officewrite/core';
 import type { ShapeType } from '../extensions/DocShape';
 import type { InkTool } from '../extensions/InkDrawing';
 import type { RibbonState } from './useRibbonState';

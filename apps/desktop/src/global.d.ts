@@ -1,11 +1,11 @@
 /// <reference types="vite/client" />
 
-import type { AppSettings, RecentFile } from '@dansword/core';
-import type { DansWordAPI, ImportDocResult } from './platform/api';
+import type { AppSettings, RecentFile } from '@officewrite/core';
+import type { OfficewriteAPI, ImportDocResult } from './platform/api';
 
-export type { DansWordAPI, ListedDocument, ImportDocResult } from './platform/api';
+export type { OfficewriteAPI, ListedDocument, ImportDocResult } from './platform/api';
 
-export interface DansWordTestHarness {
+export interface OfficewriteTestHarness {
   reset: () => void;
   setOpenFileResult: (path: string | null) => void;
   setOpenImageFileResult: (path: string | null) => void;
@@ -51,14 +51,14 @@ declare global {
      * `src/platform` before touching it on any path that can run without the
      * Electron bridge.
      */
-    dansword: DansWordAPI;
-    __DANSWORD_TEST__?: DansWordTestHarness;
+    officewrite: OfficewriteAPI;
+    __OFFICEWRITE_TEST__?: OfficewriteTestHarness;
     /**
      * The Draw tab's current pen. Ink canvases read it on every stroke, because
      * in Word the pen belongs to the tool rather than to a drawing — changing
      * colour must not rewrite the drawings already on the page.
      */
-    __DANSWORD_INK__?: {
+    __OFFICEWRITE_INK__?: {
       tool: import('./extensions/InkDrawing').InkTool;
       color: string;
       width: number;

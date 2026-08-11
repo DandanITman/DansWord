@@ -123,7 +123,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.value }}
-          name: DansWord ${{ steps.tag.outputs.value }}
+          name: Officewrite ${{ steps.tag.outputs.value }}
           body_path: release-notes.md
           files: apps/desktop/release/*.exe
           generate_release_notes: false

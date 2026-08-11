@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/react';
-import { readabilityStats } from '@dansword/core';
+import { readabilityStats } from '@officewrite/core';
 
 interface WordCountDialogProps {
   open: boolean;

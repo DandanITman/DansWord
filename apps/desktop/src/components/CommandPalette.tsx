@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CornerDownLeft, Search } from 'lucide-react';
-import type { RibbonTab } from '@dansword/core';
+import type { RibbonTab } from '@officewrite/core';
 import { buildCommands, searchCommands, type CommandContext } from '../ribbon/commands';
 
 const TAB_LABELS: Record<RibbonTab, string> = {

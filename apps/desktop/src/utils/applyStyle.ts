@@ -1,4 +1,4 @@
-import type { DocumentStyle } from '@dansword/core';
+import type { DocumentStyle } from '@officewrite/core';
 import type { Editor } from '@tiptap/react';
 
 /**

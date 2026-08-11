@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Editor } from '@tiptap/react';
-import type { PageSetup } from '@dansword/core';
-import { PAGE_DIMENSIONS } from '@dansword/core';
+import type { PageSetup } from '@officewrite/core';
+import { PAGE_DIMENSIONS } from '@officewrite/core';
 import { extractHeadings } from '../utils/headings';
 import { findAllInEditor } from '../utils/findInEditor';
 

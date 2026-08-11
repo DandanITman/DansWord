@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import type { Editor } from '@tiptap/react';
-import type { RibbonTab } from '@dansword/core';
+import type { RibbonTab } from '@officewrite/core';
 import { useRibbonState } from './useRibbonState';
 import type { RibbonActions, RibbonFlags, RibbonTabProps } from './types';
 import { HomeTab } from './tabs/HomeTab';

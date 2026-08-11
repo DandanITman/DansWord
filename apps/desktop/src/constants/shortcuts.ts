@@ -1,5 +1,5 @@
 /**
- * Every keyboard shortcut DansWord binds, in one place.
+ * Every keyboard shortcut Officewrite binds, in one place.
  *
  * Help > Keyboard Shortcuts renders this, and `docs/FEATURES.md` is written
  * from it — so a binding added to `App.tsx` without a line here is a binding the

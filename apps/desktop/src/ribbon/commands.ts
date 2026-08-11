@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/react';
-import type { RibbonTab } from '@dansword/core';
+import type { RibbonTab } from '@officewrite/core';
 import type { RibbonActions, RibbonFlags } from './types';
 import type { RibbonState } from './useRibbonState';
 import { clearWidths, distributeColumns, distributeRows } from '../utils/tableSizing';

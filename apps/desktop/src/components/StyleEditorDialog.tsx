@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { DocumentStyle } from '@dansword/core';
-import { BUILTIN_STYLES } from '@dansword/core';
+import type { DocumentStyle } from '@officewrite/core';
+import { BUILTIN_STYLES } from '@officewrite/core';
 import { availableFonts } from '../constants/fonts';
 
 interface StyleEditorDialogProps {

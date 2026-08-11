@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Editor } from '@tiptap/react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import type { DocumentFootnote, HeaderFooter, PageSetup, Watermark } from '@dansword/core';
-import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf, zonesEmpty } from '@dansword/core';
+import type { DocumentFootnote, HeaderFooter, PageSetup, Watermark } from '@officewrite/core';
+import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf, zonesEmpty } from '@officewrite/core';
 import { createExtensions } from '../editor/extensions';
 import { trackChangesPlugin, trackChangesKey } from '../editor/trackChangesPlugin';
 import { proofingIssueAt, type DocumentProofingIssue } from '../extensions/ProofingCheck';
@@ -159,7 +159,7 @@ export function WordEditor({
     onCreate: ({ editor: ed }) => {
       onReady?.(ed);
       if (document.documentElement.getAttribute('data-test-mode') === 'true') {
-        window.__DANSWORD_TEST__?.setEditor(ed);
+        window.__OFFICEWRITE_TEST__?.setEditor(ed);
       }
     },
     editorProps: {

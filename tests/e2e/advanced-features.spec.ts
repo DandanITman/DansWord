@@ -37,7 +37,7 @@ test.describe('Clipboard and editing depth', () => {
    * The keyboard path is Chromium's own clipboard handling, and a
    * script-triggered Ctrl+V does not reliably deliver a system-clipboard paste
    * headlessly — so the old version of these tests was flaky for reasons that
-   * had nothing to do with DansWord. The buttons run our `utils/clipboard.ts`,
+   * had nothing to do with Officewrite. The buttons run our `utils/clipboard.ts`,
    * which is the code that was actually broken: Paste used
    * `document.execCommand('paste')`, which Chromium blocks outright, so the
    * button was a silent no-op.
@@ -77,7 +77,7 @@ test.describe('Clipboard and editing depth', () => {
     await switchRibbonTab(page, 'home');
     await page.getByTitle('Border Color').click();
     await pickColorSwatch(page, '#334155');
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('borderColor');
   });
 
@@ -87,7 +87,7 @@ test.describe('Clipboard and editing depth', () => {
     await switchRibbonTab(page, 'home');
     await page.getByTitle('Shading', { exact: true }).click();
     await pickColorSwatch(page, '#fef08a');
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('shading');
   });
 
@@ -108,7 +108,7 @@ test.describe('Clipboard and editing depth', () => {
     await page.getByRole('button', { name: 'Previous' }).click();
     await expect
       .poll(async () =>
-        page.evaluate(() => window.__DANSWORD_TEST__?.getEditorSelectionText() ?? ''),
+        page.evaluate(() => window.__OFFICEWRITE_TEST__?.getEditorSelectionText() ?? ''),
       )
       .toMatch(/alpha/i);
   });
@@ -140,7 +140,7 @@ test.describe('Insert depth', () => {
       'data-wrap',
       'inline',
     );
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('"align":"center"');
   });
 
@@ -152,7 +152,7 @@ test.describe('Insert depth', () => {
       await page.keyboard.press('Enter');
     }
     await expect(page.getByTestId('word-editor').locator('.shape-block')).toHaveCount(3);
-    const json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    const json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('"shapeType":"circle"');
     expect(json).toContain('"shapeType":"line"');
     expect(json).toContain('"shapeType":"arrow"');
@@ -171,10 +171,10 @@ test.describe('Review and track changes depth', () => {
     await switchRibbonTab(page, 'review');
     await page.getByTestId('ribbon-track-changes').click();
     await typeInEditor(page, 'Accepted change');
-    let json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    let json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).toContain('trackInsert');
     await resolveAllChanges(page, 'accept');
-    json = await page.evaluate(() => JSON.stringify(window.__DANSWORD_TEST__?.getEditorJson()));
+    json = await page.evaluate(() => JSON.stringify(window.__OFFICEWRITE_TEST__?.getEditorJson()));
     expect(json).not.toContain('trackInsert');
     await expect(page.getByTestId('word-editor')).toContainText('Accepted change');
   });
@@ -189,8 +189,8 @@ test.describe('Review and track changes depth', () => {
 
   test('TC-REV-006: applies spell suggestion from context menu', async ({ page }) => {
     await page.evaluate(() => {
-      window.__DANSWORD_TEST__?.setSpellCheckResults([false]);
-      window.__DANSWORD_TEST__?.setSpellSuggestions(['correctword']);
+      window.__OFFICEWRITE_TEST__?.setSpellCheckResults([false]);
+      window.__OFFICEWRITE_TEST__?.setSpellSuggestions(['correctword']);
     });
     await typeInEditor(page, 'misspeled');
     await expect.poll(async () => page.locator('.spell-error').count()).toBeGreaterThan(0);
@@ -208,18 +208,18 @@ test.describe('Review and track changes depth', () => {
     await page.getByRole('button', { name: '+ Selection' }).click();
     await answerPrompt(page, 'Reopen me');
     await expect(page.locator('.comment-card p')).toContainText('Reopen me');
-    await saveToPath(page, PATHS.savedDansword);
+    await saveToPath(page, PATHS.savedOfficewrite);
     const saved = await page.evaluate(
-      (path) => window.__DANSWORD_TEST__?.readStoredFile(path),
-      PATHS.savedDansword,
+      (path) => window.__OFFICEWRITE_TEST__?.readStoredFile(path),
+      PATHS.savedOfficewrite,
     );
     expect(saved).toContain('Reopen me');
     await goHome(page);
     await page.evaluate(
       ({ path, content }) => {
-        window.__DANSWORD_TEST__?.seedFile(path, content!);
+        window.__OFFICEWRITE_TEST__?.seedFile(path, content!);
       },
-      { path: PATHS.savedDansword, content: saved },
+      { path: PATHS.savedOfficewrite, content: saved },
     );
     await page.getByTestId('home-recent-row').first().click();
     await switchRibbonTab(page, 'review');
@@ -252,7 +252,7 @@ test.describe('Layout, settings, and workflows', () => {
     await page.getByLabel('Accent color').fill('#ff5500');
     await page.getByLabel('Proofing language').selectOption('de-DE');
     await page.getByRole('button', { name: /Back to document/i }).click();
-    const settings = await page.evaluate(async () => window.dansword.getSettings());
+    const settings = await page.evaluate(async () => window.officewrite.getSettings());
     expect(settings).not.toBeNull();
     expect(settings!.accentColor).toBe('#ff5500');
     expect(settings!.language).toBe('de-DE');
@@ -263,15 +263,15 @@ test.describe('Layout, settings, and workflows', () => {
     await typeInEditor(page, ' Client addition.');
     await saveToPath(page, PATHS.savedDocx);
     const savedB64 = await page.evaluate(
-      (path) => window.__DANSWORD_TEST__?.readStoredBinaryBase64(path),
+      (path) => window.__OFFICEWRITE_TEST__?.readStoredBinaryBase64(path),
       PATHS.savedDocx,
     );
     expect(savedB64?.length).toBeGreaterThan(100);
     await goHome(page);
     await page.evaluate(
       ({ path, b64 }) => {
-        window.__DANSWORD_TEST__?.seedBinaryFile(path, b64!);
-        window.__DANSWORD_TEST__?.setOpenFileResult(path);
+        window.__OFFICEWRITE_TEST__?.seedBinaryFile(path, b64!);
+        window.__OFFICEWRITE_TEST__?.setOpenFileResult(path);
       },
       { path: PATHS.savedDocx, b64: savedB64 },
     );

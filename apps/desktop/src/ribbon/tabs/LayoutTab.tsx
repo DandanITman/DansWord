@@ -21,7 +21,7 @@ import {
   MARGIN_PRESET_HINTS,
   PAGE_SIZE_LABELS,
   type PageSizePreset,
-} from '@dansword/core';
+} from '@officewrite/core';
 import { ColorPickerButton } from '../../components/ColorPickerButton';
 import { SHADING_COLORS } from '../../constants/colorSwatches';
 import {

@@ -1,20 +1,20 @@
-# Contributing to DansWord
+# Contributing to Officewrite
 
-DansWord is a **non-profit educational project** and **free, open-source alternative to Microsoft Word**. We welcome contributors of all skill levels — students, teachers, developers, and anyone who wants to help make free word processing better for everyone.
+Officewrite is a **non-profit educational project** and **free, open-source alternative to Microsoft Word**. We welcome contributors of all skill levels — students, teachers, developers, and anyone who wants to help make free word processing better for everyone.
 
 ## Ways to contribute
 
-- **Report bugs** — [Open an issue](https://github.com/DandanITman/DansWord/issues) with steps to reproduce
+- **Report bugs** — [Open an issue](https://github.com/DandanITman/Officewrite/issues) with steps to reproduce
 - **Suggest features** — Especially features that help education and accessibility
 - **Submit code** — Fork, branch, test, pull request
 - **Improve docs** — README, testing guides, classroom materials
-- **Add tests** — See `docs/testing.md` and `.cursor/skills/dansword-add-regression-test/`
+- **Add tests** — See `docs/testing.md` and `.cursor/skills/officewrite-add-regression-test/`
 
 ## Development setup
 
 ```bash
-git clone https://github.com/DandanITman/DansWord.git
-cd DansWord
+git clone https://github.com/DandanITman/Officewrite.git
+cd Officewrite
 npm install
 npx playwright install chromium
 npm run dev
@@ -34,7 +34,7 @@ This runs typecheck, build, unit tests, e2e tests, and visual regression.
 2. **Educational first** — Clear code, good docs, safe defaults for learners
 3. **Open source** — Anyone can read, fork, and improve the project
 4. **Local & private** — Documents stay on the user's machine by default
-5. **No vendor lock-in** — Support open formats (DOCX, plain text, `.dansword`)
+5. **No vendor lock-in** — Support open formats (DOCX, plain text, `.officewrite`)
 
 ## Code of conduct
 

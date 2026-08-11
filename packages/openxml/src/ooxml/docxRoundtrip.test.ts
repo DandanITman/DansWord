@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_PAGE_SETUP } from '@dansword/core';
+import { DEFAULT_PAGE_SETUP } from '@officewrite/core';
 import { exportToDocx } from '../docxExport';
 import { importDocx, type TipTapNode } from './docxImport';
 
@@ -141,7 +141,7 @@ describe('DOCX round trip', () => {
           content: [
             {
               type: 'text',
-              text: 'DansWord site',
+              text: 'Officewrite site',
               marks: [{ type: 'link', attrs: { href: 'https://example.com/docs' } }],
             },
           ],
@@ -149,7 +149,7 @@ describe('DOCX round trip', () => {
       ],
     });
 
-    const linked = collect(result.content, 'text').find((t) => (t.text ?? '').includes('DansWord site'));
+    const linked = collect(result.content, 'text').find((t) => (t.text ?? '').includes('Officewrite site'));
     const link = linked?.marks?.find((m) => m.type === 'link');
     expect(link).toBeDefined();
     expect(link?.attrs?.href).toBe('https://example.com/docs');

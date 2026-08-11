@@ -12,19 +12,19 @@ import {
 /**
  * Generates the screenshots used by the project site in `docs/shots/`.
  *
- * Skipped unless DANSWORD_CAPTURE is set, so it never slows the normal suite
+ * Skipped unless OFFICEWRITE_CAPTURE is set, so it never slows the normal suite
  * or rewrites images on an ordinary run:
  *
- *   DANSWORD_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts
+ *   OFFICEWRITE_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts
  *
  * These are real renders of the app, which is the point — the site used to
  * show a hand-drawn mock-up of a window that did not match anything.
  */
-const CAPTURE = !!process.env.DANSWORD_CAPTURE;
+const CAPTURE = !!process.env.OFFICEWRITE_CAPTURE;
 const SHOTS = 'docs/shots';
 
 test.describe('site screenshots', () => {
-  test.skip(!CAPTURE, 'set DANSWORD_CAPTURE=1 to regenerate the site screenshots');
+  test.skip(!CAPTURE, 'set OFFICEWRITE_CAPTURE=1 to regenerate the site screenshots');
 
   test.beforeEach(async ({ page }) => {
     acceptAppDialogs(page);
@@ -40,9 +40,9 @@ test.describe('site screenshots', () => {
       const now = Date.now();
       const dir = ['C:', 'Users', 'you', 'Documents'].join(String.fromCharCode(92));
       const at = (name: string) => dir + String.fromCharCode(92) + name;
-      window.__DANSWORD_TEST__?.setRecents([
+      window.__OFFICEWRITE_TEST__?.setRecents([
         { path: at('Biology essay.docx'), name: 'Biology essay.docx', lastOpened: now - 6e5, pinned: true },
-        { path: at('Club newsletter.dansword'), name: 'Club newsletter.dansword', lastOpened: now - 864e5, pinned: false },
+        { path: at('Club newsletter.officewrite'), name: 'Club newsletter.officewrite', lastOpened: now - 864e5, pinned: false },
         { path: at('Cover letter.docx'), name: 'Cover letter.docx', lastOpened: now - 2592e5, pinned: false },
       ]);
     });
@@ -54,7 +54,7 @@ test.describe('site screenshots', () => {
   test('editor with a report', async ({ page }) => {
     await openBlankDocument(page);
     await page.evaluate(() => {
-      window.__DANSWORD_TEST__?.loadEditorContent({
+      window.__OFFICEWRITE_TEST__?.loadEditorContent({
         type: 'doc',
         content: [
           { type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: 'The Water Cycle' }] },
