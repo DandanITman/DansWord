@@ -112,6 +112,9 @@ function blockFromNode(node: TipTapNode): string {
 
   if (node.type === 'pageBreak') return '<div class="page-break" style="page-break-after:always"></div>';
 
+  if (node.type === 'columnBreak')
+    return '<div data-column-break="true" style="break-before:column"></div>';
+
   if (node.type === 'tableOfContents') {
     return '<div data-table-of-contents="true" class="doc-toc"><p><em>Table of Contents</em></p></div>';
   }

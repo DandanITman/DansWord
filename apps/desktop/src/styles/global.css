@@ -2572,11 +2572,12 @@ select:focus-visible {
 /* Large buttons dominate Review and Insert. Narrowing them and letting the
    caption run to two tighter lines is what those tabs need. */
 .office-ribbon-panel.is-compact .rb-btn--large {
-  min-width: 44px;
-  max-width: 58px;
-  padding: 4px 2px;
+  min-width: 42px;
+  max-width: 54px;
+  padding: 4px 1px;
   font-size: 10.5px;
 }
+
 
 .office-ribbon-panel.is-compact .rb-btn--small,
 .office-ribbon-panel.is-compact .rb-btn:not(.rb-btn--large):not(.rb-btn--icon) {
@@ -2587,6 +2588,16 @@ select:focus-visible {
   gap: 1px;
 }
 
+/* Paragraph and Font are the two widest groups, and both are dense rows of
+   icon buttons — a couple of pixels each is worth more here than anywhere. */
+.office-ribbon-panel.is-compact .rb-btn--icon {
+  width: 21px;
+}
+
+.office-ribbon-panel.is-compact .rb-btn--small {
+  padding: 0 2px;
+}
+
 /* Styles is by far the widest group. Collapsing its tiles to the More menu is
    the same trade Word makes when it collapses a group to a popout, and it is
    what actually buys back enough room at 900px. */
@@ -2595,9 +2606,11 @@ select:focus-visible {
 }
 
 /* The font name box is the single widest control on the ribbon. Its width is
-   set inline on the wrapper, so the cap has to go there to win. */
+   set inline on the wrapper, so the cap has to go there to win. Keeping the
+   Styles menu labelled at this density costs about 20px, and this is where
+   Home can give it back without a control losing its name. */
 .office-ribbon-panel.is-compact .rb-combo {
-  max-width: 96px;
+  max-width: 74px;
 }
 
 .ribbon-btn-lg {

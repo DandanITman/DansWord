@@ -1,6 +1,6 @@
 {
   "name": "@dansword/desktop",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "description": "DansWord — non-profit educational word processor, free Word alternative for everyone, open source for anyone to edit",
   "main": "dist-electron/main.js",

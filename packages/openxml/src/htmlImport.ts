@@ -190,6 +190,12 @@ function blocksOf(parent: HTMLElement): TipTapNode[] {
       continue;
     }
 
+    if (el.hasAttribute('data-column-break')) {
+      flushInline();
+      out.push({ type: 'columnBreak' });
+      continue;
+    }
+
     if (BLOCK_TAGS.has(tag)) {
       flushInline();
       const attrs = blockAttrs(el);

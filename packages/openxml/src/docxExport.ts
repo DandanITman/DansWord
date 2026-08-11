@@ -15,6 +15,7 @@ import {
   ImageRun,
   FootnoteReferenceRun,
   PageBreak,
+  ColumnBreak,
   PageOrientation,
   BorderStyle,
   ShadingType,
@@ -664,6 +665,12 @@ function blocksFromNodes(
 
       case 'pageBreak':
         blocks.push(new Paragraph({ children: [new PageBreak()] }));
+        break;
+
+      // columnBreak is an atom with no content, so without its own case the
+      // default branch below recursed into nothing and dropped it on save.
+      case 'columnBreak':
+        blocks.push(new Paragraph({ children: [new ColumnBreak()] }));
         break;
 
       case 'horizontalRule':

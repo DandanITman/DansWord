@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { exportToDocx, exportToRtf, exportToHtml } from './index';
+import { exportToDocx, exportToRtf, exportToHtml, importFromDocx } from './index';
 import { DEFAULT_PAGE_SETUP } from '@dansword/core';
 
 const richDoc = {
@@ -57,5 +57,41 @@ describe('format export fidelity', () => {
   it('TXT-style export via RTF does not include JSON mark names', () => {
     const rtf = exportToRtf(richDoc, 'Roundtrip');
     expect(rtf).not.toContain('"type":"bold"');
+  });
+});
+
+/**
+ * Column breaks were added to the editor before any exporter knew about them.
+ * `columnBreak` is an atom with no content, so the exporters' default branch
+ * recursed into nothing and dropped it — the break survived typing but not
+ * saving, which is the worse of the two failures.
+ */
+describe('column breaks survive export', () => {
+  const columnDoc = {
+    type: 'doc',
+    content: [
+      { type: 'paragraph', content: [{ type: 'text', text: 'before the break' }] },
+      { type: 'columnBreak' },
+      { type: 'paragraph', content: [{ type: 'text', text: 'after the break' }] },
+    ],
+  };
+
+  it('DOCX keeps a column break rather than silently dropping it', async () => {
+    const blob = await exportToDocx(columnDoc, 'Columns');
+    const bytes = new Uint8Array(blob instanceof ArrayBuffer ? blob : await blob.arrayBuffer());
+    expect(bytes.byteLength).toBeGreaterThan(1000);
+
+    const imported = await importFromDocx(bytes);
+    expect(JSON.stringify(imported.content)).toContain('columnBreak');
+  });
+
+  it('RTF writes a column break control word', () => {
+    expect(exportToRtf(columnDoc, 'Columns')).toContain('\column');
+  });
+
+  it('HTML writes a break-before rule the importer can read back', () => {
+    const html = exportToHtml(columnDoc, 'Columns');
+    expect(html).toContain('data-column-break');
+    expect(html).toContain('break-before:column');
   });
 });

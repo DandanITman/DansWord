@@ -21,6 +21,13 @@ import {
   type RibbonVisibility,
 } from '../components/RibbonStripActions';
 
+/**
+ * Below this panel width the ribbon switches to its compact density. Home is
+ * the widest tab at full density — about 1245px with its four Styles tiles —
+ * so this sits just above that and 1280px still gets the full gallery.
+ */
+const COMPACT_BELOW = 1250;
+
 const TABS: { id: RibbonTab; label: string }[] = [
   { id: 'file', label: 'File' },
   { id: 'home', label: 'Home' },
@@ -109,22 +116,16 @@ export function Ribbon({
     const panel = panelRef.current;
     if (!panel) return;
 
-    const measure = () => {
-      // Measure against the un-compacted width, or the two states latch.
-      const overflowing = panel.scrollWidth > panel.clientWidth + 1;
-      setDensity((current) => {
-        if (overflowing) return 'compact';
-        return current === 'compact' && panel.scrollWidth <= panel.clientWidth - 60
-          ? 'normal'
-          : current;
-      });
-    };
+    // A width threshold, not a scrollWidth measurement: compacting changes
+    // what scrollWidth reports, so feeding it back in oscillates and then
+    // latches — the ribbon sat compact at 1280px with 400px to spare.
+    const measure = () => setDensity(panel.clientWidth < COMPACT_BELOW ? 'compact' : 'normal');
 
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(panel);
     return () => observer.disconnect();
-  }, [activeTab, collapsed, density]);
+  }, [activeTab, collapsed]);
 
   /**
    * Follow the selection into the contextual tabs and back out again.

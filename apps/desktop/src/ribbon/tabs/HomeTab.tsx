@@ -69,7 +69,7 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
   const styleGallery = flags.customStyles.length ? flags.customStyles : BUILTIN_STYLES;
   // Word's desktop Styles group is a gallery with the active style lit, not a
   // separate "current style" box — the highlighted tile is the readout.
-  const quickStyles = styleGallery.filter((style) => style.kind !== 'character').slice(0, 5);
+  const quickStyles = styleGallery.filter((style) => style.kind !== 'character').slice(0, 4);
 
   const changeCase = (mode: 'sentence' | 'lower' | 'upper' | 'capitalise' | 'toggle') => {
     if (!editor) return;
@@ -602,8 +602,12 @@ export function HomeTab({ editor, state, actions, flags }: RibbonTabProps) {
               <span className="rb-style-name">{style.name}</span>
             </button>
           ))}
+          {/* Labelled, because at compact density the tiles fold away and this
+              becomes the whole group — an unlabelled "T" is what the gallery
+              replaced in the first place. */}
           <RibbonMenuButton
             icon={<Type size={14} />}
+            label="Styles"
             title="Styles"
             testId="ribbon-more-styles"
             menuWidth={260}

@@ -315,10 +315,13 @@ function inlineFromRuns(container: XmlNode, ctx: RunContext, inherited: Mark[]):
         case 'w:tab':
           out.push({ type: 'text', text: '\t', marks: marks.length ? marks : undefined });
           break;
-        case 'w:br':
-          if (attr(part, 'w:type') === 'page') out.push({ type: 'pageBreak' });
+        case 'w:br': {
+          const breakType = attr(part, 'w:type');
+          if (breakType === 'page') out.push({ type: 'pageBreak' });
+          else if (breakType === 'column') out.push({ type: 'columnBreak' });
           else out.push({ type: 'hardBreak' });
           break;
+        }
         case 'w:drawing':
         case 'w:pict': {
           const image = imageFromDrawing(part, ctx.pkg);
@@ -347,7 +350,7 @@ function inlineFromRuns(container: XmlNode, ctx: RunContext, inherited: Mark[]):
 }
 
 /** Node types that are blocks in the editor schema and must not sit inside a paragraph. */
-const BLOCK_INLINE_TYPES = new Set(['image', 'pageBreak', 'docShape']);
+const BLOCK_INLINE_TYPES = new Set(['image', 'pageBreak', 'columnBreak', 'docShape']);
 
 /**
  * Split a paragraph's inline run into block-level siblings.

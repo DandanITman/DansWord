@@ -59,6 +59,10 @@ function nodeToRtf(node: TipTapNode): string {
     return '\\page ';
   }
 
+  if (node.type === 'columnBreak') {
+    return '\\column ';
+  }
+
   if (node.type === 'bulletList') {
     return (node.content ?? [])
       .map((item) => {

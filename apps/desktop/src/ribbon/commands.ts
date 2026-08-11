@@ -42,6 +42,52 @@ export interface RibbonCommand {
 /** Every editor command focuses first, so it applies to the live selection. */
 const chain = (ctx: CommandContext) => ctx.editor?.chain().focus();
 
+/**
+ * The groups each tab actually renders, so a command's breadcrumb cannot name
+ * a group that does not exist.
+ *
+ * Five breadcrumbs rotted silently when the ribbon was restructured — Alt+Q
+ * was still offering "Home > Undo" and "View > Window" after both groups were
+ * deleted — because the test beside this file checked `tab` and never `group`.
+ * It does now.
+ *
+ * Two entries are deliberately not RibbonGroups: undo/redo live in the Quick
+ * Access toolbar and Restrict Editing on the tab strip's mode picker, exactly
+ * as Word places them. They are listed so the breadcrumb still points at a
+ * real place.
+ */
+export const RIBBON_GROUPS: Partial<Record<RibbonTab, readonly string[]>> = {
+  file: ['File'],
+  home: ['Clipboard', 'Font', 'Paragraph', 'Styles', 'Editing', 'Quick Access'],
+  insert: [
+    'Pages',
+    'Tables',
+    'Illustrations',
+    'Links',
+    'Comments',
+    'Header & Footer',
+    'Text',
+    'Symbols',
+  ],
+  draw: ['Pens', 'Tools', 'Canvas'],
+  pageLayout: ['Page Setup', 'Paragraph', 'Page Background', 'Arrange'],
+  references: ['Table of Contents', 'Footnotes', 'Citations & Bibliography', 'Captions', 'Index'],
+  review: [
+    'Proofing',
+    'Accessibility',
+    'Language',
+    'Comments',
+    'Tracking',
+    'Changes',
+    'Compare',
+    'Editing mode',
+  ],
+  view: ['Views', 'Immersive', 'Show', 'Dark Mode', 'Zoom', 'Tools'],
+  help: ['Help'],
+  pictureFormat: ['Adjust', 'Picture Styles', 'Arrange', 'Size', 'Accessibility'],
+  tableLayout: ['Table', 'Rows & Columns', 'Merge', 'Alignment', 'Data', 'Table Styles'],
+};
+
 export function buildCommands(): RibbonCommand[] {
   return [
     // ---- File ----
@@ -62,8 +108,8 @@ export function buildCommands(): RibbonCommand[] {
     { id: 'home.paste', label: 'Paste', tab: 'home', group: 'Clipboard', shortcut: 'Ctrl+V', run: (c) => c.actions.onPaste('default') },
     { id: 'home.pasteText', label: 'Paste as plain text', tab: 'home', group: 'Clipboard', keywords: ['unformatted'], shortcut: 'Ctrl+Shift+V', run: (c) => c.actions.onPaste('text') },
     { id: 'home.formatPainter', label: 'Format Painter', tab: 'home', group: 'Clipboard', keywords: ['copy formatting'], run: (c) => (c.flags.formatPainterActive ? c.actions.onFormatPainterApply() : c.actions.onFormatPainterCopy()) },
-    { id: 'home.undo', label: 'Undo', tab: 'home', group: 'Undo', shortcut: 'Ctrl+Z', run: (c) => chain(c)?.undo().run() },
-    { id: 'home.redo', label: 'Redo', tab: 'home', group: 'Undo', shortcut: 'Ctrl+Y', run: (c) => chain(c)?.redo().run() },
+    { id: 'home.undo', label: 'Undo', tab: 'home', group: 'Quick Access', shortcut: 'Ctrl+Z', run: (c) => chain(c)?.undo().run() },
+    { id: 'home.redo', label: 'Redo', tab: 'home', group: 'Quick Access', shortcut: 'Ctrl+Y', run: (c) => chain(c)?.redo().run() },
 
     // ---- Home: Font ----
     { id: 'home.bold', label: 'Bold', tab: 'home', group: 'Font', keywords: ['strong'], shortcut: 'Ctrl+B', run: (c) => chain(c)?.toggleBold().run() },
@@ -117,14 +163,14 @@ export function buildCommands(): RibbonCommand[] {
     { id: 'insert.pageBreak', label: 'Page break', tab: 'insert', group: 'Pages', shortcut: 'Ctrl+Enter', run: (c) => chain(c)?.insertPageBreak().run() },
     { id: 'insert.blankPage', label: 'Blank page', tab: 'insert', group: 'Pages', run: (c) => c.actions.onInsertBlankPage() },
     { id: 'insert.link', label: 'Hyperlink', tab: 'insert', group: 'Links', keywords: ['url', 'link'], shortcut: 'Ctrl+K', run: (c) => { if (c.editor) void import('../utils/hyperlink').then((m) => m.promptForLink(c.editor as Editor)); } },
-    { id: 'insert.bookmark', label: 'Bookmark', tab: 'insert', group: 'Bookmarks', run: (c) => c.actions.onInsertBookmark() },
+    { id: 'insert.bookmark', label: 'Bookmark', tab: 'insert', group: 'Links', run: (c) => c.actions.onInsertBookmark() },
     { id: 'insert.crossReference', label: 'Cross-reference', tab: 'insert', group: 'Links', run: (c) => c.actions.onOpenCrossReference() },
-    { id: 'insert.toc', label: 'Table of contents', tab: 'insert', group: 'Table of Contents', keywords: ['toc', 'contents'], run: (c) => c.actions.onInsertToc() },
+    { id: 'insert.toc', label: 'Table of contents', tab: 'references', group: 'Table of Contents', keywords: ['toc', 'contents'], run: (c) => c.actions.onInsertToc() },
     { id: 'insert.comment', label: 'New comment', tab: 'insert', group: 'Comments', shortcut: 'Ctrl+Alt+M', run: (c) => c.actions.onNewComment() },
     { id: 'insert.header', label: 'Header and footer', tab: 'insert', group: 'Header & Footer', run: (c) => c.actions.onOpenHeaderFooter() },
     { id: 'insert.pageNumbers', label: 'Page numbers', tab: 'insert', group: 'Header & Footer', run: (c) => c.actions.onInsertPageNumbers(true) },
     { id: 'insert.symbol', label: 'Symbol', tab: 'insert', group: 'Symbols', keywords: ['special character', 'unicode'], run: (c) => c.actions.onOpenSymbolPicker() },
-    { id: 'insert.emoji', label: 'Emoji', tab: 'insert', group: 'Emojis', keywords: ['emoticon', 'smiley'], run: (c) => c.actions.onOpenEmojiPicker() },
+    { id: 'insert.emoji', label: 'Emoji', tab: 'insert', group: 'Symbols', keywords: ['emoticon', 'smiley'], run: (c) => c.actions.onOpenEmojiPicker() },
     { id: 'insert.equation', label: 'Equation', tab: 'insert', group: 'Symbols', keywords: ['formula', 'maths'], run: (c) => chain(c)?.toggleEquationRun().run() },
     { id: 'insert.horizontalRule', label: 'Horizontal line', tab: 'insert', group: 'Symbols', run: (c) => chain(c)?.setHorizontalRule().run() },
     { id: 'insert.textBox', label: 'Text box', tab: 'insert', group: 'Text', run: (c) => c.actions.onInsertTextBox('simple') },
@@ -188,7 +234,7 @@ export function buildCommands(): RibbonCommand[] {
     { id: 'view.zoom100', label: 'Zoom to 100%', tab: 'view', group: 'Zoom', run: (c) => c.actions.onSetZoom(100) },
     { id: 'view.pageWidth', label: 'Fit page width', tab: 'view', group: 'Zoom', run: (c) => c.actions.onZoomToFit('pageWidth') },
     { id: 'view.onePage', label: 'Fit one page', tab: 'view', group: 'Zoom', run: (c) => c.actions.onZoomToFit('onePage') },
-    { id: 'view.ribbon', label: 'Collapse the ribbon', tab: 'view', group: 'Window', shortcut: 'Ctrl+F1', run: (c) => c.actions.onToggleRibbonCollapsed() },
+    { id: 'view.ribbon', label: 'Collapse the ribbon', tab: 'view', group: 'Tools', shortcut: 'Ctrl+F1', run: (c) => c.actions.onToggleRibbonCollapsed() },
 
     // ---- Help ----
     { id: 'help.help', label: 'Help', tab: 'help', group: 'Help', keywords: ['github', 'documentation'], run: (c) => c.actions.onOpenHelp() },

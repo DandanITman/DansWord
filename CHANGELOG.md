@@ -6,6 +6,36 @@ file inside the app.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.3]
+
+A re-audit against Word 2024 found that three of the previous two releases'
+fixes were incomplete. This closes them.
+
+### Fixed
+
+- **Column breaks were dropped on save.** 0.2.1 gave Layout > Breaks > Column
+  a real node, but no exporter knew about it: `columnBreak` is an atom with no
+  content, so the DOCX, RTF and HTML writers fell through to a branch that
+  recurses into children and it vanished. DOCX is the default save format, so
+  the normal save path lost it — the bug had moved from insert-time to
+  save-time, which is the worse of the two. All three formats now write it,
+  DOCX and HTML read it back, and a round-trip test covers it.
+- **The Styles gallery vanished below 1100px** instead of collapsing. 0.2.2's
+  compact density hid the tiles outright, and what remained was an unlabelled
+  `T` — exactly what the gallery replaced. The menu is labelled "Styles" now,
+  and Home shows four tiles at full density so the gallery survives at 1280px
+  rather than compacting away.
+- **The ribbon latched into compact density** and stayed there at 1280px with
+  400px to spare. It decided by measuring `scrollWidth` — but compacting
+  changes what `scrollWidth` reports, so the measurement fed back into itself.
+  It is a width threshold now.
+- **Five command-search breadcrumbs pointed at groups deleted in 0.2.1 and
+  0.2.2** — Alt+Q still offered "Home > Undo", "Insert > Bookmarks", "Insert >
+  Table of Contents", "Insert > Emojis" and "View > Window". 0.2.1 fixed only
+  the sixth. They rotted unnoticed because the test beside the registry
+  checked `tab` and never `group`; `RIBBON_GROUPS` now lists what each tab
+  renders and the test enforces it.
+
 ## [0.2.2]
 
 Second Word-parity pass, taking the four remaining gaps where a command Word

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { RibbonTab } from '@dansword/core';
-import { buildCommands, searchCommands } from './commands';
+import { buildCommands, searchCommands, RIBBON_GROUPS } from './commands';
 
 /**
  * The registry is hand-written, which is a deliberate trade (see commands.ts).
- * These tests cover the two ways that choice rots: a duplicated id silently
- * shadowing an entry, and a tab name that no longer exists after a tab is
- * renamed or removed.
+ * These tests cover the ways that choice rots: a duplicated id silently
+ * shadowing an entry, and a tab or group name that no longer exists after the
+ * ribbon is restructured.
  */
 const LIVE_TABS = new Set<RibbonTab>([
   'file',
@@ -36,6 +36,20 @@ describe('command registry', () => {
   it('only references tabs that exist', () => {
     const strays = commands.filter((command) => !LIVE_TABS.has(command.tab));
     expect(strays.map((command) => `${command.id} -> ${command.tab}`)).toEqual([]);
+  });
+
+  /**
+   * Breadcrumbs used to rot unnoticed: restructuring the ribbon in 0.2.1 and
+   * 0.2.2 deleted five groups that Alt+Q went on advertising, because only the
+   * tab was ever checked.
+   */
+  it('only references groups that exist on that tab', () => {
+    const strays = commands.filter(
+      (command) => !RIBBON_GROUPS[command.tab]?.includes(command.group),
+    );
+    expect(strays.map((command) => `${command.id} -> ${command.tab} > ${command.group}`)).toEqual(
+      [],
+    );
   });
 
   it('gives every command something to run and something to show', () => {

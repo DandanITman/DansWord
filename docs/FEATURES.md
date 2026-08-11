@@ -198,7 +198,7 @@ DOCX import and export cover paragraphs, headings, character formatting
 (bold, italic, underline, strike, colour, font, size, highlight, super- and
 subscript), tables including header rows and cell shading, hyperlinks,
 bulleted and numbered lists with nesting, images at their real dimensions,
-page breaks, footnotes, page setup, headers and footers, review comments,
+page and column breaks, footnotes, page setup, headers and footers, review comments,
 tracked insertions and deletions, and shapes.
 
 RTF import reads character and paragraph formatting; RTF export covers marks,
@@ -221,9 +221,10 @@ marks, links, tables, lists and images.
 - The accessibility checker reads the document, not the rendered page: it cannot
   judge whether alt text is *useful*, only whether it is there
 - Section breaks, macros and password protection are not built
-- The ribbon steps down to a compact density rather than collapsing whole
-  groups the way Word does, so the Review tab — the densest at eight groups —
-  still overflows below about 1050px. Every other tab holds to 1100px
+- The ribbon steps down to a compact density below 1250px rather than
+  collapsing whole groups the way Word does. The Styles tiles fold back into
+  their menu there, and the Review tab — the densest at eight groups — still
+  overflows below about 1050px. Every other tab holds to 1100px
 - Shapes and text boxes are arranged from Layout > Arrange rather than a
   contextual tab of their own
 
