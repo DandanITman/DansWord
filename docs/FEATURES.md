@@ -104,8 +104,8 @@ Appears while a drawing canvas is selected, and closes when it is not.
 - **Paragraph** — left and right indent, space before and after
 - **Page Background** — watermark, page colour, page borders
 - **Arrange** — appears while a shape or text box is selected: Wrap Text (in
-  line, square, tight, top and bottom), left/centre/right alignment, and Bring
-  Forward / Send Backward
+  line, square, tight, top and bottom, behind text, in front of text),
+  left/centre/right alignment, and Bring Forward / Send Backward
 - Draggable margin markers on the ruler
 
 ## References
@@ -157,7 +157,8 @@ for it.
 - **Show** — ruler, gridlines, navigation pane, header and footer, footnotes and
   endnotes. The navigation pane has a search box and Headings / Results tabs
 - **Dark Mode** — the light and dark theme switch, also on the home screen
-- Zoom from 10% to 500%, with 100%, One Page, Page Width and a Zoom dialog
+- Zoom from 10% to 500%, with 100%, One Page, Multiple Pages, Page Width and
+  a Zoom dialog
 - Ribbon layout: Classic or Single Line, and Always show ribbon, Show tabs only
   or Adjust automatically. The choice is remembered.
 - Status bar: the caret's page, word count, proofing language, a spelling

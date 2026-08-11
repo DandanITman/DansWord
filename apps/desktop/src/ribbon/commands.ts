@@ -2,6 +2,7 @@ import type { Editor } from '@tiptap/react';
 import type { RibbonTab } from '@dansword/core';
 import type { RibbonActions, RibbonFlags } from './types';
 import type { RibbonState } from './useRibbonState';
+import { clearWidths, distributeColumns, distributeRows } from '../utils/tableSizing';
 
 /**
  * The command registry behind the header's search box (Alt+Q).
@@ -80,12 +81,19 @@ export const RIBBON_GROUPS: Partial<Record<RibbonTab, readonly string[]>> = {
     'Tracking',
     'Changes',
     'Compare',
-    'Editing mode',
   ],
   view: ['Views', 'Immersive', 'Show', 'Dark Mode', 'Zoom', 'Tools'],
   help: ['Help'],
   pictureFormat: ['Adjust', 'Picture Styles', 'Arrange', 'Size', 'Accessibility'],
-  tableLayout: ['Table', 'Rows & Columns', 'Merge', 'Alignment', 'Data', 'Table Styles'],
+  tableLayout: [
+    'Table',
+    'Rows & Columns',
+    'Merge',
+    'Cell Size',
+    'Alignment',
+    'Data',
+    'Table Styles',
+  ],
 };
 
 export function buildCommands(): RibbonCommand[] {
@@ -212,9 +220,7 @@ export function buildCommands(): RibbonCommand[] {
     { id: 'review.noMarkup', label: 'Show no markup', tab: 'review', group: 'Tracking', run: (c) => c.actions.onSetMarkupView('none') },
     { id: 'review.reviewingPane', label: 'Reviewing pane', tab: 'review', group: 'Tracking', run: (c) => c.actions.onToggleReviewingPane() },
     { id: 'review.compare', label: 'Compare documents', tab: 'review', group: 'Compare', keywords: ['diff'], run: (c) => c.actions.onCompareDocuments() },
-    // There is no Protect group on the tab — the mode picker owns this flag —
-    // so the breadcrumb points at where the control actually lives.
-    { id: 'review.restrict', label: 'Restrict editing', tab: 'review', group: 'Editing mode', keywords: ['read only', 'lock', 'protect'], run: (c) => c.actions.onToggleRestrictEditing() },
+    { id: 'review.restrict', label: 'Restrict editing', tab: 'review', group: 'Tracking', keywords: ['read only', 'lock', 'protect'], run: (c) => c.actions.onToggleRestrictEditing() },
 
     // ---- View ----
     { id: 'view.print', label: 'Print layout', tab: 'view', group: 'Views', keywords: ['separate pages'], run: (c) => c.actions.onSetViewMode('print') },
@@ -247,6 +253,9 @@ export function buildCommands(): RibbonCommand[] {
     { id: 'picture.altText', label: 'Alt text', tab: 'pictureFormat', group: 'Accessibility', enabled: (c) => c.state.imageActive, run: (c) => c.actions.onOpenAltText() },
     { id: 'picture.layout', label: 'Picture size and position', tab: 'pictureFormat', group: 'Size', enabled: (c) => c.state.imageActive, run: (c) => c.actions.onOpenPictureLayout() },
     { id: 'picture.reset', label: 'Reset picture', tab: 'pictureFormat', group: 'Adjust', enabled: (c) => c.state.imageActive, run: (c) => c.actions.onResetPicture() },
+    { id: 'picture.bringForward', label: 'Bring forward', tab: 'pictureFormat', group: 'Arrange', keywords: ['z order', 'in front', 'stack'], enabled: (c) => c.state.imageActive, run: (c) => chain(c)?.updateAttributes('image', { z: Number(c.editor?.getAttributes('image').z ?? 0) + 1 }).run() },
+    { id: 'picture.sendBackward', label: 'Send backward', tab: 'pictureFormat', group: 'Arrange', keywords: ['z order', 'behind', 'stack'], enabled: (c) => c.state.imageActive, run: (c) => chain(c)?.updateAttributes('image', { z: Number(c.editor?.getAttributes('image').z ?? 0) - 1 }).run() },
+    { id: 'picture.resetSize', label: 'Reset picture size', tab: 'pictureFormat', group: 'Size', keywords: ['fit to column'], enabled: (c) => c.state.imageActive, run: (c) => chain(c)?.updateAttributes('image', { width: null, height: null }).run() },
 
     // ---- Table, selection-gated ----
     { id: 'table.properties', label: 'Table properties', tab: 'tableLayout', group: 'Table', enabled: (c) => c.state.inTable, run: (c) => c.actions.onOpenTableProperties() },
@@ -258,6 +267,11 @@ export function buildCommands(): RibbonCommand[] {
     { id: 'table.deleteTable', label: 'Delete table', tab: 'tableLayout', group: 'Rows & Columns', enabled: (c) => c.state.inTable, run: (c) => chain(c)?.deleteTable().run() },
     { id: 'table.mergeCells', label: 'Merge cells', tab: 'tableLayout', group: 'Merge', enabled: (c) => c.state.inTable, run: (c) => chain(c)?.mergeCells().run() },
     { id: 'table.splitCell', label: 'Split cell', tab: 'tableLayout', group: 'Merge', enabled: (c) => c.state.inTable, run: (c) => chain(c)?.splitCell().run() },
+    { id: 'table.rowHeight', label: 'Row height', tab: 'tableLayout', group: 'Cell Size', keywords: ['cell size', 'taller'], enabled: (c) => c.state.inTable, run: (c) => c.goToTab('tableLayout') },
+    { id: 'table.columnWidth', label: 'Column width', tab: 'tableLayout', group: 'Cell Size', keywords: ['cell size', 'wider'], enabled: (c) => c.state.inTable, run: (c) => c.goToTab('tableLayout') },
+    { id: 'table.distributeColumns', label: 'Distribute columns', tab: 'tableLayout', group: 'Cell Size', keywords: ['even', 'equal width'], enabled: (c) => c.state.inTable, run: (c) => distributeColumns(c.editor) },
+    { id: 'table.distributeRows', label: 'Distribute rows', tab: 'tableLayout', group: 'Cell Size', keywords: ['even', 'equal height'], enabled: (c) => c.state.inTable, run: (c) => distributeRows(c.editor) },
+    { id: 'table.autoFit', label: 'AutoFit contents', tab: 'tableLayout', group: 'Cell Size', keywords: ['autofit', 'shrink to fit'], enabled: (c) => c.state.inTable, run: (c) => { clearWidths(c.editor); chain(c)?.fixTables().run(); } },
 
     // ---- Draw, selection-gated ----
     { id: 'draw.pen', label: 'Pen', tab: 'draw', group: 'Tools', enabled: (c) => c.state.inkActive, run: (c) => c.actions.onSetInkTool('pen') },

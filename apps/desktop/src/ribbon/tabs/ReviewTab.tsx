@@ -192,10 +192,22 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
             onClick={actions.onToggleTrackChanges}
             testId="ribbon-track-changes"
           >
+            {/* The chevron used to open a menu holding one item that ran the
+                same command as the button face. Restrict Editing has no
+                ribbon control of its own and belongs in this group in Word,
+                and costs no ribbon width inside a menu. */}
             <RibbonMenuItem
               label="Track Changes"
               checked={flags.trackChangesEnabled}
               onClick={actions.onToggleTrackChanges}
+            />
+            <RibbonMenuSeparator />
+            <RibbonMenuItem
+              label="Restrict Editing"
+              hint="Make the document read-only"
+              checked={flags.restrictEditing}
+              onClick={actions.onToggleRestrictEditing}
+              testId="ribbon-restrict-editing"
             />
           </RibbonSplitButton>
         </RibbonStack>
@@ -333,19 +345,16 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
       </RibbonGroup>
 
       <RibbonGroup label="Compare">
-        <RibbonMenuButton
+        {/* A chevron whose menu held a single item running the same command
+            costs a click and delivers nothing. */}
+        <RibbonButton
           icon={<GitCompare size={20} />}
           label="Compare"
-          title="Compare this document with another"
+          title="Compare this document with another — the differences arrive as tracked changes"
           size="large"
+          onClick={actions.onCompareDocuments}
           testId="ribbon-compare"
-        >
-          <RibbonMenuItem
-            label="Compare Two Documents…"
-            hint="Marks the differences as tracked changes"
-            onClick={actions.onCompareDocuments}
-          />
-        </RibbonMenuButton>
+        />
       </RibbonGroup>
 
       {/* Restrict Editing used to have its own Protect group here. The tab

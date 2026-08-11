@@ -4694,6 +4694,28 @@ select:focus-visible {
   z-index: 3;
 }
 
+/* Shapes and text boxes take the same two text-relative wraps pictures have.
+   Without them Bring Forward could only reorder objects against each other,
+   never against the text, which is half of what the command is for. */
+.shape-block.wrap-behind,
+.shape-block.wrap-front,
+.doc-text-box.wrap-behind,
+.doc-text-box.wrap-front {
+  position: relative;
+  float: none;
+  clear: none;
+}
+
+.shape-block.wrap-behind,
+.doc-text-box.wrap-behind {
+  z-index: -1;
+}
+
+.shape-block.wrap-front,
+.doc-text-box.wrap-front {
+  z-index: 3;
+}
+
 .image-block.is-dragging .image-block-inner {
   opacity: 0.85;
   cursor: grabbing;

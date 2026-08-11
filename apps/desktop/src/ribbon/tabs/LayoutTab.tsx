@@ -49,6 +49,8 @@ const OBJECT_WRAPS = [
   { id: 'square', label: 'Square' },
   { id: 'tight', label: 'Tight' },
   { id: 'topBottom', label: 'Top and Bottom' },
+  { id: 'behind', label: 'Behind Text' },
+  { id: 'front', label: 'In Front of Text' },
 ] as const;
 
 export function LayoutTab({ editor, state, actions, flags }: RibbonTabProps) {

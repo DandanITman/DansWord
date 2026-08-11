@@ -343,6 +343,49 @@ test.describe('Reworked features', () => {
     await expect(page.locator('.ribbon-tab.active')).toHaveText('Insert');
   });
 
+  /**
+   * Bring Forward wrote a `z` attribute the text box view never read, so the
+   * button was enabled and silently did nothing.
+   */
+  test('TC-INS-011: Bring Forward actually stacks a text box', async ({ page }) => {
+    await openBlankDocument(page);
+    await switchRibbonTab(page, 'insert');
+    await page.getByTestId('ribbon-text-box').click();
+    await page.getByRole('menuitem').first().click();
+    await page.getByTestId('text-box').click();
+
+    await switchRibbonTab(page, 'pageLayout');
+    await page.getByTestId('object-bring-forward').click();
+
+    await expect
+      .poll(async () =>
+        page.getByTestId('text-box').evaluate((el) => getComputedStyle(el).zIndex),
+      )
+      .not.toBe('auto');
+  });
+
+  /**
+   * Clicking Table Layout by hand recorded no return tab, so leaving the table
+   * dumped the user on Home rather than where they had been.
+   */
+  test('TC-RIB-010: leaving a table returns to the tab you came from', async ({ page }) => {
+    await openBlankDocument(page);
+    // A paragraph above the table, so Control+Home lands outside it.
+    await typeInEditor(page, 'above the table');
+    await page.keyboard.press('Enter');
+    await insertDefaultTable(page);
+    await switchRibbonTab(page, 'review');
+    await page.getByTestId('word-editor').locator('td').first().click();
+
+    await switchRibbonTab(page, 'tableLayout');
+    await expect(page.locator('.ribbon-tab.active')).toHaveText('Table Layout');
+
+    // Click the paragraph above the table — focus is on the ribbon button
+    // after switching tabs, so a keystroke would never reach the editor.
+    await page.getByTestId('word-editor').locator('p').first().click();
+    await expect(page.locator('.ribbon-tab.active')).toHaveText('Review');
+  });
+
   /** Word's Ctrl+G. There was no Go To command anywhere before. */
   test('TC-VIEW-010: Go To opens from the status bar page indicator', async ({ page }) => {
     await openBlankDocument(page);

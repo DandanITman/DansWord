@@ -159,13 +159,37 @@ export function Ribbon({
       onTabChange('pictureFormat');
       return;
     }
+  }, [state.imageActive, state.inkActive, activeTab, onTabChange]);
 
-    const leftObject =
-      (!state.inkActive && activeTab === 'draw') ||
-      (!state.imageActive && activeTab === 'pictureFormat') ||
-      (!state.inTable && activeTab === 'tableLayout');
-    if (leftObject) onTabChange(returnTab.current);
-  }, [state.imageActive, state.inTable, state.inkActive, activeTab, onTabChange]);
+  const contextualVisible = {
+    draw: state.inkActive,
+    pictureFormat: state.imageActive,
+    tableLayout: state.inTable,
+  } as const;
+
+  /**
+   * Leave a contextual tab as soon as it stops being offered.
+   *
+   * Keyed on the tab's own visibility rather than on the selection flags: the
+   * panel could otherwise be left rendering Table Layout after its button had
+   * gone, with no active tab and no way back.
+   */
+  useEffect(() => {
+    const active = CONTEXTUAL.find((tab) => tab.id === activeTab);
+    if (!active || contextualVisible[active.id as keyof typeof contextualVisible]) return;
+
+    const stored = returnTab.current;
+    const storedContextual = CONTEXTUAL.some((tab) => tab.id === stored);
+    const storedStillVisible =
+      storedContextual && contextualVisible[stored as keyof typeof contextualVisible];
+    onTabChange(storedContextual && !storedStillVisible ? 'home' : stored);
+  }, [
+    activeTab,
+    contextualVisible.draw,
+    contextualVisible.pictureFormat,
+    contextualVisible.tableLayout,
+    onTabChange,
+  ]);
 
   // Keep the document selection while a ribbon button is pressed.
   const preserveEditorFocus = (event: MouseEvent) => {
@@ -177,10 +201,7 @@ export function Ribbon({
   // The File tab never becomes active, so fall back to whatever is showing.
   const Panel = PANELS[activeTab === 'file' ? 'home' : activeTab];
   const visibleContextual = CONTEXTUAL.filter(
-    (tab) =>
-      (tab.id === 'draw' && state.inkActive) ||
-      (tab.id === 'pictureFormat' && state.imageActive) ||
-      (tab.id === 'tableLayout' && state.inTable),
+    (tab) => contextualVisible[tab.id as keyof typeof contextualVisible],
   );
 
   return (
@@ -228,7 +249,15 @@ export function Ribbon({
             className={`ribbon-tab is-contextual ${activeTab === tab.id ? 'active' : ''}`}
             role="tab"
             aria-selected={activeTab === tab.id}
-            onClick={() => onTabChange(tab.id)}
+            onClick={() => {
+              // Clicking a contextual tab by hand — the only way to reach
+              // Table Layout — must remember where to come back to, or
+              // leaving the table strands the user on Home.
+              if (!CONTEXTUAL.some((contextual) => contextual.id === activeTab)) {
+                returnTab.current = activeTab;
+              }
+              onTabChange(tab.id);
+            }}
             data-tab={tab.id}
             data-testid={`ribbon-tab-${tab.id}`}
           >

@@ -19,6 +19,7 @@ export function TextBoxView({ node, updateAttributes, selected }: NodeViewProps)
     offsetY = 0,
     fill = '#ffffff',
     borderColor = '#8faadc',
+    z = 0,
   } = node.attrs as {
     boxStyle?: string;
     width?: number;
@@ -29,6 +30,7 @@ export function TextBoxView({ node, updateAttributes, selected }: NodeViewProps)
     offsetY?: number;
     fill?: string;
     borderColor?: string;
+    z?: number;
   };
 
   const startResize = (event: React.MouseEvent) => {
@@ -84,6 +86,9 @@ export function TextBoxView({ node, updateAttributes, selected }: NodeViewProps)
     borderColor,
     marginLeft: offsetX,
     marginTop: offsetY,
+    // Arrange's Bring Forward / Send Backward writes this; without it here the
+    // buttons were enabled and silently did nothing.
+    ...(z ? { zIndex: z } : {}),
   };
 
   return (

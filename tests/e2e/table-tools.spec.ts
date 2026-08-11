@@ -194,6 +194,65 @@ test.describe('Table tools', () => {
     expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(2);
   });
 
+  /**
+   * Distribute measured the FIRST table in the document, not the caret's, so
+   * in a two-table document it sized the second from the first one's width and
+   * wrote widths the table could not hold — persisted through save.
+   */
+  test('TC-TBL-014: distribute sizes the caret table, not the first one', async ({ page }) => {
+    await insertTable(page);
+    // A second, narrower table below the first.
+    await page.getByTestId('word-editor').click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('Enter');
+    await insertDefaultTable(page);
+
+    const tables = page.getByTestId('word-editor').locator('table');
+    await expect(tables).toHaveCount(2);
+
+    // Narrow the first table's columns so the two tables differ in width.
+    await tables.first().locator('td').first().click();
+    await switchRibbonTab(page, 'tableLayout');
+    await page.getByTestId('table-column-width').fill('1');
+    await page.getByTestId('table-column-width').blur();
+
+    // Distribute the SECOND table; it must not inherit the first's width.
+    await tables.nth(1).locator('td').first().click();
+    await switchRibbonTab(page, 'tableLayout');
+    await page.getByTestId('table-distribute-columns').click();
+
+    const secondWidth = await tables.nth(1).evaluate((el) => el.getBoundingClientRect().width);
+    const cells = await tables
+      .nth(1)
+      .locator('tr')
+      .first()
+      .locator('td, th')
+      .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+    const summed = cells.reduce((total, width) => total + width, 0);
+    // The columns should still add up to their own table, not a narrower one.
+    expect(Math.abs(summed - secondWidth)).toBeLessThanOrEqual(8);
+  });
+
+  /**
+   * The Cell Size group measures the caret's cell on every render, and
+   * prosemirror-tables' selectedRect THROWS outside a table rather than
+   * returning null. The Table Layout panel renders for a frame after the caret
+   * leaves, so clicking out of a table took the entire app to a blank screen.
+   */
+  test('TC-TBL-015: clicking out of a table does not crash the app', async ({ page }) => {
+    await page.getByTestId('word-editor').click();
+    await page.keyboard.type('above the table');
+    await page.keyboard.press('Enter');
+    await insertTable(page);
+    await switchRibbonTab(page, 'tableLayout');
+
+    await page.getByTestId('word-editor').locator('> p').first().click();
+
+    // The app must still be there.
+    await expect(page.getByTestId('ribbon')).toBeVisible();
+    await expect(page.getByTestId('word-editor')).toBeVisible();
+  });
+
   test('TC-TBL-010: typed cell content survives a structural edit', async ({ page }) => {
     await insertTable(page);
     await page.keyboard.type('kept text');

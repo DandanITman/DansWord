@@ -6,6 +6,53 @@ file inside the app.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5]
+
+A re-audit checked 0.2.4's claims and found four of them incomplete, one of
+them a crash. Fixing my own work came first.
+
+### Fixed
+
+- **Clicking out of a table blanked the entire app.** The Cell Size group
+  added in 0.2.4 measures the caret's cell on every render, and
+  prosemirror-tables' `selectedRect` *throws* outside a table rather than
+  returning null. The Table Layout panel renders for a frame after the caret
+  leaves, so the exception unmounted the whole React tree — a white window,
+  with the document still unsaved. Every call now goes through a guard.
+- **Distribute Rows and Columns sized the wrong table.** Both measured the
+  first table in the document instead of the caret's, so in a two-table
+  document the second was sized from the first one's width and got columns it
+  could not hold. The widths are real attributes, so the damage survived a
+  save.
+- **Bring Forward and Send Backward did nothing to a text box.** 0.2.4 added
+  the `z` attribute and the buttons but never taught `TextBoxView` to read it,
+  so the buttons were enabled and silently inert. Text boxes also now keep `z`
+  through HTML export.
+- **Leaving a table still dumped you on Home.** 0.2.4 fixed this for pictures
+  and drawings, but Table Layout is reached by clicking the tab, and that path
+  recorded no return tab. Leaving a contextual tab is now keyed on the tab's
+  own visibility, which also closes a case where the panel could be left
+  showing with no tab selected and no way back.
+- **None of 0.2.4's commands were searchable.** Alt+Q found nothing for "row
+  height", "distribute", "autofit", "bring forward" or "send backward". The
+  Cell Size logic moved to `utils/tableSizing.ts` so the palette can run it,
+  and eight commands are registered.
+
+### Added
+
+- **Multiple Pages** in View ▸ Zoom. The capability was built and already in
+  the Zoom dialog; only the button was missing.
+- **Restrict Editing** in the Track Changes menu, which previously held one
+  item that ran the same command as the button beside it.
+
+### Changed
+
+- Shapes and text boxes get **Behind Text** and **In Front of Text**, the two
+  wraps that were missing. Without them the new stacking order could only
+  reorder objects against each other, never against the text.
+- **Compare** is a plain button. Its chevron opened a menu holding a single
+  item that ran the same command.
+
 ## [0.2.4]
 
 Fourth Word-parity pass: the contextual tabs stop fighting the user, tables

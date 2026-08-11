@@ -175,6 +175,15 @@ export function ViewTab({ actions, flags }: RibbonTabProps) {
             onClick={() => actions.onZoomToFit('onePage')}
             testId="view-zoom-one-page"
           />
+          {/* Multiple Pages was built and wired into the Zoom dialog, but had
+              no button here — Word's Zoom group carries it between One Page
+              and Page Width. */}
+          <RibbonButton
+            label="Multiple Pages"
+            title="Fit several pages on screen"
+            onClick={() => actions.onZoomToFit('multiplePages')}
+            testId="view-zoom-multiple-pages"
+          />
           <RibbonButton
             label="Page Width"
             title="Fit the page width to the window"
