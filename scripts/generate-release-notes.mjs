@@ -4,7 +4,7 @@
  * Usage: node scripts/generate-release-notes.mjs [version] [--output path]
  */
 import { spawnSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 function run(cmd, args) {
   const result = spawnSync(cmd, args, { encoding: 'utf8', shell: false });
@@ -62,11 +62,65 @@ for (const commit of commits) {
 
 function section(title, items) {
   if (!items.length) return '';
-  const lines = items.map(
-    (c) => `- **${c.subject}** (\`${c.hash}\`, ${c.date}, ${c.author})`,
-  );
+  const lines = items.map((c) => `- **${c.subject}** (\`${c.hash}\`, ${c.date}, ${c.author})`);
   return `## ${title}\n\n${lines.join('\n')}\n`;
 }
+
+/**
+ * The hand-written entries for this release from CHANGELOG.md.
+ *
+ * The commit list below is accurate but not readable: it says a commit
+ * happened, not what changed for someone using the app. The changelog is where
+ * that is written, so it leads and the commits become the supporting detail.
+ *
+ * Every version between the previous tag and this one is included — a release
+ * that spans 0.2.1 to 0.2.8 should show all eight, not just the last.
+ */
+function changelogSections(tag, sinceTag) {
+  let text;
+  try {
+    text = readFileSync(new URL('../CHANGELOG.md', import.meta.url), 'utf8');
+  } catch {
+    return '';
+  }
+
+  const lines = text.split(/\r?\n/);
+  const headings = [];
+  lines.forEach((line, index) => {
+    const match = /^## \[([^\]]+)\]/.exec(line.trim());
+    if (match) headings.push({ version: match[1], index });
+  });
+
+  const clean = (value) => String(value ?? '').replace(/^v/, '');
+  const wanted = clean(tag);
+  const floor = clean(sinceTag);
+
+  const start = headings.findIndex((h) => h.version === wanted);
+  if (start === -1) return '';
+
+  const stop = floor ? headings.findIndex((h) => h.version === floor) : -1;
+  const chosen = headings.slice(start, stop === -1 ? undefined : stop);
+  if (!chosen.length) return '';
+
+  const parts = chosen
+    .filter((h) => h.version.toLowerCase() !== 'unreleased')
+    .map((heading, position) => {
+      const nextIndex =
+        headings[headings.indexOf(heading) + 1]?.index ?? lines.length;
+      const body = lines
+        .slice(heading.index + 1, nextIndex)
+        .join('\n')
+        .trim();
+      if (!body) return '';
+      const title = position === 0 ? `What's new in ${heading.version}` : heading.version;
+      return `## ${title}\n\n${body}\n`;
+    })
+    .filter(Boolean);
+
+  return parts.join('\n');
+}
+
+const highlights = changelogSections(version, previousTag);
 
 const compareUrl = previousTag
   ? `https://github.com/DandanITman/DansWord/compare/${previousTag}...${version}`
@@ -83,6 +137,11 @@ const body = [
   '',
   `[Full commit compare](${compareUrl})`,
   '',
+  highlights,
+  highlights ? '---\n' : '',
+  '<details>',
+  '<summary>Every commit in this release</summary>',
+  '',
   section('Features', groups.features),
   section('Bug fixes', groups.fixes),
   section('Tests & QA', groups.tests),
@@ -92,6 +151,8 @@ const body = [
   commits.length
     ? ''
     : '_No commits found in range — tag may point at the same commit as the previous release._\n',
+  '</details>',
+  '',
   '---',
   '',
   '## QA status',
