@@ -6,6 +6,37 @@ file inside the app.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 DansWord uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6]
+
+Two of the four remaining structural gaps: the ribbon is operable from the
+keyboard, and Print shows what will actually print.
+
+### Added
+
+- **The ribbon works from the keyboard.** It claimed `role="tablist"` and
+  `role="menu"` while honouring neither contract: arrow keys did nothing on
+  the tab strip, and opening a menu left focus on the button, so a keyboard
+  user could Tab straight past every item into the next control. That made the
+  whole menu layer — bullets, numbering, styles, margins, breaks, wrap text,
+  Display for Review — reachable only with a mouse. Now Left/Right/Home/End
+  move along the tabs with a single roving tab stop, opening a menu focuses
+  its first item, Up/Down/Home/End walk the items, Tab is trapped inside the
+  open surface, and Escape closes and returns focus to the button.
+- **A print preview**, with copies and a page range. The Print pane was a
+  heading and one button that went straight to the OS dialog. This matters
+  more here than it would in Word: the editor scrolls continuously and never
+  reflows pages on screen, so this was the only place a user could ever see
+  where the pages break — and it did not show them. The preview is the same
+  PDF the exporter produces, so it cannot disagree with what prints.
+
+### Known limitations
+
+- Alt KeyTips are not implemented; the focus and arrow-key handling is the
+  part that makes the ribbon usable without a mouse.
+- Section breaks and rich header/footer regions remain the two large gaps.
+  Both need data-model work rather than UI, and are still recorded under the
+  limitations in `docs/FEATURES.md`.
+
 ## [0.2.5]
 
 A re-audit checked 0.2.4's claims and found four of them incomplete, one of

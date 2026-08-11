@@ -191,6 +191,35 @@ export function Ribbon({
     onTabChange,
   ]);
 
+  /**
+   * Arrow-key navigation across the tab strip, with a roving tab stop so Tab
+   * enters the ribbon once rather than walking every tab.
+   */
+  const onTabStripKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+    if (!keys.includes(event.key)) return;
+
+    const strip = event.currentTarget;
+    const tabs = Array.from(strip.querySelectorAll<HTMLElement>('[role="tab"]'));
+    if (!tabs.length) return;
+
+    const current = tabs.findIndex((tab) => tab.getAttribute('data-tab') === activeTab);
+    const index = current === -1 ? 0 : current;
+    const next =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? tabs.length - 1
+          : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+
+    const target = tabs[next]?.getAttribute('data-tab') as RibbonTab | null;
+    if (!target) return;
+    event.preventDefault();
+    if (collapsed) onToggleCollapsed();
+    onTabChange(target);
+    tabs[next].focus();
+  };
+
   // Keep the document selection while a ribbon button is pressed.
   const preserveEditorFocus = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
@@ -211,7 +240,15 @@ export function Ribbon({
       }`}
       data-testid="ribbon"
     >
-      <div className="ribbon-tabs office-ribbon-tabs" role="tablist">
+      {/* A tablist owes arrow-key navigation and a single tab stop. Without
+          them Tab stepped through all eight tabs one at a time and the arrow
+          keys did nothing, which is not how any Word user drives a ribbon. */}
+      <div
+        className="ribbon-tabs office-ribbon-tabs"
+        role="tablist"
+        aria-label="Ribbon"
+        onKeyDown={onTabStripKeyDown}
+      >
         {TABS.map((tab) =>
           tab.id === 'file' ? (
             <button
@@ -232,6 +269,7 @@ export function Ribbon({
               className={`ribbon-tab ${activeTab === tab.id ? 'active' : ''}`}
               role="tab"
               aria-selected={activeTab === tab.id}
+              tabIndex={activeTab === tab.id ? 0 : -1}
               onClick={() => {
                 if (collapsed) onToggleCollapsed();
                 onTabChange(tab.id);
@@ -249,6 +287,7 @@ export function Ribbon({
             className={`ribbon-tab is-contextual ${activeTab === tab.id ? 'active' : ''}`}
             role="tab"
             aria-selected={activeTab === tab.id}
+            tabIndex={activeTab === tab.id ? 0 : -1}
             onClick={() => {
               // Clicking a contextual tab by hand — the only way to reach
               // Table Layout — must remember where to come back to, or

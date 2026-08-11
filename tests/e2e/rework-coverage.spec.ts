@@ -386,6 +386,30 @@ test.describe('Reworked features', () => {
     await expect(page.locator('.ribbon-tab.active')).toHaveText('Review');
   });
 
+  /**
+   * The Print pane was a heading and one button. Because the editor scrolls
+   * continuously and never reflows pages on screen, it was the only place a
+   * user could have seen where the pages actually break — so they could not.
+   */
+  test('TC-FILE-012: the print pane previews the document and carries settings', async ({
+    page,
+  }) => {
+    await openBlankDocument(page);
+    await typeInEditor(page, 'print me');
+    await openBackstage(page, 'print');
+
+    await expect(page.getByTestId('print-preview')).toBeVisible();
+    await expect(page.getByTestId('print-preview').locator('iframe')).toBeVisible();
+
+    await page.getByTestId('print-copies').fill('3');
+    await page.getByTestId('print-range').fill('1-2');
+    await page.getByTestId('print-confirm').click();
+
+    await expect
+      .poll(async () => page.evaluate(() => window.__DANSWORD_TEST__?.getLastPrintOptions()))
+      .toEqual({ copies: 3, pageRange: '1-2' });
+  });
+
   /** Word's Ctrl+G. There was no Go To command anywhere before. */
   test('TC-VIEW-010: Go To opens from the status bar page indicator', async ({ page }) => {
     await openBlankDocument(page);

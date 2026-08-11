@@ -183,15 +183,68 @@ export function RibbonPopover({
       if (anchor?.contains(target)) return;
       onClose();
     };
+    /**
+     * Keyboard handling for the menu surface.
+     *
+     * The markup claimed `role="menu"` while implementing none of the contract:
+     * nothing focused the menu when it opened, so a keyboard user could open
+     * Paste or Styles and then Tab straight past the items into the next
+     * ribbon control. That made the entire menu layer — bullets, numbering,
+     * styles, margins, breaks, wrap text — mouse-only.
+     */
+    const items = () =>
+      Array.from(
+        surfaceRef.current?.querySelectorAll<HTMLElement>(
+          '[role="menuitem"]:not([disabled]), button:not([disabled]), input, select',
+        ) ?? [],
+      );
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.stopPropagation();
         onClose();
+        anchor?.focus();
+        return;
+      }
+
+      const focusable = items();
+      if (!focusable.length) return;
+      const index = focusable.indexOf(document.activeElement as HTMLElement);
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const step = event.key === 'ArrowDown' ? 1 : -1;
+        const next = (index + step + focusable.length) % focusable.length;
+        focusable[index === -1 ? (step === 1 ? 0 : focusable.length - 1) : next]?.focus();
+        return;
+      }
+      if (event.key === 'Home') {
+        event.preventDefault();
+        focusable[0]?.focus();
+        return;
+      }
+      if (event.key === 'End') {
+        event.preventDefault();
+        focusable[focusable.length - 1]?.focus();
+        return;
+      }
+      // Keep Tab inside the surface: leaving it while it is still open puts
+      // focus somewhere the user cannot see.
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        const step = event.shiftKey ? -1 : 1;
+        const next = (index + step + focusable.length) % focusable.length;
+        focusable[index === -1 ? 0 : next]?.focus();
       }
     };
+
+    // Focus the first item on open, after the portal has mounted.
+    const raf = requestAnimationFrame(() => items()[0]?.focus());
+
     window.addEventListener('mousedown', onPointerDown);
     window.addEventListener('keydown', onKeyDown);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener('mousedown', onPointerDown);
       window.removeEventListener('keydown', onKeyDown);
     };

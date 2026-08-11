@@ -40,7 +40,8 @@ contextBridge.exposeInMainWorld('dansword', {
   getRecents: () => ipcRenderer.invoke('recents:get'),
   setRecents: (recents: unknown) => ipcRenderer.invoke('recents:set', recents),
   getDefaultSaveDir: () => ipcRenderer.invoke('app:getDefaultSaveDir') as Promise<string>,
-  printDocument: () => ipcRenderer.invoke('print:document') as Promise<boolean>,
+  printDocument: (options?: { copies?: number; pageRange?: string }) =>
+    ipcRenderer.invoke('print:document', options) as Promise<boolean>,
   saveRevision: (docPath: string, snapshot: unknown, label: string) =>
     ipcRenderer.invoke('revisions:save', docPath, snapshot, label) as Promise<DocumentRevision>,
   listRevisions: (docPath: string) =>

@@ -31,7 +31,8 @@ the ribbon layout menu.
 - Delete, which sends the file to the recycle bin rather than erasing it
 - Export a copy as DOCX, `.dansword`, RTF, HTML, PDF or TXT without changing
   which document is open
-- Print via the system dialog
+- Print with a preview of the paginated document, copies and a page range,
+  then the system dialog
 - Recent files with pinning, and remove-from-recent; the backstage Open pane
   lists them too
 - Auto-save on an interval once the document has a path
@@ -185,6 +186,12 @@ command), F7 (spelling), Shift+F7 (thesaurus).
 
 The same list is in `apps/desktop/src/constants/shortcuts.ts`, which is what
 Help > Keyboard Shortcuts renders.
+
+The ribbon itself is keyboard-operable: Left and Right move along the tabs
+(Home and End jump to the ends), and a single tab stop puts you on the active
+tab rather than walking all eight. Opening a menu moves focus into it, the
+arrow keys walk its items, Tab stays inside it, and Escape closes it and puts
+focus back on the button. Alt KeyTips are not built.
 
 ## Pictures
 

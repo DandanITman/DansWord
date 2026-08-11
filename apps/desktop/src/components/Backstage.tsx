@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { AppSettings, DocumentMetadata, DocumentRevision, RecentFile } from '@dansword/core';
 import { DEFAULT_SETTINGS, TEMPLATES } from '@dansword/core';
 import { RevisionHistoryPanel } from './RevisionHistoryPanel';
@@ -16,7 +17,9 @@ interface BackstageProps {
   onExportDocx: () => void;
   onExportDansword: () => void;
   onExportPdf: () => void;
-  onPrint: () => void;
+  onPrint: (options?: { copies?: number; pageRange?: string }) => void;
+  /** Renders the paginated document for the Print pane's preview. */
+  onBuildPreview?: () => Promise<Uint8Array | null>;
   settings: AppSettings;
   onSettingsChange: (settings: AppSettings) => void;
   fileName: string;
@@ -77,7 +80,47 @@ export function Backstage({
   onNewFromTemplate,
   recents,
   onOpenRecent,
+  onBuildPreview,
 }: BackstageProps) {
+  const [copies, setCopies] = useState(1);
+  const [pageRange, setPageRange] = useState('');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
+  /**
+   * The preview is the same PDF the exporter produces, so what it shows is
+   * exactly what prints. Built only while the Print pane is open, and revoked
+   * on the way out — a blob URL per visit would otherwise leak.
+   */
+  useEffect(() => {
+    if (section !== 'print' || !onBuildPreview) return;
+    let url: string | null = null;
+    let cancelled = false;
+
+    setPreviewError(null);
+    setPreviewUrl(null);
+    void (async () => {
+      try {
+        const bytes = await onBuildPreview();
+        if (cancelled) return;
+        if (!bytes?.byteLength) {
+          setPreviewError('No preview available for this document.');
+          return;
+        }
+        // Copy into a fresh ArrayBuffer: Uint8Array's buffer may be shared.
+        url = URL.createObjectURL(new Blob([new Uint8Array(bytes).slice().buffer], { type: 'application/pdf' }));
+        setPreviewUrl(url);
+      } catch {
+        if (!cancelled) setPreviewError('Could not build a preview.');
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [section, onBuildPreview]);
+
   const exportHandlers = {
     docx: onExportDocx,
     dansword: onExportDansword,
@@ -265,13 +308,59 @@ export function Backstage({
               </div>
             </>
           )}
+          {/* Word's Print backstage is settings beside a live paginated
+              preview. This was a heading and one button — and because the
+              editor scrolls continuously rather than reflowing pages on
+              screen, it was the only place a user could ever have seen where
+              the pages actually break, so they could not. */}
           {section === 'print' && (
             <>
               <h2>Print</h2>
-              <p className="backstage-subtitle">Send the document to your printer.</p>
-              <button className="icon-btn primary" onClick={onPrint}>
-                Print document
-              </button>
+              <p className="backstage-subtitle">
+                Check the page breaks before sending the document to your printer.
+              </p>
+              <div className="print-pane">
+                <div className="print-settings">
+                  <label>
+                    Copies
+                    <input
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={copies}
+                      onChange={(event) => setCopies(Math.max(1, Number(event.target.value) || 1))}
+                      data-testid="print-copies"
+                    />
+                  </label>
+                  <label>
+                    Pages
+                    <input
+                      type="text"
+                      placeholder="All"
+                      value={pageRange}
+                      onChange={(event) => setPageRange(event.target.value)}
+                      data-testid="print-range"
+                    />
+                  </label>
+                  <p className="print-hint">e.g. 1-3, 5. Leave blank for every page.</p>
+                  <button
+                    className="icon-btn primary"
+                    onClick={() => onPrint({ copies, pageRange: pageRange.trim() || undefined })}
+                    data-testid="print-confirm"
+                  >
+                    Print
+                  </button>
+                </div>
+                <div className="print-preview" data-testid="print-preview">
+                  {previewError ? (
+                    <p className="muted">{previewError}</p>
+                  ) : previewUrl ? (
+                    <iframe title="Print preview" src={previewUrl} />
+                  ) : (
+                    <p className="muted">Building preview…</p>
+                  )}
+                </div>
+              </div>
             </>
           )}
           {section === 'history' && (

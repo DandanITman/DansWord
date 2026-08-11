@@ -1775,10 +1775,11 @@ export default function App() {
             exportPdf();
             setBackstageOpen(false);
           }}
-          onPrint={async () => {
-            await getPlatform().printDocument();
+          onPrint={async (options) => {
+            await getPlatform().printDocument(options);
             setBackstageOpen(false);
           }}
+          onBuildPreview={() => getPlatform().exportPdf()}
           settings={settings}
           onSettingsChange={setSettings}
           fileName={fileName}

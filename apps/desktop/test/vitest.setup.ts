@@ -27,6 +27,7 @@ const mockHarness = {
   emitSaveAndClose: () => {},
   getExportPdfCallCount: () => 0,
   getPrintCallCount: () => 0,
+  getLastPrintOptions: () => null,
   getOpenedExternalUrls: () => [],
 };
 

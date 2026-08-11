@@ -8,10 +8,27 @@ import { addToUserDictionary, getUserDictionary, isKnownWord } from '../userDict
 
 /** Printing, PDF export, legacy .doc conversion and spell check. */
 export function registerOutputIpc(getWindow: () => BrowserWindow | null) {
-  ipcMain.handle('print:document', async () => {
+  ipcMain.handle('print:document', async (_e, options?: { copies?: number; pageRange?: string }) => {
     const win = getWindow();
     if (!win) return false;
-    await win.webContents.print({});
+
+    // Word's Print pane sets copies and a page range before the OS dialog.
+    // "1-3, 5" becomes the {from,to} pairs Electron expects, 1-based inclusive.
+    const pageRanges = (options?.pageRange ?? '')
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const [from, to] = part.split('-').map((n) => Number.parseInt(n, 10));
+        if (!Number.isFinite(from) || from < 1) return null;
+        return { from, to: Number.isFinite(to) && to >= from ? to : from };
+      })
+      .filter((range): range is { from: number; to: number } => range !== null);
+
+    await win.webContents.print({
+      ...(options?.copies && options.copies > 1 ? { copies: options.copies } : {}),
+      ...(pageRanges.length ? { pageRanges } : {}),
+    });
     return true;
   });
 

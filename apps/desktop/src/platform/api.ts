@@ -39,7 +39,7 @@ export interface DansWordAPI {
   getRecents: () => Promise<RecentFile[]>;
   setRecents: (recents: RecentFile[]) => Promise<boolean>;
   getDefaultSaveDir: () => Promise<string>;
-  printDocument: () => Promise<boolean>;
+  printDocument: (options?: { copies?: number; pageRange?: string }) => Promise<boolean>;
   saveRevision: (docPath: string, snapshot: unknown, label: string) => Promise<DocumentRevision>;
   listRevisions: (docPath: string) => Promise<DocumentRevision[]>;
   loadRevision: (docPath: string, id: string) => Promise<unknown>;

@@ -39,6 +39,7 @@ export interface DansWordTestHarness {
   emitSaveAndClose: () => void;
   getExportPdfCallCount: () => number;
   getPrintCallCount: () => number;
+  getLastPrintOptions: () => { copies?: number; pageRange?: string } | null;
   /** URLs Help handed to the host, so tests can assert without a real browser. */
   getOpenedExternalUrls: () => string[];
 }
@@ -81,6 +82,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
   let spellResults: boolean[] | null = null;
   let spellSuggestions: string[] = ['suggestion'];
   let exportPdfCalls = 0;
+  let lastPrintOptions: { copies?: number; pageRange?: string } | null = null;
   let printCalls = 0;
   let openedExternalUrls: string[] = [];
   let editorRef: Editor | null = null;
@@ -213,8 +215,9 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       return true;
     },
     getDefaultSaveDir: async () => 'C:\\DansWordTest',
-    printDocument: async () => {
+    printDocument: async (options?: { copies?: number; pageRange?: string }) => {
       printCalls += 1;
+      lastPrintOptions = options ?? null;
       return true;
     },
     // Mirrors the main process's allowlist so a test cannot pass here and fail
@@ -295,6 +298,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
       spellSuggestions = ['suggestion'];
       exportPdfCalls = 0;
       printCalls = 0;
+      lastPrintOptions = null;
       openedExternalUrls = [];
       editorRef = null;
       dirty = false;
@@ -377,6 +381,7 @@ export function installMockDansword(target: Window & typeof globalThis): DansWor
     },
     getExportPdfCallCount: () => exportPdfCalls,
     getPrintCallCount: () => printCalls,
+    getLastPrintOptions: () => lastPrintOptions,
     getOpenedExternalUrls: () => [...openedExternalUrls],
   };
 
