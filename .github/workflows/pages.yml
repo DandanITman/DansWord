@@ -7,6 +7,9 @@ on:
       - 'docs/**'
       - '.github/workflows/pages.yml'
       - 'scripts/verify-pages.mjs'
+      # /app is built from the renderer, so a change there changes the site.
+      - 'apps/desktop/**'
+      - 'packages/**'
   workflow_dispatch:
 
 permissions:
@@ -71,6 +74,20 @@ jobs:
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+
+      # docs/app is gitignored: the browser build is produced here so the
+      # committed tree never carries a bundle that can drift from the source.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the browser app
+        run: npm run build:web
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
