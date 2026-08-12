@@ -3,7 +3,18 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const required = ['docs/index.html', 'docs/site.css', 'docs/site.js', 'docs/logo.png'];
+// CNAME is what points officewrite.com at this site: lose it and the custom
+// domain silently reverts to the github.io URL on the next deploy.
+const required = [
+  'docs/index.html',
+  'docs/site.css',
+  'docs/site.js',
+  'docs/logo.png',
+  'docs/CNAME',
+  'docs/robots.txt',
+  'docs/sitemap.xml',
+  'docs/llms.txt',
+];
 let failed = false;
 
 console.log('Checking GitHub Pages site files...\n');
@@ -27,4 +38,6 @@ console.log('\nBefore the first GitHub Pages deploy succeeds, enable Pages once:
 console.log('  1. Open https://github.com/DandanITman/Officewrite/settings/pages');
 console.log('  2. Build and deployment → Source → GitHub Actions');
 console.log('  3. Re-run the "Deploy GitHub Pages" workflow if a prior run failed');
-console.log('\nLive site (after deploy): https://dandanitman.github.io/Officewrite/\n');
+console.log('\nLive site (after deploy): https://officewrite.com/');
+console.log('DNS must resolve before merging a CNAME change, or the github.io');
+console.log('URL redirects to a domain that is not answering yet.\n');
