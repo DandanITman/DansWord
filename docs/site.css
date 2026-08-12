@@ -544,3 +544,90 @@ code {
     transition: none !important;
   }
 }
+
+/* Comparison table ------------------------------------------------------ */
+
+/* The table is wider than a phone. Scroll it inside its own box so the page
+   body never scrolls sideways — the same guard TC-UI-002 enforces in the app. */
+.compare-wrap {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.compare-table {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.compare-table thead th {
+  background: var(--surface-alt);
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* The row label carries the question; keep it distinct from the answers. */
+.compare-table tbody th {
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* Officewrite's own column — the one a reader is scanning for. */
+.compare-table thead th:nth-child(2),
+.compare-table tbody td:nth-child(1) {
+  color: var(--word-blue);
+}
+
+.compare-table tbody tr:last-child th,
+.compare-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Article lists --------------------------------------------------------- */
+
+/* The content pages use ordinary prose lists. The reset strips list styling
+   globally, so restore it here rather than fighting it inline. */
+.plain-list {
+  margin: 1rem 0 1.25rem;
+  padding-left: 1.5rem;
+  list-style: disc;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+
+ol.plain-list {
+  list-style: decimal;
+}
+
+.plain-list li {
+  margin-bottom: 0.5rem;
+}
+
+.plain-list strong {
+  color: var(--ink);
+}
+
+/* Prose inside the article panels needs breathing room the landing page
+   sections get from their own spacing rules. */
+.panel > h2 {
+  margin-top: 2.25rem;
+}
+
+.panel > p {
+  color: var(--ink-soft);
+  line-height: 1.7;
+  max-width: 62ch;
+}

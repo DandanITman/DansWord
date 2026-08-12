@@ -22,7 +22,8 @@
     "test:visual:update": "playwright test tests/visual --update-snapshots",
     "regression": "node scripts/regression.mjs",
     "release-notes": "node scripts/generate-release-notes.mjs",
-    "verify:pages": "node scripts/verify-pages.mjs"
+    "verify:pages": "node scripts/verify-pages.mjs",
+    "build:web": "npm run build:web -w @officewrite/desktop"
   },
   "engines": {
     "node": ">=20"

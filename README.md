@@ -10,7 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://dandanitman.github.io/Officewrite/">Website</a> ·
+  <a href="https://officewrite.com/">Website</a> ·
+  <a href="https://officewrite.com/app/">Use it in your browser</a> ·
   <a href="https://github.com/DandanITman/Officewrite/releases/latest">Download</a> ·
   <a href="docs/FEATURES.md">Features</a> ·
   <a href="CHANGELOG.md">Changelog</a> ·

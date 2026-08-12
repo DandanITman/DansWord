@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Officewrite — a free, open-source word processor for Windows. A non-profit educational project: no subscription, no account, your files stay on your machine."
+      content="A free, open-source word processor that opens and saves .docx. Use it in your browser or download it for Windows — no account, no subscription."
     />
     <link rel="canonical" href="https://officewrite.com/" />
 
@@ -49,10 +49,11 @@
         "@type": "SoftwareApplication",
         "name": "Officewrite",
         "url": "https://officewrite.com/",
-        "description": "A free, open-source word processor for Windows. Opens and saves Microsoft Word .docx files, runs offline, and needs no account or subscription.",
+        "description": "A free, open-source word processor. Opens and saves Microsoft Word .docx files, runs in a browser or offline on Windows, and needs no account or subscription.",
         "applicationCategory": "BusinessApplication",
         "applicationSubCategory": "Word Processor",
-        "operatingSystem": "Windows",
+        "operatingSystem": "Windows, Web browser",
+        "installUrl": "https://officewrite.com/#download",
         "softwareVersion": "0.3.0",
         "isAccessibleForFree": true,
         "license": "https://github.com/DandanITman/Officewrite/blob/main/LICENSE",
@@ -65,6 +66,7 @@
         },
         "featureList": [
           "Opens and saves Microsoft Word .docx files",
+          "Runs in a browser with no installation",
           "Works offline with no account or subscription",
           "Track changes, comments and review workflow",
           "Tables, images, shapes and styles",
@@ -81,11 +83,12 @@
         <span>Officewrite</span>
       </a>
       <nav class="topnav">
-        <a href="#tour">Take a look</a>
         <a href="#what">What it does</a>
-        <a href="#why">Why it exists</a>
-        <a href="#build">Build it yourself</a>
-        <a class="topnav-cta" href="#download">Download</a>
+        <a href="#compare">Compare</a>
+        <a href="free-alternative-to-microsoft-word.html">Free Word alternative</a>
+        <a href="open-docx-without-word.html">Open a .docx</a>
+        <a href="#download">Download</a>
+        <a class="topnav-cta" href="app/">Try in browser</a>
       </nav>
     </header>
 
@@ -94,15 +97,17 @@
       <section class="hero">
         <div class="hero-copy">
           <p class="eyebrow">Free · Open source · Non-profit educational project</p>
-          <h1>A word processor that doesn't ask for your card.</h1>
+          <h1>A free word processor that doesn't ask for your card.</h1>
           <p class="lede">
-            Officewrite writes essays, letters, reports and CVs — with the ribbon, the styles and the
-            <code>.docx</code> files you already know. It runs on your own Windows PC, works
-            offline, and costs nothing. Ever.
+            Officewrite is a free alternative to Microsoft Word for essays, letters, reports and CVs
+            — with the ribbon, the styles and the <code>.docx</code> files you already know. Use it
+            <a href="app/">free in your browser</a>, or download it for Windows and work offline.
+            No account, no subscription, nothing uploaded.
           </p>
 
           <div class="cta-row">
-            <a id="download-btn" class="btn btn-primary" href="#download">Download for Windows</a>
+            <a class="btn btn-primary" href="app/">Try it in your browser</a>
+            <a id="download-btn" class="btn btn-ghost" href="#download">Download for Windows</a>
             <a
               class="btn btn-ghost"
               href="https://github.com/DandanITman/Officewrite"
@@ -284,6 +289,86 @@
       </section>
 
       <!-- Build --------------------------------------------------------- -->
+      <!-- Comparison ---------------------------------------------------- -->
+      <section id="compare" class="panel">
+        <h2>Officewrite vs Microsoft Word, LibreOffice Writer and Google Docs</h2>
+        <p class="section-lede">
+          The honest version. Officewrite is younger and smaller than any of these — what it offers
+          is that it is free, opens the same files, and asks nothing of you.
+        </p>
+
+        <div class="compare-wrap">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th scope="col">&nbsp;</th>
+                <th scope="col">Officewrite</th>
+                <th scope="col">Microsoft Word</th>
+                <th scope="col">LibreOffice Writer</th>
+                <th scope="col">Google Docs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Cost</th>
+                <td>Free</td>
+                <td>Subscription or licence</td>
+                <td>Free</td>
+                <td>Free</td>
+              </tr>
+              <tr>
+                <th scope="row">Account required</th>
+                <td>No</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <th scope="row">Works offline</th>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Limited</td>
+              </tr>
+              <tr>
+                <th scope="row">Runs in a browser</th>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <th scope="row">Reads and writes .docx</th>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Import / export</td>
+              </tr>
+              <tr>
+                <th scope="row">Documents stay on your device</th>
+                <td>Yes</td>
+                <td>Optional</td>
+                <td>Yes</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <th scope="row">Open source</th>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>No</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="fine-print">
+          Read more: <a href="free-alternative-to-microsoft-word.html">a free alternative to
+          Microsoft Word</a> · <a href="open-docx-without-word.html">how to open a .docx file
+          without Word</a>
+        </p>
+      </section>
+
       <section id="build" class="panel alt">
         <h2>Build it yourself</h2>
         <p class="section-lede">
