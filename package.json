@@ -1,6 +1,6 @@
 {
   "name": "officewrite",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": false,
   "description": "Officewrite — non-profit educational project, free Word alternative for everyone, open source for anyone to edit",
   "workspaces": [

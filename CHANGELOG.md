@@ -10,6 +10,20 @@ The project was called **DansWord** until 0.3.0. Entries below that version have
 been rewritten to use the current name, so they describe the same application
 under the name it now has rather than the one it shipped with at the time.
 
+## [0.4.0]
+
+Released automatically from `main`. The entries below are commit
+subjects; see the release notes for the full detail.
+
+### Changed
+
+- Read the release marker from the commit subject (#40) [minor]
+- Cut a release automatically on every push to main (#39) [minor]
+- Grow the template catalogue to 32 and give it a gallery to browse
+- Put Officewrite in the browser, and give the site something to rank for
+- Point the site at officewrite.com and make it legible to crawlers
+- Clear the security advisories Dependabot could not fix itself
+
 ## [0.3.0]
 
 **The project is now Officewrite.** Same application, new name — everywhere:
