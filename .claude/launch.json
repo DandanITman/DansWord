@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "officewrite-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:test", "--", "--port", "5188", "--strictPort"],
+      "cwd": "apps/desktop",
+      "port": 5188
+    }
+  ]
+}
