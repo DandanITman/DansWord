@@ -166,7 +166,11 @@ jobs:
             echo
             echo "### Changed"
             echo
-            git log "$range" --no-merges --pretty='- %s' | sed 's/ (#[0-9]*)$//'
+            # Strip the PR reference and the bump markers wherever they sit.
+            # Anchoring to end-of-line missed them: a subject ending "[minor]"
+            # kept its "(#40)", and the marker itself reached Help > What's New.
+            git log "$range" --no-merges --pretty='- %s' \
+              | sed -E 's/ *\(#[0-9]+\)//g; s/ *\[(skip release|minor|major)\]//g'
             echo
           } > /tmp/section.md
 
