@@ -41,19 +41,38 @@ jobs:
     name: Bump, tag and publish
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # One guard, not two: the bump commit tags itself '[skip release]', so the
-    # same check that gives humans an escape hatch also closes the loop. An
-    # earlier version matched commits starting with 'Release ', which would
-    # have silently skipped any honest PR titled "Release notes for 0.4".
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      !contains(github.event.head_commit.message, '[skip release]')
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Decide whether to release
+        id: gate
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = 'workflow_dispatch' ]; then
+            echo 'go=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # The SUBJECT line only, never the body.
+          #
+          # A job-level `if: !contains(github.event.head_commit.message, ...)`
+          # reads the entire message, and a squashed body is the PR
+          # description. The first run of this workflow skipped itself because
+          # the PR introducing it documented the marker in its own description.
+          # Any PR explaining the feature would switch the feature off.
+          subject=$(git log -1 --pretty=%s)
+          case "$subject" in
+            *'[skip release]'*)
+              echo "Subject carries [skip release]; nothing to do."
+              echo 'go=false' >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo 'go=true' >> "$GITHUB_OUTPUT"
+              ;;
+          esac
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -61,6 +80,7 @@ jobs:
           node-version: 20
 
       - name: Work out the next version
+        if: steps.gate.outputs.go == 'true'
         id: version
         run: |
           set -euo pipefail
@@ -96,6 +116,7 @@ jobs:
           echo "Releasing $current -> $next ($level)"
 
       - name: Bump the version in every manifest
+        if: steps.gate.outputs.go == 'true'
         run: |
           set -euo pipefail
           npm version "${{ steps.version.outputs.next }}" \
@@ -121,6 +142,7 @@ jobs:
           NEXT: ${{ steps.version.outputs.next }}
 
       - name: Write the changelog entry
+        if: steps.gate.outputs.go == 'true'
         run: |
           set -euo pipefail
           next="${{ steps.version.outputs.next }}"
@@ -159,6 +181,7 @@ jobs:
           mv /tmp/changelog.md CHANGELOG.md
 
       - name: Commit and tag
+        if: steps.gate.outputs.go == 'true'
         run: |
           set -euo pipefail
           next="${{ steps.version.outputs.next }}"
@@ -173,6 +196,7 @@ jobs:
           git push origin "v$next"
 
       - name: Build the installer and deploy the site
+        if: steps.gate.outputs.go == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
