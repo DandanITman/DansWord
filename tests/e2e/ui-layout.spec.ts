@@ -15,12 +15,33 @@ async function expectNoClippedControls(root: Locator, label: string) {
     const containerRect = container.getBoundingClientRect();
     const controls = Array.from(container.querySelectorAll<HTMLElement>(selector));
 
+    /**
+     * Is this control inside a container that scrolls sideways on purpose?
+     *
+     * The template rail has always been `overflow-x: auto`, but until the
+     * catalogue grew past a handful of templates it never actually overflowed,
+     * so this guard had never met a scroller. A card past the right edge of a
+     * scroller is reachable, not clipped — flagging it would force the rail to
+     * be trimmed to whatever fits at one specific viewport width. Vertical
+     * clipping is still reported, and so is everything else below.
+     */
+    const insideHorizontalScroller = (control: HTMLElement) => {
+      for (let node = control.parentElement; node && node !== container.parentElement; node = node.parentElement) {
+        const overflowX = window.getComputedStyle(node).overflowX;
+        if ((overflowX === 'auto' || overflowX === 'scroll') && node.scrollWidth > node.clientWidth + 1) {
+          return true;
+        }
+      }
+      return false;
+    };
+
     return controls.flatMap((control) => {
       const style = window.getComputedStyle(control);
       if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
         return [];
       }
 
+      const scrollsSideways = insideHorizontalScroller(control);
       const rect = control.getBoundingClientRect();
       const name =
         control.getAttribute('aria-label') ||
@@ -32,9 +53,11 @@ async function expectNoClippedControls(root: Locator, label: string) {
       if (rect.width < 8 || rect.height < 8) {
         currentIssues.push(`${name}: ${Math.round(rect.width)}x${Math.round(rect.height)}`);
       }
+      const outsideHorizontally =
+        !scrollsSideways && (rect.left < containerRect.left - 1 || rect.right > containerRect.right + 1);
+
       if (
-        rect.left < containerRect.left - 1 ||
-        rect.right > containerRect.right + 1 ||
+        outsideHorizontally ||
         rect.top < containerRect.top - 1 ||
         rect.bottom > containerRect.bottom + 1
       ) {
