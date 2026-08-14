@@ -496,6 +496,51 @@ function listBlocks(
   return blocks;
 }
 
+/**
+ * A checklist. Nested task lists indent like any other list, and a checked item
+ * exports as a filled box so the state survives the round trip through Word.
+ */
+function taskListBlocks(
+  node: TipTapNode,
+  idToNumber: Map<string, number>,
+  depth: number,
+  commentIds: CommentIndex = new Map(),
+): Array<Paragraph | Table> {
+  const blocks: Array<Paragraph | Table> = [];
+
+  for (const item of node.content ?? []) {
+    const box = item.attrs?.checked ? '☒ ' : '☐ ';
+    let marked = false;
+
+    for (const inner of item.content ?? []) {
+      if (inner.type === 'taskList') {
+        blocks.push(...taskListBlocks(inner, idToNumber, depth + 1, commentIds));
+        continue;
+      }
+      if (inner.type === 'paragraph' || inner.type === 'heading') {
+        // The box belongs on the item's first line only, not on a wrapped
+        // second paragraph inside the same item.
+        const prefixed = marked
+          ? inner
+          : { ...inner, content: [{ type: 'text', text: box }, ...(inner.content ?? [])] };
+        marked = true;
+        blocks.push(
+          paragraphFromNode(
+            prefixed,
+            idToNumber,
+            { indent: { left: pxToDxa(24 + depth * 24) } },
+            commentIds,
+          ),
+        );
+        continue;
+      }
+      blocks.push(...blocksFromNodes([inner], idToNumber, depth, commentIds));
+    }
+  }
+
+  return blocks;
+}
+
 function tableBlock(
   node: TipTapNode,
   idToNumber: Map<string, number>,
@@ -679,6 +724,14 @@ function blocksFromNodes(
 
       case 'horizontalRule':
         blocks.push(new Paragraph({ thematicBreak: true }));
+        break;
+
+      // Without a case of its own a checklist fell to the default branch, which
+      // recurses into the content and emits bare paragraphs — the text survived
+      // but every checkbox vanished on save. Word has no checkbox list item, so
+      // it does what this does: a ballot-box character in front of the text.
+      case 'taskList':
+        blocks.push(...taskListBlocks(node, idToNumber, depth, commentIds));
         break;
 
       default:

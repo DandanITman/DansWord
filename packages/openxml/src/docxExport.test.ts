@@ -180,4 +180,36 @@ describe('docxExport', () => {
     // The untouched row must not gain a height.
     expect(xml.match(/<w:trHeight/g)).toHaveLength(1);
   });
+
+  // taskList had no case in the exporter, so it fell through to the branch that
+  // recurses into children: the item text was written but the checkbox — the
+  // only thing that makes it a checklist — was silently dropped.
+  it('keeps checkbox state when exporting a task list', async () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'taskList',
+          content: [
+            {
+              type: 'taskItem',
+              attrs: { checked: true },
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Packed' }] }],
+            },
+            {
+              type: 'taskItem',
+              attrs: { checked: false },
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Still to do' }] }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const xml = await partOf(await exportToDocx(doc, {}), 'word/document.xml');
+    expect(xml).toContain('☒ ');
+    expect(xml).toContain('☐ ');
+    expect(xml).toContain('Packed');
+    expect(xml).toContain('Still to do');
+  });
 });
