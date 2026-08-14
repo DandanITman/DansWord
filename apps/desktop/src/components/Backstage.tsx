@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { AppSettings, DocumentMetadata, DocumentRevision, RecentFile } from '@officewrite/core';
-import { DEFAULT_SETTINGS, TEMPLATES } from '@officewrite/core';
+import { DEFAULT_SETTINGS, TEMPLATES, TEMPLATE_CATEGORIES } from '@officewrite/core';
 import { RevisionHistoryPanel } from './RevisionHistoryPanel';
 import { PROOFING_LANGUAGES } from '../constants/languages';
 
@@ -228,18 +228,35 @@ export function Backstage({
                   <span className="backstage-tpl-thumb">Aa</span>
                   <span>Blank Document</span>
                 </button>
-                {TEMPLATES.filter((template) => template.id !== 'blank').map((template) => (
-                  <button
-                    key={template.id}
-                    className="backstage-tpl-card"
-                    onClick={() => onNewFromTemplate(template.id)}
-                    data-testid={`backstage-template-${template.id}`}
-                  >
-                    <span className="backstage-tpl-thumb">{template.name.charAt(0)}</span>
-                    <span>{template.name}</span>
-                  </button>
-                ))}
               </div>
+              {/* Grouped rather than one flat wall of cards: the catalogue is
+                  long enough now that a heading is the only way to find the
+                  letter templates without reading all of them. */}
+              {TEMPLATE_CATEGORIES.filter((category) => category !== 'Basic').map((category) => {
+                const inCategory = TEMPLATES.filter(
+                  (template) => template.category === category && template.id !== 'blank',
+                );
+                if (inCategory.length === 0) return null;
+                return (
+                  <div key={category}>
+                    <h3 className="backstage-subhead">{category}</h3>
+                    <div className="backstage-template-grid">
+                      {inCategory.map((template) => (
+                        <button
+                          key={template.id}
+                          className="backstage-tpl-card"
+                          onClick={() => onNewFromTemplate(template.id)}
+                          data-testid={`backstage-template-${template.id}`}
+                          title={template.description}
+                        >
+                          <span className="backstage-tpl-thumb">{template.name.charAt(0)}</span>
+                          <span>{template.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </>
           )}
           {section === 'open' && (
