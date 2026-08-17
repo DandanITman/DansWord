@@ -16,7 +16,13 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const EM_DASH = '—';
+/**
+ * Built from its code point rather than written out.
+ *
+ * This file is tracked, so a literal here would make the check fail on itself
+ * the moment it was committed. Which it did.
+ */
+const EM_DASH = String.fromCharCode(0x2014);
 
 /**
  * Files where the character is data rather than prose. Removing it from these
