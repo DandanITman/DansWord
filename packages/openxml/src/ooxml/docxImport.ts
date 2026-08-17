@@ -99,7 +99,7 @@ function runMarks(rPr: XmlNode | undefined): Mark[] {
     }
   }
 
-  // textStyle carries colour, family and size — all previously lost on import.
+  // textStyle carries colour, family and size - all previously lost on import.
   const textStyle: Record<string, unknown> = {};
   const color = val(rPr, 'w:color');
   if (color && color !== 'auto') textStyle.color = `#${color}`;

@@ -336,7 +336,7 @@ describe('DOCX round trip', () => {
   });
 });
 
-describe('DOCX round trip — review and structure', () => {
+describe('DOCX round trip: review and structure', () => {
   // Previously: nothing read word/comments.xml and nothing wrote it, so a
   // reviewed document lost every comment in both directions.
   it('preserves comments and their anchors', async () => {

@@ -8,6 +8,7 @@ import { InsertTab } from './tabs/InsertTab';
 import { DrawTab } from './tabs/DrawTab';
 import { LayoutTab } from './tabs/LayoutTab';
 import { ReferencesTab } from './tabs/ReferencesTab';
+import { MailingsTab } from './tabs/MailingsTab';
 import { ReviewTab } from './tabs/ReviewTab';
 import { ViewTab } from './tabs/ViewTab';
 import { HelpTab } from './tabs/HelpTab';
@@ -23,7 +24,7 @@ import {
 
 /**
  * Below this panel width the ribbon switches to its compact density. Home is
- * the widest tab at full density — about 1245px with its four Styles tiles —
+ * the widest tab at full density - about 1245px with its four Styles tiles -
  * so this sits just above that and 1280px still gets the full gallery.
  */
 const COMPACT_BELOW = 1250;
@@ -34,6 +35,7 @@ const TABS: { id: RibbonTab; label: string }[] = [
   { id: 'insert', label: 'Insert' },
   { id: 'pageLayout', label: 'Layout' },
   { id: 'references', label: 'References' },
+  { id: 'mailings', label: 'Mailings' },
   { id: 'review', label: 'Review' },
   { id: 'view', label: 'View' },
   { id: 'help', label: 'Help' },
@@ -52,6 +54,7 @@ const PANELS: Record<Exclude<RibbonTab, 'file'>, (props: RibbonTabProps) => Reac
   insert: InsertTab,
   pageLayout: LayoutTab,
   references: ReferencesTab,
+  mailings: MailingsTab,
   review: ReviewTab,
   view: ViewTab,
   help: HelpTab,
@@ -107,7 +110,7 @@ export function Ribbon({
 
   /**
    * The panel used to scroll sideways once the groups outgrew the window, so
-   * below about 1280px the rightmost groups simply went behind a scrollbar —
+   * below about 1280px the rightmost groups simply went behind a scrollbar -
    * Word never scrolls its ribbon. The window can be as narrow as 900px, so
    * the density steps down first and buys back the space instead.
    */
@@ -120,7 +123,7 @@ export function Ribbon({
 
     // A width threshold, not a scrollWidth measurement: compacting changes
     // what scrollWidth reports, so feeding it back in oscillates and then
-    // latches — the ribbon sat compact at 1280px with 400px to spare.
+    // latches - the ribbon sat compact at 1280px with 400px to spare.
     const measure = () => setDensity(panel.clientWidth < COMPACT_BELOW ? 'compact' : 'normal');
 
     measure();
@@ -132,7 +135,7 @@ export function Ribbon({
   /**
    * Follow the selection into the contextual tabs and back out again.
    *
-   * Word only *activates* a contextual tab when you select an object — a
+   * Word only *activates* a contextual tab when you select an object - a
    * picture or a drawing canvas. Putting the caret in a table reveals Table
    * Layout but leaves the tab alone, because you are usually typing, and
    * yanking Bold and the font boxes away mid-sentence is hostile. Table Layout
@@ -289,8 +292,8 @@ export function Ribbon({
             aria-selected={activeTab === tab.id}
             tabIndex={activeTab === tab.id ? 0 : -1}
             onClick={() => {
-              // Clicking a contextual tab by hand — the only way to reach
-              // Table Layout — must remember where to come back to, or
+              // Clicking a contextual tab by hand - the only way to reach
+              // Table Layout - must remember where to come back to, or
               // leaving the table strands the user on Home.
               if (!CONTEXTUAL.some((contextual) => contextual.id === activeTab)) {
                 returnTab.current = activeTab;

@@ -55,7 +55,7 @@ export function InkDrawingView({ node, updateAttributes, selected, editor, getPo
     const { tool, color, width: penWidth } = settings();
     if (tool === 'select') {
       // Select the canvas explicitly so the contextual Draw tab reopens. Only
-      // on the select tool — doing it for pen or eraser would fight the stroke
+      // on the select tool - doing it for pen or eraser would fight the stroke
       // handler below for the pointer.
       const pos = typeof getPos === 'function' ? getPos() : null;
       if (pos != null) editor.commands.setNodeSelection(pos);

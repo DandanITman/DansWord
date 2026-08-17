@@ -36,7 +36,7 @@ test.describe('Clipboard and editing depth', () => {
    *
    * The keyboard path is Chromium's own clipboard handling, and a
    * script-triggered Ctrl+V does not reliably deliver a system-clipboard paste
-   * headlessly — so the old version of these tests was flaky for reasons that
+   * headlessly - so the old version of these tests was flaky for reasons that
    * had nothing to do with Officewrite. The buttons run our `utils/clipboard.ts`,
    * which is the code that was actually broken: Paste used
    * `document.execCommand('paste')`, which Chromium blocks outright, so the

@@ -35,6 +35,7 @@ import { TableRowResizing } from '../extensions/TableRowResizing';
 import { TextBox } from '../extensions/TextBox';
 import { InkDrawing } from '../extensions/InkDrawing';
 import { Bibliography, Bookmark, DocumentIndex, IndexEntry, TableOfFigures } from '../extensions/DocFields';
+import { MergeField } from '../extensions/MergeField';
 
 export interface EditorExtensionOptions {
   spellCheckEnabled?: boolean;
@@ -106,6 +107,7 @@ export function createExtensions(options: EditorExtensionOptions = {}): Extensio
     FootnoteRef,
     Bookmark,
     IndexEntry,
+    MergeField,
     Bibliography,
     DocumentIndex,
     TableOfFigures,

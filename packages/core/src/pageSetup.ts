@@ -47,7 +47,7 @@ export interface DocumentFootnote {
 }
 
 /**
- * Word lays a header and footer out in three zones against tab stops — title
+ * Word lays a header and footer out in three zones against tab stops - title
  * on the left, page number on the right is the commonest arrangement of all.
  */
 export interface HeaderFooterZones {

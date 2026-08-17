@@ -8,6 +8,8 @@ import {
   switchRibbonTab,
   openBackstage,
   visualMaskLocators,
+  attachRecipientList,
+  insertMergeFieldFor,
 } from '../helpers/playwright';
 
 test.describe('Extended visual regression', () => {
@@ -21,6 +23,7 @@ test.describe('Extended visual regression', () => {
     'insert',
     'pageLayout',
     'references',
+    'mailings',
     'review',
     'view',
     'help',
@@ -33,6 +36,52 @@ test.describe('Extended visual regression', () => {
       });
     });
   }
+
+  /**
+   * Mailings with a list attached.
+   *
+   * The greyed-out tab is already covered by the loop above, and that is the
+   * state a user sees for about ten seconds. This is the one they work in: every
+   * control live, and the record navigator counting.
+   */
+  test('mailings tab with a recipient list attached', async ({ page }) => {
+    await openBlankDocument(page);
+    await attachRecipientList(page);
+    await insertMergeFieldFor(page, 'First Name');
+    await page.getByTestId('mailings-preview-results').click();
+    await expect(page.getByTestId('ribbon')).toHaveScreenshot('ribbon-mailings-active.png', {
+      mask: visualMaskLocators(page),
+    });
+  });
+
+  /**
+   * The template gallery, which is the page the previews exist for. Guards the
+   * card grid as well as the previews: the cards had to grow to fit readable
+   * text, and a regression to the old width would show up here first.
+   */
+  test('template gallery', async ({ page }) => {
+    await page.getByTestId('home-nav-new').click();
+    await expect(page.getByTestId('template-gallery')).toBeVisible();
+    await expect(page.getByTestId('home-screen')).toHaveScreenshot('template-gallery.png', {
+      mask: visualMaskLocators(page),
+    });
+  });
+
+  test('template preview dialog', async ({ page }) => {
+    await page.getByTestId('home-template-preview-invoice').click();
+    await expect(page.getByTestId('template-preview-dialog')).toHaveScreenshot(
+      'template-preview-dialog.png',
+      { mask: visualMaskLocators(page) },
+    );
+  });
+
+  test('backstage new pane', async ({ page }) => {
+    await openBlankDocument(page);
+    await openBackstage(page, 'new');
+    await expect(page.getByTestId('backstage')).toHaveScreenshot('backstage-new.png', {
+      mask: visualMaskLocators(page),
+    });
+  });
 
   test('find and replace bar open', async ({ page }) => {
     await openBlankDocument(page);

@@ -1122,8 +1122,10 @@ select:focus-visible {
 
 .backstage-template-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 14px;
+  /* Wider, now that each card carries a readable miniature rather than an
+     initial on a tile. */
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 16px;
 }
 
 .backstage-tpl-card {
@@ -1145,17 +1147,16 @@ select:focus-visible {
 }
 
 .backstage-tpl-thumb {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 82px;
+  /* Was a single letter on a coloured tile; now it holds a real miniature, so
+     it needs a page's proportions rather than a square. */
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 148px;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 3px;
   background: #fff;
-  color: #1f2937;
-  font-size: 20px;
-  font-weight: 600;
 }
 
 .backstage-recents {
@@ -1792,7 +1793,8 @@ select:focus-visible {
 }
 
 .home-tpl-card {
-  flex: 0 0 140px;
+  flex: 0 0 180px;
+  width: 180px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -1807,6 +1809,44 @@ select:focus-visible {
 .home-tpl-card:hover {
   transform: translateY(-3px);
   color: var(--text);
+}
+
+/* The card and its preview button are siblings, not nested buttons: a button
+   inside a button is invalid HTML and Chrome silently drops the inner one, which
+   is how the zoom control would have become unclickable. */
+.home-tpl-card-wrap {
+  position: relative;
+  flex: 0 0 180px;
+}
+
+.home-tpl-zoom {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg-panel) 88%, transparent);
+  color: var(--text-secondary);
+  cursor: pointer;
+  /* Hidden until the card is hovered or the button itself is focused, so the
+     grid is not a wall of icons - but always reachable by keyboard. */
+  opacity: 0;
+  transition: opacity var(--transition), color var(--transition);
+}
+
+.home-tpl-card-wrap:hover .home-tpl-zoom,
+.home-tpl-zoom:focus-visible {
+  opacity: 1;
+}
+
+.home-tpl-zoom:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .home-panel-head {
@@ -1916,13 +1956,20 @@ select:focus-visible {
    instead of stretching across the whole pane. */
 .home-template-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 22px 16px;
+  /* Wider than before: the previews render real text, and 150px left the
+     headings too small to read, which defeated the change. */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 26px 18px;
   padding: 4px 4px 32px;
+}
+
+.home-template-grid .home-tpl-card-wrap {
+  width: 100%;
 }
 
 .home-template-grid .home-tpl-card {
   flex: none;
+  width: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -1937,7 +1984,8 @@ select:focus-visible {
 }
 
 .home-tpl-thumb {
-  height: 120px;
+  /* 8.5:11 at the card's width, so the thumbnail is page-shaped. */
+  height: 228px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--bg-panel);
@@ -1963,137 +2011,188 @@ select:focus-visible {
   border-style: dashed;
 }
 
-.tpl-preview {
-  width: 78%;
-  height: 78%;
-  display: flex;
-  flex-direction: column;
-  /* Content-derived previews start at the top like a real page, rather than
-     floating four fixed bars in the middle of the thumbnail. */
-  justify-content: flex-start;
-  gap: 4px;
+/* --- Template previews ------------------------------------------------
+   A miniature of the template's own first page. The old thumbnails were four
+   grey bars; these render the template's real text, which is the only thing
+   that tells an invoice from an invitation at card size. One renderer at two
+   scales, so the card and the preview dialog cannot disagree. */
+
+.tp-page {
+  /* Positioned so the bottom fade anchors to the page rather than to whatever
+     ancestor happens to be positioned - which differs between the card and the
+     preview dialog. */
+  position: relative;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+  background: #fff;
+  color: #0f172a;
+  font-family: 'Calibri', 'Segoe UI', system-ui, sans-serif;
+  text-align: left;
+  /* A real page's leading, scaled: tight enough that a letter's blank lines
+     still read as spacing rather than as a gap in the render. */
+  line-height: 1.35;
 }
 
-.tpl-preview-blank {
+/* Deliberately larger than true-to-scale.
+   A letter page at this card width would put body text at 3.6px, which is an
+   accurate silhouette and completely unreadable. Exaggerating the type until
+   the title and headings can be read is the whole point of the thumbnail: you
+   are choosing between "Invoice" and "Meeting Agenda", not proofreading. */
+.tp-thumb {
+  padding: 10px 11px;
+  font-size: 5px;
+}
+
+/* Readable, at the size the preview dialog gives it. */
+.tp-page.tp-page {
+  border-radius: 2px;
+}
+
+.tp-page:not(.tp-thumb) {
+  padding: 46px 52px;
+  font-size: 11px;
+}
+
+.tp-blank {
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.tpl-preview-blank {
-  align-items: center;
-  color: var(--accent);
+.tp-blank-label {
+  color: #94a3b8;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.tpl-preview-doc {
-  padding: 8px;
+.tp-page:not(.tp-thumb) .tp-blank-label {
+  font-size: 13px;
 }
 
-.tpl-line {
-  height: 4px;
-  border-radius: 2px;
-  background: #cbd5e1;
+.tp-h {
+  font-weight: 700;
+  color: #12263f;
+  margin: 0 0 0.25em;
+  /* Headings are the part of a thumbnail people actually squint at, so they
+     get the extra weight and a little tracking rather than more size. */
+  letter-spacing: -0.01em;
 }
 
-.tpl-line.bold {
-  height: 5px;
-  background: #94a3b8;
+.tp-h1 { font-size: 2.15em; }
+.tp-h2 { font-size: 1.5em; margin-top: 0.65em; color: #1d4ed8; }
+.tp-h3 { font-size: 1.2em; margin-top: 0.5em; }
+
+.tp-p {
+  margin: 0 0 0.28em;
+  color: #334155;
 }
 
-/* Heading levels, so the silhouette reads as a document: a title, section
-   headings under it, body text under those. */
-.tpl-line.tpl-title {
-  height: 6px;
-  border-radius: 3px;
-  background: #64748b;
-  margin-bottom: 1px;
+.tp-subtitle {
+  color: #64748b;
+  font-style: italic;
 }
 
-.tpl-line.tpl-head {
-  height: 5px;
-  background: #94a3b8;
-  margin-top: 2px;
+.tp-gap {
+  height: 0.85em;
 }
 
-.tpl-bullet-row {
+.tp-list {
+  margin: 0 0 0.3em;
+}
+
+.tp-li {
   display: flex;
-  align-items: center;
-  gap: 3px;
-  padding-left: 5px;
+  gap: 0.4em;
+  color: #334155;
+  margin-bottom: 0.12em;
 }
 
-.tpl-bullet-dot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: #cbd5e1;
+.tp-marker {
   flex: none;
+  color: #64748b;
 }
 
-/* A checklist reads as a box rather than a dot, the way it does on the page. */
-.tpl-bullet-box {
-  width: 3px;
-  height: 3px;
+.tp-li-text {
+  min-width: 0;
+}
+
+.tp-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.4em 0;
+  table-layout: fixed;
+}
+
+.tp-table th,
+.tp-table td {
   border: 1px solid #cbd5e1;
-  border-radius: 1px;
-  flex: none;
-}
-
-/* Tables carry the invoice, planner and budget templates, so the thumbnail
-   draws the grid instead of collapsing every cell into one long bar. */
-.tpl-table {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  border: 1px solid #e2e8f0;
-  border-radius: 2px;
+  padding: 0.25em 0.35em;
+  text-align: left;
   overflow: hidden;
-  flex: none;
+  /* Long cells must clip rather than push the table wider than the page. */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #334155;
 }
 
-.tpl-table-row {
-  display: flex;
-  gap: 1px;
+.tp-table th {
+  background: #eef2f7;
+  font-weight: 700;
+  color: #12263f;
 }
 
-.tpl-table-row.head .tpl-table-cell {
-  background: #94a3b8;
-}
-
-.tpl-table-cell {
-  flex: 1;
-  height: 5px;
-  background: #e2e8f0;
-}
-
-.tpl-rule {
+.tp-rule {
   height: 1px;
-  background: #94a3b8;
-  flex: none;
-  margin: 2px 0;
+  background: #cbd5e1;
+  margin: 0.5em 0;
 }
 
-.tpl-rule.dashed {
-  height: 0;
-  background: none;
+.tp-page-break {
   border-top: 1px dashed #cbd5e1;
+  margin: 0.6em 0;
 }
 
-/* An empty paragraph in the template is white space in the document. */
-.tpl-gap {
-  height: 3px;
+/* The page continues past what fits: a soft fade rather than a hard cut, so a
+   clipped word does not read as a broken template. */
+.tp-more {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 24px;
+  background: linear-gradient(to bottom, transparent, #fff);
+  pointer-events: none;
+}
+
+.home-tpl-thumb,
+.backstage-tpl-thumb { position: relative; }
+
+/* --- Template preview dialog ------------------------------------------- */
+
+.template-preview-dialog {
+  max-width: 720px;
+  width: min(720px, 94vw);
+}
+
+.template-preview-stage {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: var(--bg-subtle, #f1f5f9);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-height: min(62vh, 640px);
+  overflow: auto;
+}
+
+.template-preview-stage .tp-page {
+  /* US Letter at 8.5:11, so the preview is the shape of the real page. */
+  width: 520px;
+  min-height: 673px;
   flex: none;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
 }
-
-.tpl-line.w40 { width: 40%; }
-.tpl-line.w45 { width: 45%; }
-.tpl-line.w50 { width: 50%; }
-.tpl-line.w55 { width: 55%; }
-.tpl-line.w60 { width: 60%; }
-.tpl-line.w70 { width: 70%; }
-.tpl-line.w75 { width: 75%; }
-.tpl-line.w80 { width: 80%; }
-.tpl-line.w85 { width: 85%; }
-.tpl-line.w90 { width: 90%; }
 
 .home-docs-panel {
   background: var(--bg-panel);
@@ -2628,7 +2727,7 @@ select:focus-visible {
   text-decoration: underline;
 }
 
-/* Editor chrome — title bar and ribbon tab strip.
+/* Editor chrome - title bar and ribbon tab strip.
    Single source of truth: three successive restyle passes used to redefine
    these selectors further down the file, so an edit here could silently lose
    to a later block. They are merged, resolved to the values that rendered. */
@@ -2786,8 +2885,8 @@ select:focus-visible {
   align-items: stretch;
   gap: 0;
   /*
-   * One fixed height for every tab. These were free to grow, so References —
-   * a few px taller than the rest — shunted the document down whenever you
+   * One fixed height for every tab. These were free to grow, so References -
+   * a few px taller than the rest - shunted the document down whenever you
    * switched to it and back. Word's ribbon never changes height.
    */
   min-height: 102px;
@@ -2803,7 +2902,7 @@ select:focus-visible {
  * Compact density, applied by Ribbon's ResizeObserver when the groups would
  * otherwise overflow. Word collapses whole groups to a popout; the tabs here
  * are JSX rather than data, so instead the padding, gaps and the widest
- * controls give ground — which recovers enough for the narrow window sizes
+ * controls give ground - which recovers enough for the narrow window sizes
  * the app allows (minWidth is 900) before anything can scroll off.
  */
 .office-ribbon-panel.is-compact {
@@ -2840,7 +2939,7 @@ select:focus-visible {
 }
 
 /* Paragraph and Font are the two widest groups, and both are dense rows of
-   icon buttons — a couple of pixels each is worth more here than anywhere. */
+   icon buttons - a couple of pixels each is worth more here than anywhere. */
 .office-ribbon-panel.is-compact .rb-btn--icon {
   width: 21px;
 }
@@ -2862,6 +2961,14 @@ select:focus-visible {
    Home can give it back without a control losing its name. */
 .office-ribbon-panel.is-compact .rb-combo {
   max-width: 74px;
+}
+
+/* Mailings' record navigator. The number box and the four arrows around it are
+   the only fixed-width run on that tab, so this is where it gives back the last
+   few pixels at 900px rather than letting the Finish group slide off. */
+.office-ribbon-panel.is-compact .rb-merge-record {
+  width: 34px;
+  margin: 0 1px;
 }
 
 .ribbon-btn-lg {
@@ -3313,7 +3420,7 @@ select:focus-visible {
   padding-top: 24px;
 }
 
-/* View > Immersive Reader. Presentation only — nothing here edits the
+/* View > Immersive Reader. Presentation only - nothing here edits the
    document, so leaving the mode restores exactly what was there. */
 .immersive-bar {
   display: flex;
@@ -4195,7 +4302,7 @@ select:focus-visible {
  * Group padding is the ribbon's main width lever: Insert has eleven groups, so
  * every pixel here costs eleven across the tab. At 8px the tab ran to 1249 of
  * 1280 on Windows and overflowed outright on Linux, whose default faces are
- * wider than Segoe UI — the last group (Emoji) ended up off the edge.
+ * wider than Segoe UI - the last group (Emoji) ended up off the edge.
  */
 .rb-group {
   display: flex;
@@ -4329,7 +4436,7 @@ select:focus-visible {
 
 /*
  * An icon button that also opens a menu draws a chevron beside its glyph, and
- * the pair does not fit the plain 24px icon width — Borders clipped its glyph.
+ * the pair does not fit the plain 24px icon width - Borders clipped its glyph.
  */
 .rb-btn--icon.rb-btn--menu {
   width: 34px;
@@ -4798,7 +4905,7 @@ select:focus-visible {
   line-height: 1.1;
 }
 
-/* Wide enough that "Heading 1" and "Heading 2" stay tellable apart — at 46px
+/* Wide enough that "Heading 1" and "Heading 2" stay tellable apart - at 46px
    both truncated to "Headin…", which defeats the point of a gallery. */
 .rb-style-tile {
   width: 56px;
@@ -6284,4 +6391,385 @@ ul[data-type='taskList'] li > div {
 
 .find-toggle[data-testid='find-whole-word'] {
   text-decoration: underline;
+}
+
+/* ======================================================================
+   Mailings
+   ====================================================================== */
+
+/* --- Merge fields in the document --------------------------------------
+   Drawn as Word draws them: «FieldName» in the body face, so the line still
+   reads as a sentence, with the chevrons doing the work of saying "this is a
+   field, not text you typed". */
+
+.doc-merge-field {
+  /* No background by default. A permanently shaded field would fight every
+     document theme; Highlight Merge Fields is the control for that, and it is
+     off until asked for - matching Word. */
+  color: #1d4ed8;
+  white-space: pre-wrap;
+  cursor: default;
+  border-radius: 2px;
+  /* Selecting a field selects the whole thing, since it is an atom. */
+  user-select: none;
+}
+
+.doc-merge-field.is-highlighted {
+  background: #dbeafe;
+  box-shadow: 0 0 0 1px #93c5fd;
+}
+
+/* Preview Results: the resolved value is ordinary document text, because that
+   is what it will be once merged. Only the tint says it came from a field. */
+.doc-merge-field.is-preview {
+  color: inherit;
+  background: color-mix(in srgb, #2563eb 8%, transparent);
+}
+
+/* A field that resolves to nothing still has to be visible, or a forgotten
+   column looks identical to a field that was never inserted. */
+.doc-merge-field.is-preview.is-empty {
+  color: #b91c1c;
+  font-style: italic;
+  background: color-mix(in srgb, #dc2626 10%, transparent);
+}
+
+.ProseMirror-selectednode.doc-merge-field {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+[data-theme="dark"] .doc-merge-field {
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .doc-merge-field.is-highlighted {
+  background: #1e3a8a;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* --- The ribbon record navigator --------------------------------------- */
+
+.rb-merge-nav {
+  align-items: center;
+  gap: 1px;
+}
+
+.rb-merge-record {
+  width: 46px;
+  height: 22px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg-panel);
+  color: var(--text);
+  font-size: 12px;
+  margin: 0 3px;
+}
+
+.rb-merge-record:disabled {
+  color: var(--text-muted);
+  background: var(--bg-subtle, #f1f5f9);
+}
+
+/* Word's navigator has no spinners; the arrows either side are the control. */
+.rb-merge-record::-webkit-inner-spin-button,
+.rb-merge-record::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* --- Mailings dialogs -------------------------------------------------- */
+
+.dialog-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.dialog-tabs button {
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.dialog-tabs button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.merge-two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .merge-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The live preview every address and greeting dialog carries. Generous line
+   height, so a multi-line address keeps the shape it will have on paper. */
+.merge-preview-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-panel);
+  padding: 12px 14px;
+  min-height: 84px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.find-recipient-hit {
+  justify-content: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.recipient-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.recipient-toolbar input {
+  min-width: 200px;
+}
+
+.recipient-table-wrap {
+  overflow: auto;
+  max-height: min(46vh, 420px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.recipient-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.recipient-table th,
+.recipient-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 5px 7px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* The header has to stay put: a hundred-row list is the normal case, and a
+   scrolled-away header makes the columns unidentifiable. */
+.recipient-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-panel);
+  font-weight: 600;
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+
+.recipient-table td input {
+  width: 100%;
+  min-width: 92px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  padding: 3px 5px;
+}
+
+.recipient-table td input:hover {
+  border-color: var(--border);
+}
+
+.recipient-table td input:focus {
+  border-color: var(--accent);
+  background: var(--bg-panel);
+  outline: none;
+}
+
+.recipient-number {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.merge-range {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px 14px;
+  margin: 4px 0 14px;
+}
+
+.merge-range legend {
+  padding: 0 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.merge-range input[type="number"] {
+  width: 72px;
+  margin: 0 6px;
+}
+
+.merge-problem-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.merge-problem-list li {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 9px 11px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.merge-problem-list li.error {
+  border-color: #fca5a5;
+  background: color-mix(in srgb, #dc2626 8%, transparent);
+}
+
+.merge-problem-list li.warning {
+  border-color: #fcd34d;
+  background: color-mix(in srgb, #d97706 8%, transparent);
+}
+
+.merge-problem-list svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* --- The wizard task pane ---------------------------------------------
+   A right-hand pane rather than a modal, because Word's is: every step tells
+   you to do something to the document, which you cannot do behind a backdrop. */
+
+.merge-wizard {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  font-size: 13px;
+}
+
+.merge-wizard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.merge-wizard-head h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.merge-wizard-steps {
+  list-style: none;
+  margin: 0;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.merge-wizard-steps button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.merge-wizard-steps button:hover {
+  background: var(--bg-subtle, #f1f5f9);
+  color: var(--text);
+}
+
+.merge-wizard-steps li.active button {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.merge-wizard-steps li.done button {
+  color: var(--text);
+}
+
+.merge-wizard-body {
+  flex: 1;
+  overflow: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  align-items: flex-start;
+}
+
+.merge-wizard-body p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.merge-wizard-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.merge-wizard-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* Screen-reader-only labels, for the selects whose visible label is the
+   checkbox above them. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }

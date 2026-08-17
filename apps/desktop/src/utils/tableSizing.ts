@@ -2,7 +2,7 @@ import type { Editor } from '@tiptap/react';
 import { selectedRect } from '@tiptap/pm/tables';
 
 /**
- * `selectedRect` throws — not returns null — when the selection is not inside
+ * `selectedRect` throws - not returns null - when the selection is not inside
  * a table, because prosemirror-tables' `selectionCell` raises "no cell found".
  *
  * The Table Layout panel renders for a frame after the caret leaves the table,
@@ -27,8 +27,8 @@ function rectOf(editor: Editor | null) {
  * When they were inline, the ribbon buttons worked and searching for "column
  * width" or "distribute" found nothing at all.
  *
- * Every one of them writes the same attributes the drag resizers maintain —
- * `colwidth` on cells, `height` on rows — so dragging a border and typing a
+ * Every one of them writes the same attributes the drag resizers maintain -
+ * `colwidth` on cells, `height` on rows - so dragging a border and typing a
  * number cannot disagree.
  */
 

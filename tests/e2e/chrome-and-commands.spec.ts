@@ -25,7 +25,7 @@ test.describe('Ribbon tab strip', () => {
     await resetTestState(page);
   });
 
-  test('TC-TAB-001: shows exactly the eight tabs', async ({ page }) => {
+  test('TC-TAB-001: shows exactly the nine tabs, in Word\'s order', async ({ page }) => {
     await openBlankDocument(page);
     await expect(page.locator('.ribbon-tab:not(.is-contextual)')).toHaveText([
       'File',
@@ -33,6 +33,7 @@ test.describe('Ribbon tab strip', () => {
       'Insert',
       'Layout',
       'References',
+      'Mailings',
       'Review',
       'View',
       'Help',

@@ -14,6 +14,7 @@ const LIVE_TABS = new Set<RibbonTab>([
   'insert',
   'pageLayout',
   'references',
+  'mailings',
   'review',
   'view',
   'help',
@@ -79,7 +80,7 @@ describe('searchCommands', () => {
   });
 
   it('finds a command by keyword rather than by label', () => {
-    // "spell check" appears in no label — only in the Spelling & Grammar keywords.
+    // "spell check" appears in no label - only in the Spelling & Grammar keywords.
     const labels = searchCommands(commands, 'spell check').map((r) => r.command.label);
     expect(labels).toContain('Spelling & Grammar');
   });

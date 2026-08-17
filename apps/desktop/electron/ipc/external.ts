@@ -6,7 +6,7 @@ import { ipcMain, shell } from 'electron';
  * Officewrite makes no network requests of its own, and the Help tab is the single
  * place that leaves the app at all. Rather than trust the renderer, the main
  * process re-parses the URL and refuses anything that is not this project's
- * repository over HTTPS — so a bug (or an injected string) in the renderer
+ * repository over HTTPS - so a bug (or an injected string) in the renderer
  * cannot turn Help into a general-purpose "open any link" primitive.
  */
 const ALLOWED_HOST = 'github.com';

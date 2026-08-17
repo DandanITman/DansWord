@@ -79,7 +79,7 @@ export function attr(node: XmlNode | undefined, name: string): string | undefine
   return node?.attrs[name];
 }
 
-/** `w:val` on a child element — the most common OOXML shape. */
+/** `w:val` on a child element - the most common OOXML shape. */
 export function val(node: XmlNode | undefined, name: string): string | undefined {
   return attr(child(node, name), 'w:val');
 }
@@ -146,7 +146,7 @@ export function fieldInstructions(node: XmlNode | undefined): string[] {
   return out;
 }
 
-/** Twips (1/20 pt) to CSS pixels at 96 DPI — the unit the document model uses. */
+/** Twips (1/20 pt) to CSS pixels at 96 DPI - the unit the document model uses. */
 export function twipsToPx(twips: number | string | undefined): number {
   const n = typeof twips === 'string' ? parseFloat(twips) : twips;
   if (n === undefined || !Number.isFinite(n)) return 0;

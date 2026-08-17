@@ -19,8 +19,8 @@ function charBefore(doc: import('@tiptap/pm/model').Node, pos: number): string {
 /**
  * AutoCorrect and AutoFormat As You Type.
  *
- * Word fixes a word the moment you finish it — by typing a space, a newline or
- * punctuation — never mid-word. This handles the same trigger points:
+ * Word fixes a word the moment you finish it - by typing a space, a newline or
+ * punctuation - never mid-word. This handles the same trigger points:
  *
  *  - the replacement table ("teh" → "the")
  *  - TWo INitial CApitals

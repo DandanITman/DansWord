@@ -45,7 +45,8 @@ import type {
   PageSetup,
   Watermark,
 } from '@officewrite/core';
-import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf, zonesEmpty } from '@officewrite/core';
+import { PAGE_DIMENSIONS, footerZonesOf, headerZonesOf, zonesEmpty, mergeFieldLabel } from '@officewrite/core';
+import type { MergeFieldAttrs } from '@officewrite/core';
 
 type TipTapNode = {
   type?: string;
@@ -230,7 +231,7 @@ type CommentIndex = Map<string, number>;
  *
  * Hyperlinks become real `ExternalHyperlink` runs, tracked changes become real
  * `w:ins`/`w:del` revisions, and comment anchors open and close real comment
- * ranges — so a document reviewed in Officewrite arrives in Word with its links,
+ * ranges - so a document reviewed in Officewrite arrives in Word with its links,
  * pending changes and comments intact. All three used to be dropped silently.
  */
 function inlineChildren(
@@ -260,6 +261,25 @@ function inlineChildren(
       closeComments();
       const run = imageRun(child);
       if (run) out.push(run);
+      continue;
+    }
+    /**
+     * A mail-merge field exports as its own «FieldName» text.
+     *
+     * Without this branch the guard below dropped it entirely, because a merge
+     * field is an inline atom with no `.text` - so saving a merge main document
+     * as .docx silently lost every field in it. Word writes these as real MERGE
+     * fields; the visible text is what it shows, and it is legible rather than
+     * corrupt anywhere that has never heard of a merge.
+     */
+    if (child.type === 'mergeField') {
+      closeComments();
+      out.push(
+        new TextRun({
+          text: mergeFieldLabel(child.attrs as unknown as MergeFieldAttrs),
+          ...runOptionsFromMarks(child.marks ?? []),
+        }),
+      );
       continue;
     }
     if (child.type !== 'text' || !child.text) continue;
@@ -460,7 +480,7 @@ function shapeParagraph(node: TipTapNode): Paragraph {
  *
  * Both list types used to collapse to `bullet: { level: 0 }`, so ordered lists
  * exported as bullets, nesting was lost, and list text was rebuilt by joining
- * raw `.text` — dropping every inline mark inside a list item.
+ * raw `.text` - dropping every inline mark inside a list item.
  */
 function listBlocks(
   node: TipTapNode,
@@ -556,7 +576,7 @@ function tableBlock(
       if (cellNode.type === 'tableHeader') isHeaderRow = true;
       const attrs = cellNode.attrs ?? {};
 
-      // Cells may hold lists, images and nested tables — not just paragraphs.
+      // Cells may hold lists, images and nested tables - not just paragraphs.
       const cellChildren = blocksFromNodes(cellNode.content ?? [], idToNumber, 0, commentIds);
       const shading = hex(attrs.backgroundColor);
       const colwidth = Array.isArray(attrs.colwidth) ? Number(attrs.colwidth[0]) : undefined;
@@ -575,7 +595,7 @@ function tableBlock(
     }
 
     // A dragged row height is "at least this tall", which is Word's ATLEAST
-    // rule — EXACT would clip text that no longer fits.
+    // rule - EXACT would clip text that no longer fits.
     const rowHeight = Number(rowNode.attrs?.height);
     rows.push(
       new TableRow({
@@ -595,15 +615,15 @@ function tableBlock(
   });
 }
 
-/** US Letter less one-inch margins, in twips — the width a table spans by default. */
+/** US Letter less one-inch margins, in twips - the width a table spans by default. */
 const TEXT_WIDTH_DXA = 9360;
 
 /**
  * The column widths for `w:tblGrid`.
  *
  * Word lays a table out from its grid, so the grid has to carry the real
- * widths. Left to itself `docx` wrote every column as 100 twips — about
- * 0.07in — which threw away any column the user had resized.
+ * widths. Left to itself `docx` wrote every column as 100 twips - about
+ * 0.07in - which threw away any column the user had resized.
  */
 function tableColumnWidths(node: TipTapNode): number[] {
   const widths: number[] = [];
@@ -727,7 +747,7 @@ function blocksFromNodes(
         break;
 
       // Without a case of its own a checklist fell to the default branch, which
-      // recurses into the content and emits bare paragraphs — the text survived
+      // recurses into the content and emits bare paragraphs - the text survived
       // but every checkbox vanished on save. Word has no checkbox list item, so
       // it does what this does: a ballot-box character in front of the text.
       case 'taskList':
@@ -881,7 +901,7 @@ export async function exportToDocx(
   /**
    * Word lays header and footer zones out against a centre and a right tab
    * stop in a single paragraph. Writing them that way is what makes a title
-   * on the left and a page number on the right survive the round trip — the
+   * on the left and a page number on the right survive the round trip - the
    * previous single centred run could not express it.
    *
    * `%p` and `%P` are expanded into real page-number fields.

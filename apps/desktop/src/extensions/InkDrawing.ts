@@ -126,7 +126,7 @@ export const InkDrawing = Node.create({
           chain()
             .insertContent({ type: this.name, attrs: { width: 560, height: 240, strokes: [] } })
             // insertContent leaves the caret past the atom, which is not a node
-            // selection — so the contextual Draw tab would never open on insert.
+            // selection - so the contextual Draw tab would never open on insert.
             // Step back onto the canvas and select it, as Word does.
             .command(({ tr, dispatch }) => {
               const pos = tr.selection.from - 1;

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Home,
   FilePlus,
@@ -19,10 +19,12 @@ import {
   LayoutGrid,
   Search,
   ArrowRight,
+  Maximize2,
 } from 'lucide-react';
 import { TEMPLATES, TEMPLATE_CATEGORIES } from '@officewrite/core';
 import type { RecentFile, AppSettings, Template } from '@officewrite/core';
 import { appIconUrl } from '../utils/assets';
+import { TemplatePreview } from './TemplatePreview';
 
 type HomeTab = 'recent' | 'favorites';
 type SidebarItem = 'home' | 'new' | 'open';
@@ -89,164 +91,116 @@ function formatDate(ts: number) {
 }
 
 /**
- * The shape of a TipTap node the thumbnail needs. TEMPLATES is declared `as
- * const`, so its real types are wide literal unions that differ per node —
- * some carry attrs, some carry content, some carry neither. Reading
- * defensively is simpler than threading those through, and it cannot break
- * when a template is edited.
+ * Card for one template.
+ *
+ * Two controls, not one: the card creates the document, and the corner button
+ * opens the full-page preview. Word's gallery works the same way, and the split
+ * matters here because the thumbnail can only ever be a hint - the preview is
+ * where you read the template before committing to it.
  */
-type PreviewBlock = {
-  type?: string;
-  attrs?: { level?: number; textAlign?: string };
-  content?: readonly unknown[];
-};
-
-/**
- * Centred text is most of what distinguishes a flyer or an invitation from a
- * letter, so the thumbnail has to show it or half the catalogue looks alike.
- */
-function alignmentOf(node: unknown): React.CSSProperties {
-  const align = (node as PreviewBlock | null)?.attrs?.textAlign;
-  if (align === 'center') return { alignSelf: 'center' };
-  if (align === 'right') return { alignSelf: 'flex-end' };
-  return {};
-}
-
-/** Total characters under a node, so a bar's width reflects its real text. */
-function textLengthOf(node: unknown): number {
-  const block = node as (PreviewBlock & { text?: string }) | null;
-  if (typeof block?.text === 'string') return block.text.length;
-  if (!Array.isArray(block?.content)) return 0;
-  return block.content.reduce<number>((sum, child) => sum + textLengthOf(child), 0);
-}
-
-/**
- * Bar width from text length. The base offset matters: a purely proportional
- * scale pinned every short line in the letter template to the same minimum,
- * so four different lines drew as four identical stubs. Starting at 18% and
- * rising steeply spreads short and medium lines apart, which is where the
- * differences between these templates actually are.
- */
-function widthFor(node: unknown): string {
-  return `${Math.min(94, 18 + textLengthOf(node) * 2.2)}%`;
-}
-
-/** How many blocks fit in the thumbnail before it stops looking like a page. */
-const PREVIEW_BLOCK_LIMIT = 9;
-
-/**
- * A miniature of the template's first page, built from the template's own
- * content rather than hand-drawn lines. Previously every thumbnail was four
- * fixed bars that resembled nothing in particular and silently stopped
- * matching whenever a template changed.
- */
-function TemplatePreview({ blocks }: { blocks: readonly unknown[] }) {
-  const rendered: React.ReactNode[] = [];
-
-  for (const node of blocks) {
-    if (rendered.length >= PREVIEW_BLOCK_LIMIT) break;
-    const block = node as PreviewBlock;
-    const key = rendered.length;
-
-    if (block?.type === 'heading') {
-      const level = block.attrs?.level ?? 1;
-      rendered.push(
-        <div
-          key={key}
-          className={level === 1 ? 'tpl-line tpl-title' : 'tpl-line tpl-head'}
-          style={{ width: widthFor(node), ...alignmentOf(node) }}
-        />,
-      );
-      continue;
-    }
-
-    if (block?.type === 'bulletList' || block?.type === 'orderedList' || block?.type === 'taskList') {
-      const marker = block.type === 'taskList' ? 'tpl-bullet-box' : 'tpl-bullet-dot';
-      for (const item of block.content ?? []) {
-        if (rendered.length >= PREVIEW_BLOCK_LIMIT) break;
-        rendered.push(
-          <div key={`b${rendered.length}`} className="tpl-bullet-row">
-            <span className={marker} />
-            <span className="tpl-line" style={{ width: widthFor(item) }} />
-          </div>,
-        );
-      }
-      continue;
-    }
-
-    /* A table is the whole point of the invoice and planner templates, so it
-       draws as a grid rather than collapsing into one very long bar. */
-    if (block?.type === 'table') {
-      const rows = (block.content ?? []).slice(0, 4);
-      const columns = Math.min(4, (rows[0] as PreviewBlock | undefined)?.content?.length ?? 2);
-      rendered.push(
-        <div key={key} className="tpl-table">
-          {rows.map((_, rowIndex) => (
-            <div key={rowIndex} className={rowIndex === 0 ? 'tpl-table-row head' : 'tpl-table-row'}>
-              {Array.from({ length: columns }, (_, cell) => (
-                <span key={cell} className="tpl-table-cell" />
-              ))}
-            </div>
-          ))}
-        </div>,
-      );
-      continue;
-    }
-
-    if (block?.type === 'horizontalRule') {
-      rendered.push(<div key={key} className="tpl-rule" />);
-      continue;
-    }
-
-    if (block?.type === 'pageBreak') {
-      rendered.push(<div key={key} className="tpl-rule dashed" />);
-      continue;
-    }
-
-    // An empty paragraph is spacing in the document, so it is spacing here.
-    if (textLengthOf(node) === 0) {
-      rendered.push(<div key={key} className="tpl-gap" />);
-      continue;
-    }
-
-    rendered.push(
-      <div key={key} className="tpl-line" style={{ width: widthFor(node), ...alignmentOf(node) }} />,
-    );
-  }
-
-  if (rendered.length === 0) {
-    return (
-      <div className="tpl-preview tpl-preview-blank">
-        <FilePlus size={28} strokeWidth={1.5} />
-      </div>
-    );
-  }
-
-  return <div className="tpl-preview tpl-preview-doc">{rendered}</div>;
-}
-
 function TemplateCard({
   template,
   onPick,
+  onPreview,
   showDescription = false,
 }: {
   template: Template;
   onPick: () => void;
+  onPreview: () => void;
   showDescription?: boolean;
 }) {
   return (
-    <button
-      className="home-tpl-card"
-      data-testid={`home-template-${template.id}`}
-      onClick={onPick}
-      title={template.description}
-    >
-      <div className="home-tpl-thumb" style={{ borderColor: colorFor(template) }}>
-        <TemplatePreview blocks={template.content.content} />
+    <div className="home-tpl-card-wrap">
+      <button
+        className="home-tpl-card"
+        data-testid={`home-template-${template.id}`}
+        onClick={onPick}
+        title={template.description}
+      >
+        <div className="home-tpl-thumb" style={{ borderColor: colorFor(template) }}>
+          <TemplatePreview template={template} />
+        </div>
+        <span>{template.name}</span>
+        {showDescription && <small className="home-tpl-desc">{template.description}</small>}
+      </button>
+      <button
+        className="home-tpl-zoom"
+        title={`Preview ${template.name}`}
+        aria-label={`Preview ${template.name}`}
+        data-testid={`home-template-preview-${template.id}`}
+        onClick={(event) => {
+          // The zoom button sits inside the card's hover area, so the click must
+          // not also reach the card and create the document.
+          event.stopPropagation();
+          onPreview();
+        }}
+      >
+        <Maximize2 size={13} />
+      </button>
+    </div>
+  );
+}
+
+/**
+ * The preview dialog: the template at a size you can actually read, with the
+ * Create button beside it. Escape and the backdrop both close it.
+ */
+function TemplatePreviewDialog({
+  template,
+  onCreate,
+  onClose,
+}: {
+  template: Template;
+  onCreate: () => void;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="backdrop" onClick={onClose}>
+      <div
+        className="dialog panel-card template-preview-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${template.name} preview`}
+        data-testid="template-preview-dialog"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="dialog-head">
+          <div>
+            <h2>{template.name}</h2>
+            <p className="muted">
+              {template.category}: {template.description}
+            </p>
+          </div>
+          <button
+            className="dialog-close"
+            aria-label="Close"
+            data-testid="template-preview-close"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+        <div className="template-preview-stage">
+          <TemplatePreview template={template} variant="page" />
+        </div>
+        <div className="dialog-actions">
+          <button className="icon-btn" onClick={onClose}>
+            Close
+          </button>
+          <button className="icon-btn primary" data-testid="template-preview-create" onClick={onCreate}>
+            Create
+          </button>
+        </div>
       </div>
-      <span>{template.name}</span>
-      {showDescription && <small className="home-tpl-desc">{template.description}</small>}
-    </button>
+    </div>
   );
 }
 
@@ -269,6 +223,7 @@ export function HomeScreen({
   const [newExpanded, setNewExpanded] = useState(true);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string | null>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
 
   const favorites = recents.filter((r) => r.pinned);
   const recentDocs = recents.filter((r) => !r.pinned);
@@ -280,8 +235,8 @@ export function HomeScreen({
 
   /**
    * One pass over name, description, category and keywords. Keywords exist for
-   * the words people actually type — "CV" finds the resumes, "christmas" finds
-   * the holiday templates — none of which appear in any template's name.
+   * the words people actually type - "CV" finds the resumes, "christmas" finds
+   * the holiday templates - none of which appear in any template's name.
    */
   const results = useMemo(() => {
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
@@ -313,8 +268,20 @@ export function HomeScreen({
     setQuery('');
   };
 
+  const previewTemplate = previewId ? (TEMPLATES.find((t) => t.id === previewId) ?? null) : null;
+
   return (
     <div className="home-backstage" data-testid="home-screen">
+      {previewTemplate && (
+        <TemplatePreviewDialog
+          template={previewTemplate}
+          onCreate={() => {
+            setPreviewId(null);
+            onNewFromTemplate(previewTemplate.id);
+          }}
+          onClose={() => setPreviewId(null)}
+        />
+      )}
       {aboutOpen && (
         <div className="backdrop" onClick={() => setAboutOpen(false)}>
           <div className="dialog" onClick={(e) => e.stopPropagation()} data-testid="about-dialog">
@@ -386,7 +353,7 @@ export function HomeScreen({
             <div>
               <h1>New</h1>
               <p className="home-greeting">
-                {TEMPLATES.length} templates, all editable — nothing here is locked or paid for.
+                {TEMPLATES.length} templates, all editable. Nothing here is locked or paid for.
               </p>
             </div>
             <div className="home-header-actions">
@@ -461,6 +428,7 @@ export function HomeScreen({
                   template={template}
                   showDescription
                   onPick={() => onNewFromTemplate(template.id)}
+                  onPreview={() => setPreviewId(template.id)}
                 />
               ))}
             </div>
@@ -472,7 +440,8 @@ export function HomeScreen({
           <div>
             <h1>Get Started</h1>
             <p className="home-greeting">
-              Free Word alternative for everyone — a non-profit educational project, open source for anyone to edit.
+              A free alternative to Microsoft Word, LibreOffice and OpenOffice. A non-profit
+              educational project, open source for anyone to edit.
             </p>
           </div>
           <div className="home-header-actions">
@@ -510,6 +479,7 @@ export function HomeScreen({
                   key={template.id}
                   template={template}
                   onPick={() => onNewFromTemplate(template.id)}
+                  onPreview={() => setPreviewId(template.id)}
                 />
               ))}
               </div>

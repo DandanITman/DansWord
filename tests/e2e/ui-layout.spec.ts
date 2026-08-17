@@ -21,7 +21,7 @@ async function expectNoClippedControls(root: Locator, label: string) {
      * The template rail has always been `overflow-x: auto`, but until the
      * catalogue grew past a handful of templates it never actually overflowed,
      * so this guard had never met a scroller. A card past the right edge of a
-     * scroller is reachable, not clipped — flagging it would force the rail to
+     * scroller is reachable, not clipped - flagging it would force the rail to
      * be trimmed to whatever fits at one specific viewport width. Vertical
      * clipping is still reported, and so is everything else below.
      */
@@ -100,6 +100,7 @@ test.describe('UI layout guards', () => {
       'insert',
       'pageLayout',
       'references',
+      'mailings',
       'review',
       'view',
       'help',
@@ -118,7 +119,7 @@ test.describe('UI layout guards', () => {
 
   /**
    * The ribbon used to scroll sideways as soon as the groups outgrew the
-   * window, hiding the rightmost groups behind a scrollbar — Word never does
+   * window, hiding the rightmost groups behind a scrollbar - Word never does
    * that. The compact density now holds every tab down to 1100px.
    *
    * Review, the densest tab at eight groups, still overflows below about
@@ -127,7 +128,7 @@ test.describe('UI layout guards', () => {
    *
    * That residual is deliberately NOT asserted as a pixel budget. An earlier
    * version bounded it at 130px, which passed on Windows and failed every CI
-   * run on Linux — text metrics differ enough between platforms that any
+   * run on Linux - text metrics differ enough between platforms that any
    * hardcoded overflow figure is a coin toss. What is asserted instead is the
    * behaviour the budget was standing in for: the compact density is actually
    * engaged at that width.
@@ -143,13 +144,13 @@ test.describe('UI layout guards', () => {
       });
 
     await page.setViewportSize({ width: 1100, height: 700 });
-    for (const tab of ['home', 'insert', 'references', 'review', 'view'] as const) {
+    for (const tab of ['home', 'insert', 'references', 'mailings', 'review', 'view'] as const) {
       await switchRibbonTab(page, tab);
       expect(await overflowOf(), `ribbon ${tab} tab overflows at 1100px`).toBeLessThanOrEqual(1);
     }
 
     await page.setViewportSize({ width: 900, height: 700 });
-    for (const tab of ['home', 'insert', 'references', 'view'] as const) {
+    for (const tab of ['home', 'insert', 'references', 'mailings', 'view'] as const) {
       await switchRibbonTab(page, tab);
       expect(await overflowOf(), `ribbon ${tab} tab overflows at 900px`).toBeLessThanOrEqual(1);
     }

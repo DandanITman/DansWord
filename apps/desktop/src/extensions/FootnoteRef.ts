@@ -33,7 +33,7 @@ export const FootnoteRef = Mark.create({
     const { number: _number, id, kind, ...rest } = HTMLAttributes;
     // The third element must be ProseMirror's content hole (0), not the number.
     // A mark spec without a hole has its marked text appended to the rendered
-    // element instead — and since the marked text *is* the number, footnote
+    // element instead - and since the marked text *is* the number, footnote
     // markers rendered as "11", "22", "33".
     return [
       'sup',

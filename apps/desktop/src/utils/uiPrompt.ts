@@ -29,7 +29,7 @@ export function registerUiPromptHost(next: PromptHost | null) {
 /*
  * Note: there is deliberately no test-mode branch here. This used to fall back
  * to window.prompt/alert/confirm whenever `data-test-mode` was set, so the e2e
- * suite drove native dialogs while users only ever saw UiPromptHost — the two
+ * suite drove native dialogs while users only ever saw UiPromptHost - the two
  * were never exercised together.
  */
 

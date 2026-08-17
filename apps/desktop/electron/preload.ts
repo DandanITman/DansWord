@@ -19,6 +19,7 @@ function subscribe<T extends unknown[]>(channel: string, callback: (...args: T) 
 contextBridge.exposeInMainWorld('officewrite', {
   openFile: () => ipcRenderer.invoke('dialog:openFile') as Promise<string | null>,
   openImageFile: () => ipcRenderer.invoke('dialog:openImageFile') as Promise<string | null>,
+  openDataFile: () => ipcRenderer.invoke('dialog:openDataFile') as Promise<string | null>,
   saveFile: (defaultPath?: string) =>
     ipcRenderer.invoke('dialog:saveFile', defaultPath) as Promise<string | null>,
   openFolder: () => ipcRenderer.invoke('dialog:openFolder') as Promise<string | null>,

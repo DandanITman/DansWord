@@ -186,7 +186,7 @@ export function TableLayoutTab({ editor, state, actions }: RibbonTabProps) {
       </RibbonGroup>
 
       {/* Word's Cell Size group. There was no way to give a column a specific
-          width at all — only "Fix Columns", which resets them. Widths and
+          width at all - only "Fix Columns", which resets them. Widths and
           heights are the attributes the drag resizers already write, so the
           boxes and the drag agree. */}
       <RibbonGroup label="Cell Size">

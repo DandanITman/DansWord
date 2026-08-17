@@ -7,6 +7,8 @@ import {
   acceptAppDialogs,
   typeInEditor,
   insertDefaultTable,
+  attachRecipientList,
+  insertMergeFieldFor,
 } from '../helpers/playwright';
 
 /**
@@ -17,7 +19,7 @@ import {
  *
  *   OFFICEWRITE_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts
  *
- * These are real renders of the app, which is the point — the site used to
+ * These are real renders of the app, which is the point - the site used to
  * show a hand-drawn mock-up of a window that did not match anything.
  */
 const CAPTURE = !!process.env.OFFICEWRITE_CAPTURE;
@@ -118,6 +120,17 @@ test.describe('site screenshots', () => {
     await page.getByTestId('view-dark-mode').click();
     await page.waitForTimeout(300);
     await page.screenshot({ path: `${SHOTS}/dark.png` });
+  });
+
+  test('mailings tab mid-merge', async ({ page }) => {
+    await openBlankDocument(page);
+    // A merge with its list attached and a field previewing, so the shot shows
+    // the tab in the state people work in rather than greyed out.
+    await attachRecipientList(page);
+    await typeInEditor(page, 'Dear ');
+    await insertMergeFieldFor(page, 'First Name');
+    await page.getByTestId('mailings-preview-results').click();
+    await page.screenshot({ path: `${SHOTS}/mailings.png` });
   });
 
   test('references tab', async ({ page }) => {

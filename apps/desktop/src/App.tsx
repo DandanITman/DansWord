@@ -21,6 +21,22 @@ import {
   type DocumentEnvelope,
   type AccessibilityIssue,
   checkAccessibility,
+  ENVELOPE_PRESETS,
+  LABEL_PRESETS,
+  autoMatchFields,
+  checkMergeErrors,
+  collectMergePrompts,
+  dataSourceFromText,
+  executeMerge,
+  includedRecipients,
+  mergeFieldNames,
+  usesCompositeFields,
+  type FieldMapping,
+  type MergeDataSource,
+  type MergeFieldAttrs,
+  type MergeProblem,
+  type MergeRuleKind,
+  type MergeType,
 } from '@officewrite/core';
 import {
   exportToDocx,
@@ -53,7 +69,16 @@ import type {
   RibbonLayout,
   RibbonVisibility,
 } from './components/RibbonStripActions';
-import type { MarkupOptions, MarkupView, RibbonActions, RibbonFlags, ViewMode } from './ribbon/types';
+import type {
+  MailMergeFlags,
+  MarkupOptions,
+  MarkupView,
+  MergeDestination,
+  MergeRecordStep,
+  RibbonActions,
+  RibbonFlags,
+  ViewMode,
+} from './ribbon/types';
 import { StatusBar } from './components/StatusBar';
 import { Backstage, type BackstageSection } from './components/Backstage';
 import { WordEditor, insertNote } from './components/WordEditor';
@@ -87,6 +112,20 @@ import {
   SymbolDialog,
 } from './components/dialogs/InsertDialogs';
 import { SourcesDialog } from './components/dialogs/ReferenceDialogs';
+import {
+  AddressBlockDialog,
+  CheckMergeErrorsDialog,
+  EnvelopesLabelsDialog,
+  FindRecipientDialog,
+  FinishMergeDialog,
+  GreetingLineDialog,
+  InsertMergeFieldDialog,
+  MailMergeWizard,
+  MatchFieldsDialog,
+  MergeRuleDialog,
+  NewRecipientListDialog,
+  RecipientListDialog,
+} from './components/dialogs/MailingsDialogs';
 import { KeyboardShortcutsDialog, WhatsNewDialog } from './components/dialogs/HelpDialogs';
 import { useFormatPainter } from './hooks/useFormatPainter';
 import { useDocumentStats } from './hooks/useDocumentStats';
@@ -107,6 +146,14 @@ import {
   updateGeneratedBlocks,
 } from './utils/documentIndex';
 import { compareDocuments } from './utils/compareDocuments';
+import { setMergePreview } from './extensions/MergeField';
+import {
+  insertEnvelope,
+  insertMergeField as insertMergeFieldNode,
+  replaceWithFixedLabels,
+  replaceWithLabelSheet,
+  updateLabels as updateLabelSheet,
+} from './utils/mailMergeEditor';
 import { COVER_PAGE_TEMPLATES } from './constants/coverPages';
 import { MAX_RECENT_EMOJI } from './constants/emoji';
 import type { DocumentProofingIssue } from './extensions/ProofingCheck';
@@ -128,7 +175,7 @@ const REPO_URL = 'https://github.com/DandanITman/Officewrite';
 /**
  * Hand a project URL to the user's browser.
  *
- * The app itself still makes no network requests — this opens the OS browser
+ * The app itself still makes no network requests - this opens the OS browser
  * and nothing is loaded in a Officewrite window. A refusal means the main-process
  * allowlist rejected the URL, which is worth surfacing rather than swallowing.
  */
@@ -256,6 +303,66 @@ export default function App() {
     color: '#000000',
     width: 2,
   });
+
+  /**
+   * Mailings state.
+   *
+   * One object rather than eight `useState` calls, because the pieces only make
+   * sense together: attaching a list has to reset the mapping, the record
+   * pointer and the preview at the same instant, and three separate setters
+   * would render an intermediate state where the preview points at a record from
+   * the previous list.
+   */
+  const [mailMerge, setMailMerge] = useState<{
+    type: MergeType;
+    source: MergeDataSource | null;
+    mapping: FieldMapping;
+    previewActive: boolean;
+    highlightFields: boolean;
+    /** 1-based over the ticked recipients. */
+    recordIndex: number;
+    labelPresetId: string;
+    envelopePresetId: string;
+  }>({
+    type: 'letters',
+    source: null,
+    mapping: {},
+    previewActive: false,
+    highlightFields: false,
+    recordIndex: 1,
+    labelPresetId: LABEL_PRESETS[0].id,
+    envelopePresetId: ENVELOPE_PRESETS[0].id,
+  });
+  const [mailingsDialog, setMailingsDialog] = useState<
+    | null
+    | 'envelopes'
+    | 'labels'
+    | 'recipients'
+    | 'newList'
+    | 'addressBlock'
+    | 'greetingLine'
+    | 'insertField'
+    | 'matchFields'
+    | 'findRecipient'
+    | 'checkErrors'
+    | 'finishMerge'
+  >(null);
+  const [mergeRule, setMergeRule] = useState<MergeRuleKind | null>(null);
+  const [mergeProblems, setMergeProblems] = useState<MergeProblem[]>([]);
+  /**
+   * Ask and Fill-in prompts, captured when Finish & Merge opens.
+   *
+   * Snapshotted rather than derived on every render. Deriving it meant reading
+   * the live document, which hands back a fresh array each time and so gave the
+   * dialog a new prop identity on every unrelated re-render.
+   */
+  const [mergePrompts, setMergePrompts] = useState<
+    Array<{ rule: 'ask' | 'fillIn'; key: string; prompt: string; defaultText: string }>
+  >([]);
+  const [mergeDestination, setMergeDestination] = useState<MergeDestination>('documents');
+  /** 0 closes the wizard; 1–6 are Word's steps. */
+  const [mergeWizardStep, setMergeWizardStep] = useState(0);
+
   const autoSaveTimer = useRef<number | null>(null);
   const contentMirrorTimer = useRef<number | null>(null);
   const { active: formatPainterActive, copyFormat, applyFormat } = useFormatPainter(editor);
@@ -275,6 +382,43 @@ export default function App() {
     window.dispatchEvent(new Event('officewrite:ink-settings'));
   }, [ink]);
 
+  const mergeRecipients = useMemo(
+    () => includedRecipients(mailMerge.source),
+    [mailMerge.source],
+  );
+
+  /**
+   * Publish the preview to the merge-field node views.
+   *
+   * Same reasoning as the ink pen above: Preview Results changes how fields
+   * *draw*, not what the document contains, so pushing it through a ProseMirror
+   * transaction would put one undo entry on the stack per press of Next Record.
+   */
+  useEffect(() => {
+    const recipient = mailMerge.previewActive
+      ? (mergeRecipients[mailMerge.recordIndex - 1] ?? null)
+      : null;
+    setMergePreview({
+      active: mailMerge.previewActive && recipient !== null,
+      highlight: mailMerge.highlightFields,
+      context: {
+        recipient,
+        recordNumber: recipient?.id ?? 0,
+        sequenceNumber: mailMerge.recordIndex,
+        mapping: mailMerge.mapping,
+        // Ask and Fill-in are answered at Finish & Merge, so the preview shows
+        // their defaults rather than inventing an answer.
+        bookmarks: {},
+      },
+    });
+  }, [
+    mailMerge.previewActive,
+    mailMerge.highlightFields,
+    mailMerge.recordIndex,
+    mailMerge.mapping,
+    mergeRecipients,
+  ]);
+
   const cancelContentMirror = useCallback(() => {
     if (contentMirrorTimer.current !== null) {
       window.clearTimeout(contentMirrorTimer.current);
@@ -287,7 +431,7 @@ export default function App() {
    *
    * This ran on every keystroke: each character replaced `envelope.content`,
    * re-rendering App and the whole editor chrome below it. Nothing needs the
-   * mirror to be keystroke-exact — saving reads the editor directly (see
+   * mirror to be keystroke-exact - saving reads the editor directly (see
    * `writeDocumentTo`) and the panes only need to be current once the user
    * pauses.
    */
@@ -555,7 +699,7 @@ export default function App() {
   // title bar names the open document instead of just repeating the app name.
   useEffect(() => {
     document.title =
-      view === 'editor' ? `${fileName}${isDirty ? ' *' : ''} — Officewrite` : 'Officewrite';
+      view === 'editor' ? `${fileName}${isDirty ? ' *' : ''} - Officewrite` : 'Officewrite';
   }, [view, fileName, isDirty]);
 
   // The host paused a close so we could save; finish, then let it proceed.
@@ -841,6 +985,215 @@ export default function App() {
     });
   }, [updateEnvelope]);
 
+  /* ---------------------------------------------------------------- *
+   * Mailings
+   * ---------------------------------------------------------------- */
+
+  /**
+   * Attach a recipient list.
+   *
+   * The mapping is guessed here rather than in the dialog, so a list attached
+   * from the wizard, the ribbon menu or Type a New List all arrive matched.
+   * Everything downstream - the pointer, the preview - resets with it, because a
+   * record 7 from the previous list means nothing against the new one.
+   */
+  const attachDataSource = useCallback((source: MergeDataSource) => {
+    setMailMerge((prev) => ({
+      ...prev,
+      source,
+      mapping: autoMatchFields(source.fields),
+      recordIndex: 1,
+      previewActive: false,
+    }));
+  }, []);
+
+  /** Select Recipients > Use an Existing List. */
+  const pickExistingRecipientList = useCallback(async () => {
+    const path = await getPlatform().openDataFile();
+    if (!path) return;
+    let text: string;
+    try {
+      text = await getPlatform().readTextFile(path);
+    } catch {
+      await uiAlert(`Officewrite could not read ${getFileName(path)}.`);
+      return;
+    }
+    const source = dataSourceFromText(text, getFileName(path));
+    if (source.fields.length === 0 || source.recipients.length === 0) {
+      await uiAlert(
+        `${getFileName(path)} has no rows Officewrite can read. It needs a header line and at least one row of data, separated by commas or tabs.`,
+      );
+      return;
+    }
+    attachDataSource(source);
+  }, [attachDataSource]);
+
+  /**
+   * Move the preview pointer, clamped to the ticked rows.
+   *
+   * Turning the preview on as a side effect of stepping is deliberate: pressing
+   * Next Record while previewing is off otherwise changes a number nobody can
+   * see, which reads as a broken button.
+   */
+  const stepMergeRecord = useCallback(
+    (step: MergeRecordStep) => {
+      setMailMerge((prev) => {
+        const count = includedRecipients(prev.source).length;
+        if (count === 0) return prev;
+        const current = Math.min(Math.max(1, prev.recordIndex), count);
+        const next =
+          step === 'first'
+            ? 1
+            : step === 'last'
+              ? count
+              : step === 'next'
+                ? Math.min(count, current + 1)
+                : Math.max(1, current - 1);
+        return { ...prev, recordIndex: next, previewActive: true };
+      });
+    },
+    [],
+  );
+
+  const goToMergeRecord = useCallback((index: number) => {
+    setMailMerge((prev) => {
+      const count = includedRecipients(prev.source).length;
+      if (count === 0) return prev;
+      return {
+        ...prev,
+        recordIndex: Math.min(count, Math.max(1, Math.round(index))),
+        previewActive: true,
+      };
+    });
+  }, []);
+
+  /** Mailings > Check for Errors, run against the live document. */
+  const runMergeCheck = useCallback(() => {
+    const doc = editor?.getJSON() ?? envelope.content;
+    setMergeProblems(
+      checkMergeErrors(
+        mergeFieldNames(doc),
+        mailMerge.source,
+        mailMerge.mapping,
+        usesCompositeFields(doc),
+      ),
+    );
+    setMailingsDialog('checkErrors');
+  }, [editor, envelope.content, mailMerge.mapping, mailMerge.source]);
+
+  /**
+   * Finish & Merge.
+   *
+   * "Edit Individual Documents" opens the merged result as a new unsaved
+   * document, exactly as Word does - the main document with its fields stays
+   * untouched, which is what lets you fix a typo and merge again.
+   *
+   * E-mail writes one file per recipient instead of sending anything. Officewrite
+   * makes no network requests, so pretending to send mail would be a lie; the
+   * dialog says so before the user commits.
+   */
+  const finishMerge = useCallback(
+    async (request: { from: number; to: number; answers: Record<string, string> }) => {
+      const doc = editor?.getJSON() ?? envelope.content;
+      const result = executeMerge(doc, mailMerge.source, mailMerge.mapping, {
+        type: mailMerge.type,
+        from: request.from,
+        to: request.to,
+        answers: request.answers,
+      });
+
+      if (result.merged === 0) {
+        await uiAlert(
+          result.skipped > 0
+            ? `Every record in that range was dropped by a Skip Record If rule (${result.skipped} skipped).`
+            : 'There are no ticked recipients in that range, so there is nothing to merge.',
+        );
+        return;
+      }
+
+      if (mergeDestination === 'email') {
+        const folder = await getPlatform().openFolder();
+        if (!folder) return;
+
+        // One document per recipient, so each file can be attached to its own
+        // message. Merging them into one file would defeat the purpose.
+        const recipients = mergeRecipients.slice(request.from - 1, request.to);
+        let written = 0;
+        for (let index = 0; index < recipients.length; index += 1) {
+          const recipient = recipients[index];
+          const single = executeMerge(doc, mailMerge.source, mailMerge.mapping, {
+            type: mailMerge.type,
+            from: request.from + index,
+            to: request.from + index,
+            answers: request.answers,
+          });
+          if (single.merged === 0) continue;
+
+          // Named after whatever identifies the row, falling back to its number
+          // so two nameless rows cannot overwrite each other.
+          const label =
+            mailMerge.mapping['E-mail Address'] && recipient.values[mailMerge.mapping['E-mail Address']!]
+              ? recipient.values[mailMerge.mapping['E-mail Address']!]
+              : `Recipient ${recipient.id}`;
+          const safe = label.replace(/[^A-Za-z0-9._@-]+/g, '_').slice(0, 60);
+          const target = joinPath(folder, `${safe}.docx`);
+          const blob = await exportToDocx(
+            single.content,
+            docxExportOpts({ ...envelope, content: single.content }, safe),
+          );
+          await getPlatform().writeFile(target, new Uint8Array(await blob.arrayBuffer()));
+          written += 1;
+        }
+        await uiAlert(
+          `Wrote ${written} document(s) to ${folder}, one per recipient, ready to attach.`,
+        );
+        return;
+      }
+
+      const merged = createDocumentEnvelope(result.content, {
+        pageSetup: envelope.pageSetup,
+        headerFooter: envelope.headerFooter,
+        customStyles: envelope.customStyles,
+      });
+      openDocumentEnvelope(merged, null, `${fileName.replace(/\.[^.]+$/, '')} (Merged)`);
+      setEditorSyncKey((k) => k + 1);
+      setIsDirty(true);
+      // The merged copy has no fields left, so previewing it would be a no-op
+      // control pointing at a list the document no longer references.
+      setMailMerge((prev) => ({ ...prev, previewActive: false }));
+
+      if (mergeDestination === 'print') {
+        await getPlatform().printDocument();
+        return;
+      }
+      const note = result.skipped > 0 ? ` ${result.skipped} record(s) were skipped by a rule.` : '';
+      await uiAlert(`Merged ${result.merged} record(s) into a new document.${note}`);
+    },
+    [
+      editor,
+      envelope,
+      fileName,
+      mailMerge.mapping,
+      mailMerge.source,
+      mailMerge.type,
+      mergeDestination,
+      mergeRecipients,
+      openDocumentEnvelope,
+    ],
+  );
+
+  /** Rules with nothing to configure go straight in; the rest open the dialog. */
+  const insertMergeRule = useCallback(
+    (rule: MergeRuleKind) => {
+      if (rule === 'mergeRecord' || rule === 'mergeSequence' || rule === 'nextRecord') {
+        insertMergeFieldNode(editor, { kind: 'rule', rule });
+        return;
+      }
+      setMergeRule(rule);
+    },
+    [editor],
+  );
+
   const ribbonActions: RibbonActions = useMemo(
     () => ({
       onNew: () => newFromTemplate('blank'),
@@ -1041,6 +1394,47 @@ export default function App() {
       },
 
 
+      onOpenEnvelopes: () => setMailingsDialog('envelopes'),
+      onOpenLabels: () => setMailingsDialog('labels'),
+      onSetMergeType: (type) => {
+        setMailMerge((prev) => ({ ...prev, type }));
+        // Labels is the one type whose main document has a required shape, so
+        // choosing it offers to build the sheet rather than leaving the user to
+        // find Update Labels on a blank page.
+        if (type === 'labels') setMailingsDialog('labels');
+        if (type === 'envelopes') setMailingsDialog('envelopes');
+      },
+      onOpenMergeWizard: () => setMergeWizardStep(1),
+      onNewRecipientList: () => setMailingsDialog('newList'),
+      onUseExistingRecipientList: () => void pickExistingRecipientList(),
+      onEditRecipientList: () => setMailingsDialog('recipients'),
+      onToggleHighlightMergeFields: () =>
+        setMailMerge((prev) => ({ ...prev, highlightFields: !prev.highlightFields })),
+      onOpenAddressBlock: () => setMailingsDialog('addressBlock'),
+      onOpenGreetingLine: () => setMailingsDialog('greetingLine'),
+      onInsertMergeField: (field) => insertMergeFieldNode(editor, { kind: 'field', field }),
+      onOpenInsertMergeField: () => setMailingsDialog('insertField'),
+      onInsertMergeRule: insertMergeRule,
+      onOpenMatchFields: () => setMailingsDialog('matchFields'),
+      onUpdateLabels: () => {
+        if (!updateLabelSheet(editor)) {
+          void uiAlert(
+            'Update Labels needs a label sheet. Use Mailings > Labels to build one first.',
+          );
+        }
+      },
+      onTogglePreviewResults: () =>
+        setMailMerge((prev) => ({ ...prev, previewActive: !prev.previewActive })),
+      onStepMergeRecord: stepMergeRecord,
+      onGoToMergeRecord: goToMergeRecord,
+      onOpenFindRecipient: () => setMailingsDialog('findRecipient'),
+      onCheckMergeErrors: runMergeCheck,
+      onFinishMerge: (destination) => {
+        setMergeDestination(destination);
+        setMergePrompts(collectMergePrompts(editor?.getJSON() ?? envelope.content));
+        setMailingsDialog('finishMerge');
+      },
+
       onOpenProofing: () => {
         setProofingOpen(true);
         setThesaurusOpen(false);
@@ -1166,13 +1560,18 @@ export default function App() {
       envelope,
       exportPdf,
       goToNextIn,
+      goToMergeRecord,
       handleInsertImage,
       handleInsertNote,
+      insertMergeRule,
       newFromTemplate,
       openDocumentAtPath,
+      pickExistingRecipientList,
       readDocumentAt,
       ribbonState.selectionText,
+      runMergeCheck,
       saveDocument,
+      stepMergeRecord,
       updateEnvelope,
       updatePageSetup,
     ],
@@ -1342,6 +1741,20 @@ export default function App() {
           unresolvedComments: envelope.comments.filter((comment) => !comment.resolved).length,
           ink,
           proofingIssues: proofingIssues.length,
+          mailMerge: {
+            type: mailMerge.type,
+            source: mailMerge.source,
+            mapping: mailMerge.mapping,
+            previewActive: mailMerge.previewActive,
+            highlightFields: mailMerge.highlightFields,
+            // Clamped rather than stored clamped: unticking rows in the
+            // recipient list can shrink the count under the pointer, and the
+            // ribbon must not then offer to step to a record that is gone.
+            recordIndex: mergeRecipients.length
+              ? Math.min(mailMerge.recordIndex, mergeRecipients.length)
+              : 0,
+            recordCount: mergeRecipients.length,
+          } satisfies MailMergeFlags,
   };
 
   return (
@@ -1727,6 +2140,141 @@ export default function App() {
         citationStyle={envelope.citationStyle}
         onChange={(sources) => updateEnvelope({ sources })}
         onClose={() => setDialog(null)}
+      />
+
+      {/* ---- Mailings ------------------------------------------------- */}
+
+      <EnvelopesLabelsDialog
+        open={mailingsDialog === 'envelopes' || mailingsDialog === 'labels'}
+        initialTab={mailingsDialog === 'labels' ? 'labels' : 'envelopes'}
+        source={mailMerge.source}
+        defaultReturnAddress={settings.authorName}
+        onInsertEnvelope={(request) => {
+          setMailMerge((prev) => ({ ...prev, envelopePresetId: request.presetId, type: 'envelopes' }));
+          insertEnvelope(
+            editor,
+            request.returnAddress,
+            request.fromRecipients ? '' : request.deliveryAddress,
+          );
+          setIsDirty(true);
+        }}
+        onInsertLabels={(request) => {
+          const preset =
+            LABEL_PRESETS.find((entry) => entry.id === request.presetId) ?? LABEL_PRESETS[0];
+          setMailMerge((prev) => ({ ...prev, labelPresetId: preset.id, type: 'labels' }));
+          if (request.fromRecipients) replaceWithLabelSheet(editor, preset);
+          else replaceWithFixedLabels(editor, preset, request.address);
+          /**
+           * No `setEditorSyncKey` here, deliberately.
+           *
+           * Bumping it remounts WordEditor, which re-initialises from
+           * `envelope.content` - and that mirror is debounced, so it still holds
+           * the pre-label document. The remount therefore threw the new sheet
+           * away the instant it was built. The editor's own `setContent` has
+           * already replaced the document; the mirror catches up on its own.
+           */
+          setIsDirty(true);
+        }}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <RecipientListDialog
+        open={mailingsDialog === 'recipients'}
+        source={mailMerge.source}
+        onApply={(source) => setMailMerge((prev) => ({ ...prev, source, recordIndex: 1 }))}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <NewRecipientListDialog
+        open={mailingsDialog === 'newList'}
+        onCreate={attachDataSource}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <InsertMergeFieldDialog
+        open={mailingsDialog === 'insertField'}
+        source={mailMerge.source}
+        onInsert={(field) => insertMergeFieldNode(editor, { kind: 'field', field })}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <AddressBlockDialog
+        open={mailingsDialog === 'addressBlock'}
+        source={mailMerge.source}
+        mapping={mailMerge.mapping}
+        onInsert={(addressOptions) =>
+          insertMergeFieldNode(editor, { kind: 'addressBlock', addressOptions })
+        }
+        onOpenMatchFields={() => setMailingsDialog('matchFields')}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <GreetingLineDialog
+        open={mailingsDialog === 'greetingLine'}
+        source={mailMerge.source}
+        mapping={mailMerge.mapping}
+        onInsert={(greetingOptions) =>
+          insertMergeFieldNode(editor, { kind: 'greetingLine', greetingOptions })
+        }
+        onOpenMatchFields={() => setMailingsDialog('matchFields')}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <MatchFieldsDialog
+        open={mailingsDialog === 'matchFields'}
+        source={mailMerge.source}
+        mapping={mailMerge.mapping}
+        onApply={(mapping) => setMailMerge((prev) => ({ ...prev, mapping }))}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <MergeRuleDialog
+        open={mergeRule !== null}
+        rule={mergeRule}
+        source={mailMerge.source}
+        onInsert={(attrs: Partial<MergeFieldAttrs>) => insertMergeFieldNode(editor, attrs)}
+        onClose={() => setMergeRule(null)}
+      />
+      <FindRecipientDialog
+        open={mailingsDialog === 'findRecipient'}
+        source={mailMerge.source}
+        onGoTo={goToMergeRecord}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <CheckMergeErrorsDialog
+        open={mailingsDialog === 'checkErrors'}
+        problems={mergeProblems}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <FinishMergeDialog
+        open={mailingsDialog === 'finishMerge'}
+        destination={mergeDestination}
+        recordCount={mergeRecipients.length}
+        prompts={mergePrompts}
+        onConfirm={(request) => {
+          setMailingsDialog(null);
+          void finishMerge(request);
+        }}
+        onClose={() => setMailingsDialog(null)}
+      />
+      <MailMergeWizard
+        open={mergeWizardStep > 0}
+        step={mergeWizardStep}
+        mergeType={mailMerge.type}
+        source={mailMerge.source}
+        fieldCount={mergeFieldNames(editor?.getJSON() ?? envelope.content).length}
+        recordCount={mergeRecipients.length}
+        previewActive={mailMerge.previewActive}
+        onSetStep={setMergeWizardStep}
+        onSetMergeType={(type) => setMailMerge((prev) => ({ ...prev, type }))}
+        onSelectRecipients={() => void pickExistingRecipientList()}
+        onEditRecipients={() => setMailingsDialog('recipients')}
+        onInsertAddressBlock={() => setMailingsDialog('addressBlock')}
+        onInsertGreetingLine={() => setMailingsDialog('greetingLine')}
+        onInsertMergeField={() => setMailingsDialog('insertField')}
+        onTogglePreview={() =>
+          setMailMerge((prev) => ({ ...prev, previewActive: !prev.previewActive }))
+        }
+        onStepRecord={stepMergeRecord}
+        onFinish={() => {
+          setMergeDestination('documents');
+          setMergePrompts(collectMergePrompts(editor?.getJSON() ?? envelope.content));
+          setMailingsDialog('finishMerge');
+        }}
+        onClose={() => setMergeWizardStep(0)}
       />
 
       {backstageOpen && (

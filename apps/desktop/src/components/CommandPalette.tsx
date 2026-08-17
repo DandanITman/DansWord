@@ -10,6 +10,7 @@ const TAB_LABELS: Record<RibbonTab, string> = {
   insert: 'Insert',
   pageLayout: 'Layout',
   references: 'References',
+  mailings: 'Mailings',
   review: 'Review',
   view: 'View',
   help: 'Help',

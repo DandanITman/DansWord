@@ -28,13 +28,13 @@ async function loadLatestRelease() {
 
     meta.textContent = asset
       ? `Latest: v${release.tag_name.replace(/^v/, '')} · Windows installer`
-      : `Release ${release.tag_name} — open Releases page to download`;
+      : `Release ${release.tag_name}: open the Releases page to download`;
   } catch {
     [btnTop, btnBottom].forEach((btn) => {
       if (btn) btn.href = FALLBACK_RELEASES;
     });
     meta.textContent =
-      'First release coming soon — star the repo on GitHub to get notified, or build from source today.';
+      'First release coming soon. Star the repo on GitHub to get notified, or build from source today.';
   }
 }
 
@@ -54,6 +54,7 @@ const SHOTS = {
   insert: 'Tables, pictures, shapes, links, headers and footers, symbols and emoji.',
   references: 'Contents, footnotes, citations and bibliography, captions and an index.',
   review: 'Spelling and grammar, comments, track changes, compare, accessibility.',
+  mailings: 'A full mail merge: recipients, merge fields, rules, preview and finish.',
   navigation: 'The navigation pane searches the document and lists its headings.',
   dark: 'Dark mode, for writing at night.',
 };
@@ -68,7 +69,7 @@ function setUpTour() {
     const shot = tab.dataset.shot;
     tabs.forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
     image.src = `shots/${shot}.png`;
-    image.alt = `Officewrite — ${tab.textContent.trim()}`;
+    image.alt = `Officewrite: ${tab.textContent.trim()}`;
     caption.textContent = SHOTS[shot] ?? '';
   };
 

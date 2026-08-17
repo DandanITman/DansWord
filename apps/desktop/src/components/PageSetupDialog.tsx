@@ -186,8 +186,8 @@ interface HeaderFooterDialogProps {
 
 /**
  * Word lays a header and footer out in three zones. This was two single-line
- * inputs, so a title on the left with a page number on the right — the
- * commonest arrangement there is — could not be expressed at all.
+ * inputs, so a title on the left with a page number on the right - the
+ * commonest arrangement there is - could not be expressed at all.
  */
 export function HeaderFooterDialog({ open, value, onChange, onClose }: HeaderFooterDialogProps) {
   if (!open) return null;

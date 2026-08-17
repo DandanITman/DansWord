@@ -28,7 +28,7 @@ export async function loadWindowState(): Promise<{
   const state = await readJson<WindowState>(windowStatePath, {});
   const bounds = state.bounds;
 
-  // Ignore a saved position that would place the window off every display —
+  // Ignore a saved position that would place the window off every display -
   // e.g. after disconnecting an external monitor.
   if (bounds && isOnScreen(bounds)) {
     return {

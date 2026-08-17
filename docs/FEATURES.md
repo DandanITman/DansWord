@@ -1,12 +1,13 @@
 # Officewrite features
 
-What the app does today. Anything not listed here is not built — this file is
+What the app does today. Anything not listed here is not built. This file is
 maintained by hand against the actual code, and nothing generates a coverage
 percentage from it.
 
-The ribbon has eight tabs: **File, Home, Insert, Layout, References, Review,
-View, Help**, plus three contextual tabs — **Draw**, **Picture Format** and
-**Table Layout** — that appear when a drawing, a picture or a table is selected.
+The ribbon has nine tabs: **File, Home, Insert, Layout, References, Mailings,
+Review, View, Help**, plus three contextual tabs (**Draw**, **Picture Format**
+and **Table Layout**) that appear when a drawing, a picture or a table is
+selected.
 Selecting a picture or a drawing switches to its tab and leaves it again for
 wherever you were; putting the caret in a table reveals Table Layout but leaves
 the tab alone, since you are usually typing.
@@ -23,8 +24,11 @@ the ribbon layout menu.
 
 ## File
 
-- New document from a blank page or the letter, report and resume templates,
-  from the start screen or the backstage New pane
+- New document from a blank page or any of the 32 templates, from the start
+  screen, its searchable gallery, or the backstage New pane. Every card shows a
+  miniature of the template's own first page, meaning its real headings, text,
+  lists and tables. A corner button opens that page at readable size, with a
+  Create button beside it.
 - Open `.officewrite`, `.docx`, `.doc`, `.rtf`, `.html`, `.txt`
 - Save and Save As; the format follows the file extension
 - Rename the open document, and Create a Copy alongside it
@@ -36,32 +40,32 @@ the ribbon layout menu.
 - Recent files with pinning, and remove-from-recent; the backstage Open pane
   lists them too
 - Auto-save on an interval once the document has a path
-- Version history — up to 20 snapshots per document, for every save format
+- Version history: up to 20 snapshots per document, for every save format
 - Windows file associations: double-clicking a `.docx` or `.officewrite` opens it
 - Prompts to save when closing with unsaved changes
 - Document properties: title, author, subject, keywords, company
 
 ## Home
 
-- **Clipboard** — Paste as a split button with Keep Source Formatting, Merge
+- **Clipboard**: Paste as a split button with Keep Source Formatting, Merge
   Formatting and Keep Text Only; Cut, Copy, Format Painter
-- **Font** — family and size combo boxes, Grow/Shrink Font, Change Case
+- **Font**: family and size combo boxes, Grow/Shrink Font, Change Case
   (five modes), Clear All Formatting, bold, italic, underline with six underline
   styles, strikethrough, sub- and superscript, text effects (shadow, outline,
   glow, reflection), small caps and all caps, highlight colour, font colour, and
   a Font dialog with a live preview
-- **Paragraph** — bullet library, numbering library, checklists, multilevel list
+- **Paragraph**: bullet library, numbering library, checklists, multilevel list
   schemes, increase and decrease indent (which demote and promote list items),
   left-to-right and right-to-left text direction, Sort, Show/Hide formatting
   marks, the four alignments, line and paragraph spacing, shading, borders on
   any side, border colour, and a Paragraph dialog
-- **Styles** — a live gallery of preview tiles with the caret's style lit, and
+- **Styles**: a live gallery of preview tiles with the caret's style lit, and
   behind More the full set (Normal, No Spacing, the headings, Title,
   Subtitle, Quote, Intense Quote, List Paragraph and the character styles
   Emphasis, Strong, Subtle/Intense Emphasis, references and Book Title), a style
   editor for custom styles, and the eight style sets, which restyle the
   paragraphs already in the document rather than only the gallery
-- **Editing** — Find (a split button whose menu holds Go To), Replace and
+- **Editing**: Find (a split button whose menu holds Go To), Replace and
   Select
 
 Everything above tracks the caret: the ribbon shows the formatting at the
@@ -71,20 +75,20 @@ the dialogs, comments and synonyms.
 
 ## Insert
 
-- **Pages** — four cover pages, Blank Page, Page Break
-- **Tables** — the hover-to-size grid picker, a quick 3 × 3, and Delete Table.
+- **Pages**: four cover pages, Blank Page, Page Break
+- **Tables**: the hover-to-size grid picker, a quick 3 × 3, and Delete Table.
   The contextual Table Layout tab adds rows and columns, merges and splits
   cells, selects a cell/row/column/table, sets row height and column width in
   inches, distributes rows or columns evenly, and offers AutoFit
-- **Illustrations** — Pictures, Shapes (rectangle, oval, triangle, line, arrow)
+- **Illustrations**: Pictures, Shapes (rectangle, oval, triangle, line, arrow)
   and Drawing, which inserts an ink canvas and opens the Draw tab
-- **Links** — hyperlinks, bookmarks and cross-references
-- **Comments** — New Comment
-- **Header & Footer** — header and footer with left, centre and right zones,
+- **Links**: hyperlinks, bookmarks and cross-references
+- **Comments**: New Comment
+- **Header & Footer**: header and footer with left, centre and right zones,
   `%p` and `%P` page-number fields, page numbers and Different First Page
-- **Text** — text boxes (simple, sidebar, pull quote), Drop Cap, Date & Time in
+- **Text**: text boxes (simple, sidebar, pull quote), Drop Cap, Date & Time in
   three formats
-- **Symbols** — inline equation runs, a symbol gallery with a full picker of
+- **Symbols**: inline equation runs, a symbol gallery with a full picker of
   eight Unicode subsets, horizontal lines, and the emoji picker: around six
   hundred emoji in seven groups, searchable by name, with a recently-used row
   that survives a restart
@@ -99,52 +103,109 @@ Appears while a drawing canvas is selected, and closes when it is not.
 
 ## Layout
 
-- **Page Setup** — margins gallery (Normal, Narrow, Moderate, Wide, Mirrored),
+- **Page Setup**: margins gallery (Normal, Narrow, Moderate, Wide, Mirrored),
   orientation, six page sizes (Letter, A4, Legal, A5, Executive, Tabloid),
   columns with an optional line between, page and column breaks, line numbers
   (continuous or restarting each page), automatic hyphenation
-- **Paragraph** — left and right indent, space before and after
-- **Page Background** — watermark, page colour, page borders
-- **Arrange** — appears while a shape or text box is selected: Wrap Text (in
+- **Paragraph**: left and right indent, space before and after
+- **Page Background**: watermark, page colour, page borders
+- **Arrange**: appears while a shape or text box is selected: Wrap Text (in
   line, square, tight, top and bottom, behind text, in front of text),
   left/centre/right alignment, and Bring Forward / Send Backward
 - Draggable margin markers on the ruler
 
 ## References
 
-- **Table of Contents** — an automatic table that refreshes as headings change,
+- **Table of Contents**: an automatic table that refreshes as headings change,
   Add Text to set a heading level, Update Table
-- **Footnotes** — footnotes and endnotes, each with its own editable notes area,
+- **Footnotes**: footnotes and endnotes, each with its own editable notes area,
   and Show Notes
-- **Citations & Bibliography** — a source manager for books, articles, web
+- **Citations & Bibliography**: a source manager for books, articles, web
   sites, reports and conference papers; in-text citations and a bibliography in
   APA, MLA, Chicago or IEEE
-- **Captions** — numbered Figure, Table and Equation captions, tables of figures
-- **Index** — Mark Entry and a generated, alphabetised index
+- **Captions**: numbered Figure, Table and Equation captions, tables of figures
+- **Index**: Mark Entry and a generated, alphabetised index
+
+## Mailings
+
+A complete mail merge, arranged as Word arranges it. Everything from Edit
+Recipient List rightwards is disabled until a list is attached, so the tab itself
+says which step comes next.
+
+- **Create**: **Envelopes** and **Labels**, either from one typed address or
+  merged from the recipient list. Seven envelope sizes and eight label stocks
+  (Avery 5160, 5161, 5162, 5163, 5164, 5167, 5395, L7160). These two work with no
+  recipient list at all, as Word's do.
+- **Start Mail Merge**: document type (Letters, E-mail Messages, Envelopes,
+  Labels, Directory, Normal), a six-step **Step-by-Step Mail Merge Wizard** in a
+  task pane, and **Select Recipients**:
+  - **Use an Existing List** reads `.csv`, `.tsv` and delimited `.txt`. The reader
+    handles quoted cells, separators inside quotes, doubled quotes, a UTF-8 byte
+    order mark, short rows and duplicate headers, and sniffs comma, tab,
+    semicolon or pipe from the header line.
+  - **Type a New List** builds a source by hand, with columns you can add.
+  - **Edit Recipient List** ticks rows in or out of the merge, edits cells in
+    place, adds and removes entries, and sorts or filters by any column.
+- **Write & Insert Fields**
+  - **Insert Merge Field** for any column, as a «FieldName» field
+  - **Address Block** and **Greeting Line**, both with a live preview of the
+    first recipient. Address Block collapses missing parts rather than leaving
+    blank lines, and follows Word's "never / always / only when different from"
+    country rule. Greeting Line falls back to "Dear Sir or Madam," for a row with
+    no name.
+  - **Match Fields** points sixteen standard address fields at your columns.
+    Attaching a list guesses the mapping, matching `fname`, `LAST_NAME`,
+    `postcode` and the like, and never lets one column answer for two fields.
+  - **Rules**: Ask, Fill-in, If…Then…Else, Merge Record #, Merge Sequence #,
+    Next Record, Next Record If, Skip Record If, Set Bookmark. Comparisons are
+    numeric when both sides are numbers, so "greater than 100" does not compare
+    `10` against `9` as text.
+  - **Highlight Merge Fields** shades every field so they are easy to find
+  - **Update Labels** copies the first label across the sheet, giving each later
+    cell a Next Record rule. Pressing it twice does not double the rules.
+- **Preview Results**: swap the fields for one recipient's real values, step
+  through records with first/previous/next/last or by typing a number, **Find
+  Recipient** to search and jump, and **Check for Errors**, which reports fields
+  with no column behind them, an unmatched Address Block, no ticked rows, and
+  rows that would merge to a blank document. A field that resolves to empty stays
+  visible while previewing, so a forgotten column does not look like a field you
+  never inserted.
+- **Finish & Merge**: **Edit Individual Documents** merges into a new document
+  and leaves the main document's fields intact, **Print Documents** merges and
+  prints, and **Send E-mail Messages** writes one `.docx` per recipient for you
+  to attach. Either all recipients or a record range, and any Ask or Fill-in rule
+  is answered once before the merge runs.
+
+Merge fields are stored as document fields, so they survive a save and reopen. In
+`.docx`, `.rtf` and HTML they export as their «FieldName» text, which is what
+Word shows and is legible rather than corrupt anywhere else.
+
+Officewrite makes no network requests, so the e-mail merge writes files rather
+than sending mail.
 
 ## Review
 
-- **Proofing** — Hunspell spell check in English, German, Spanish and French; a
+- **Proofing**: Hunspell spell check in English, German, Spanish and French; a
   grammar checker covering repeated words, article agreement, spacing,
   sentence capitalisation and common wrong phrases; the F7 Spelling & Grammar
   pane with Change, Change All, Ignore Once, Ignore All and Add to Dictionary;
   an offline thesaurus (Shift+F7); word count with readability
 - AutoCorrect as you type: the replacement table, TWo INitial CApitals, a lone
   "i", sentence capitals, curly quotes, and the `--`, `...`, `(c)` shortcuts
-- **Accessibility** — Check Accessibility reports pictures and drawings with no
+- **Accessibility**: Check Accessibility reports pictures and drawings with no
   text alternative, tables with no header row or with merged cells, skipped
   heading levels, link text that names no destination, and text whose contrast
   falls below the WCAG AA ratio. Clicking an issue takes the caret to it.
-- **Language** — proofing language per document, and switches for
+- **Language**: proofing language per document, and switches for
   check-as-you-type spelling and grammar
-- **Comments** — new, delete (one, all resolved, or all), previous, next, and the
+- **Comments**: new, delete (one, all resolved, or all), previous, next, and the
   comments pane; comments anchor to a selection and can be resolved
-- **Tracking** — track changes recording insertions **and** deletions, Display
+- **Tracking**: track changes recording insertions **and** deletions, Display
   for Review (Simple, All, No Markup, Original), Show Markup filters, and a
   reviewing pane listing every revision with its author
-- **Changes** — accept and reject one, all, or accept-and-move-to-next, with
+- **Changes**: accept and reject one, all, or accept-and-move-to-next, with
   Previous and Next, and a live count of what is pending
-- **Compare** — compare against another document; the differences arrive as
+- **Compare**: compare against another document; the differences arrive as
   tracked changes
 
 Restrict Editing has no Protect group of its own: the tab strip's Editing /
@@ -154,11 +215,11 @@ for it.
 ## View
 
 - Five views: Read Mode, Print Layout, Web Layout, Outline and Draft
-- **Immersive Reader** — reading without the editing chrome, with three column
+- **Immersive Reader**: reading without the editing chrome, with three column
   widths, three text spacings, a white, sepia or grey page, and line focus
-- **Show** — ruler, gridlines, navigation pane, header and footer, footnotes and
+- **Show**: ruler, gridlines, navigation pane, header and footer, footnotes and
   endnotes. The navigation pane has a search box and Headings / Results tabs
-- **Dark Mode** — the light and dark theme switch, also on the home screen
+- **Dark Mode**: the light and dark theme switch, also on the home screen
 - Zoom from 10% to 500%, with 100%, One Page, Multiple Pages, Page Width and
   a Zoom dialog
 - Ribbon layout: Classic or Single Line, and Always show ribbon, Show tabs only
@@ -244,7 +305,7 @@ marks, links, tables, lists and images.
 - There is no picture crop
 - The ribbon steps down to a compact density below 1250px rather than
   collapsing whole groups the way Word does. The Styles tiles fold back into
-  their menu there, and the Review tab — the densest at eight groups — still
+  their menu there, and the Review tab, the densest at eight groups, still
   overflows below about 1050px. Every other tab holds to 1100px
 - Shapes and text boxes are arranged from Layout > Arrange rather than a
   contextual tab of their own
@@ -252,6 +313,6 @@ marks, links, tables, lists and images.
 ## Not in scope
 
 Officewrite is local-first. It has no accounts, no cloud sync, no collaboration, no
-AI features and no telemetry, and it makes no network requests of its own — the
+AI features and no telemetry, and it makes no network requests of its own. The
 Help tab hands a GitHub URL to your browser, and the main process refuses any
 address outside this project's repository.

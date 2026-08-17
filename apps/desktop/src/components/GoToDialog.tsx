@@ -11,8 +11,8 @@ interface GoToDialogProps {
 type Target = 'page' | 'line' | 'bookmark';
 
 /**
- * Word's Ctrl+G. Long documents had no navigation command at all — the page
- * indicator was inert and Find offered no Go To — so the only way to reach
+ * Word's Ctrl+G. Long documents had no navigation command at all - the page
+ * indicator was inert and Find offered no Go To - so the only way to reach
  * page 40 was to scroll.
  *
  * The page geometry is read back off `.doc-page`'s `--page-height` custom
@@ -51,8 +51,8 @@ export function GoToDialog({ open, editor, pages, onClose }: GoToDialogProps) {
     if (!Number.isFinite(parsed) || parsed < 1) return onClose();
 
     if (target === 'line') {
-      // Lines are not a fixed height — the line-spacing menu and any font size
-      // change them — so this walks the real line boxes instead of assuming
+      // Lines are not a fixed height - the line-spacing menu and any font size
+      // change them - so this walks the real line boxes instead of assuming
       // 24px, which drifted further off with every line down the page.
       const { doc } = editor.state;
       const tops: number[] = [];

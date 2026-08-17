@@ -122,14 +122,14 @@ export function ReferencesTab({ editor, state, actions, flags }: RibbonTabProps)
             menuWidth={280}
           >
             {flags.sources.length === 0 ? (
-              <RibbonMenuItem label="No sources yet — add one…" onClick={actions.onManageSources} />
+              <RibbonMenuItem label="No sources yet, add one…" onClick={actions.onManageSources} />
             ) : (
               <>
                 <RibbonMenuHeader label="Sources in this document" />
                 {flags.sources.map((source) => (
                   <RibbonMenuItem
                     key={source.id}
-                    label={`${source.author || 'Unknown'} — ${source.title}`}
+                    label={`${source.author || 'Unknown'}: ${source.title}`}
                     hint={source.year}
                     onClick={() => actions.onInsertCitation(source.id)}
                   />

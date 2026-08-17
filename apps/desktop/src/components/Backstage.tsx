@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { AppSettings, DocumentMetadata, DocumentRevision, RecentFile } from '@officewrite/core';
 import { DEFAULT_SETTINGS, TEMPLATES, TEMPLATE_CATEGORIES } from '@officewrite/core';
+import { TemplatePreview } from './TemplatePreview';
 import { RevisionHistoryPanel } from './RevisionHistoryPanel';
 import { PROOFING_LANGUAGES } from '../constants/languages';
 
@@ -48,7 +49,7 @@ const NAV: { id: BackstageSection; label: string }[] = [
 ];
 
 const EXPORT_FORMATS = [
-  { label: 'DOCX', desc: 'Default — Microsoft Word format', action: 'docx' as const },
+  { label: 'DOCX', desc: 'Default, the Microsoft Word format', action: 'docx' as const },
   { label: '.officewrite', desc: 'Officewrite native format with version history', action: 'officewrite' as const },
   { label: 'RTF', desc: 'Rich Text Format', action: 'rtf' as const },
   { label: 'HTML', desc: 'Web page with styling', action: 'html' as const },
@@ -90,7 +91,7 @@ export function Backstage({
   /**
    * The preview is the same PDF the exporter produces, so what it shows is
    * exactly what prints. Built only while the Print pane is open, and revoked
-   * on the way out — a blob URL per visit would otherwise leak.
+   * on the way out - a blob URL per visit would otherwise leak.
    */
   useEffect(() => {
     if (section !== 'print' || !onBuildPreview) return;
@@ -214,7 +215,7 @@ export function Backstage({
           )}
           {/* New and Open used to be one button each. The templates and the
               recent list existed only on the start screen, so once a document
-              was open they were unreachable — Word's backstage carries both. */}
+              was open they were unreachable - Word's backstage carries both. */}
           {section === 'new' && (
             <>
               <h2>New</h2>
@@ -249,7 +250,9 @@ export function Backstage({
                           data-testid={`backstage-template-${template.id}`}
                           title={template.description}
                         >
-                          <span className="backstage-tpl-thumb">{template.name.charAt(0)}</span>
+                          <span className="backstage-tpl-thumb">
+                            <TemplatePreview template={template} />
+                          </span>
                           <span>{template.name}</span>
                         </button>
                       ))}
@@ -291,7 +294,8 @@ export function Backstage({
             <>
               <h2>Save</h2>
               <p className="backstage-subtitle">
-                Documents save as DOCX by default — compatible with Microsoft Word and easy to share.
+                Documents save as DOCX by default, so they open in Microsoft Word, LibreOffice and
+            OpenOffice.
               </p>
               <div className="action-row">
                 <button className="icon-btn primary" onClick={onSave}>
@@ -326,7 +330,7 @@ export function Backstage({
             </>
           )}
           {/* Word's Print backstage is settings beside a live paginated
-              preview. This was a heading and one button — and because the
+              preview. This was a heading and one button - and because the
               editor scrolls continuously rather than reflowing pages on
               screen, it was the only place a user could ever have seen where
               the pages actually break, so they could not. */}

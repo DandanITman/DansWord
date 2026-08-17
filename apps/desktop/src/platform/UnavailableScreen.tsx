@@ -1,7 +1,7 @@
 /**
  * Shown instead of the editor when the Electron bridge is missing. Without this
  * the first mount effect calls into `window.officewrite`, throws, and React
- * unmounts the tree — leaving a blank white window with no explanation.
+ * unmounts the tree - leaving a blank white window with no explanation.
  */
 export function UnavailableScreen() {
   return (

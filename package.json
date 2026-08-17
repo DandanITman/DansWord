@@ -1,8 +1,8 @@
 {
   "name": "officewrite",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": false,
-  "description": "Officewrite — non-profit educational project, free Word alternative for everyone, open source for anyone to edit",
+  "description": "Officewrite: a free, open-source alternative to Microsoft Word, LibreOffice and OpenOffice. A non-profit educational project, open source for anyone to edit.",
   "workspaces": [
     "apps/desktop",
     "packages/core",
@@ -23,6 +23,7 @@
     "regression": "node scripts/regression.mjs",
     "release-notes": "node scripts/generate-release-notes.mjs",
     "verify:pages": "node scripts/verify-pages.mjs",
+    "check:em-dashes": "node scripts/check-em-dashes.mjs",
     "build:web": "npm run build:web -w @officewrite/desktop"
   },
   "engines": {

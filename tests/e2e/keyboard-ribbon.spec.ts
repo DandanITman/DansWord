@@ -5,8 +5,8 @@ import { resetTestState, openBlankDocument, switchRibbonTab, acceptAppDialogs } 
  * The ribbon markup claimed `role="tablist"` and `role="menu"` while
  * implementing neither keyboard contract: arrow keys did nothing on the tab
  * strip, and opening a menu left focus on the button, so a keyboard user could
- * Tab straight past every item into the next control. The whole menu layer —
- * bullets, numbering, styles, margins, breaks, wrap text — was mouse-only.
+ * Tab straight past every item into the next control. The whole menu layer -
+ * bullets, numbering, styles, margins, breaks, wrap text - was mouse-only.
  */
 test.describe('Ribbon keyboard access', () => {
   test.beforeEach(async ({ page }) => {

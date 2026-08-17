@@ -36,7 +36,7 @@ const TABLE_DOC = {
 /**
  * Lay the table out: each row 40px tall, each cell 100px wide.
  *
- * Also attaches the editor to the document — the plugin captures at the
+ * Also attaches the editor to the document - the plugin captures at the
  * document, so a detached editor would never see the events.
  */
 function stubLayout(dom: HTMLElement) {

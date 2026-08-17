@@ -20,8 +20,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
 /**
  * Templates are stored as TipTap document JSON, which is unreadable written out
  * by hand at this volume. The builders below cover the handful of node shapes
- * the catalogue needs. Every attribute they set — textAlign, styleId, shading,
- * spacing — is one the ParagraphFormatting extension already understands, so a
+ * the catalogue needs. Every attribute they set - textAlign, styleId, shading,
+ * spacing - is one the ParagraphFormatting extension already understands, so a
  * template only ever puts the document in a state the ribbon can also reach.
  */
 
@@ -48,7 +48,7 @@ function t(text: string, ...marks: Array<'bold' | 'italic' | 'underline'>): Text
 }
 
 /**
- * A paragraph. Called with no text it is a blank line — which these templates
+ * A paragraph. Called with no text it is a blank line - which these templates
  * use the same way Word's do, as the spacing between blocks.
  */
 function p(text = '', attrs: ParagraphAttrs = {}): Block {
@@ -291,9 +291,9 @@ export const TEMPLATES: Template[] = [
       p('Describe the current situation and what it is costing in time, money or risk.'),
       h(2, 'Proposed approach'),
       ol(
-        '[Phase one — what gets done and what it produces]',
-        '[Phase two — what gets done and what it produces]',
-        '[Phase three — what gets done and what it produces]',
+        '[Phase one - what gets done and what it produces]',
+        '[Phase two - what gets done and what it produces]',
+        '[Phase three - what gets done and what it produces]',
       ),
       h(2, 'Timeline'),
       table(
@@ -359,7 +359,7 @@ export const TEMPLATES: Template[] = [
     content: doc(
       h(1, 'Weekly Status'),
       p('[Project or team] · Week of [date]', { styleId: 'subtitle' }),
-      rich({}, t('Overall: ', 'bold'), t('[On track / at risk / off track] — one sentence why.')),
+      rich({}, t('Overall: ', 'bold'), t('[On track / at risk / off track] - one sentence why.')),
       p(),
       h(2, 'Done this week'),
       ul('[Finished thing, with the number that proves it]', '[Finished thing]'),
@@ -397,7 +397,7 @@ export const TEMPLATES: Template[] = [
       p('Write the second paragraph here.'),
       h(2, 'In brief'),
       ul(
-        '[Short item — one sentence each]',
+        '[Short item - one sentence each]',
         '[Short item]',
         '[Short item]',
       ),
@@ -487,9 +487,9 @@ export const TEMPLATES: Template[] = [
         '[Result, with the number and the timeframe that make it real.]',
       ),
       h(2, 'Experience'),
-      rich({}, t('[Job Title]', 'bold'), t(' — [Company], [City]. [Month Year – Month Year]')),
+      rich({}, t('[Job Title]', 'bold'), t(' - [Company], [City]. [Month Year – Month Year]')),
       ul('[What you owned, and what changed because of it.]'),
-      rich({}, t('[Job Title]', 'bold'), t(' — [Company], [City]. [Month Year – Month Year]')),
+      rich({}, t('[Job Title]', 'bold'), t(' - [Company], [City]. [Month Year – Month Year]')),
       ul('[What you owned, and what changed because of it.]'),
       h(2, 'Education & Certifications'),
       p('[Degree or certificate], [Institution], [Year]'),
@@ -584,7 +584,7 @@ export const TEMPLATES: Template[] = [
       ),
       p(),
       p(
-        'Thank you for the opportunity. [Name one thing you genuinely valued — a project, a skill you gained, a person you learned from.]',
+        'Thank you for the opportunity. [Name one thing you genuinely valued - a project, a skill you gained, a person you learned from.]',
       ),
       p(),
       p(
@@ -618,7 +618,7 @@ export const TEMPLATES: Template[] = [
       ),
       p(),
       p(
-        '[Second short paragraph on how they work with other people — that is usually what the reader cannot tell from the application itself.]',
+        '[Second short paragraph on how they work with other people - that is usually what the reader cannot tell from the application itself.]',
       ),
       p(),
       p(
@@ -642,7 +642,7 @@ export const TEMPLATES: Template[] = [
       p(),
       p('[Date]'),
       p(),
-      p('[Company name] — Customer Relations'),
+      p('[Company name] - Customer Relations'),
       p('[Company address]'),
       p(),
       rich({}, t('Re: ', 'bold'), t('[Order, account or reference number]')),
@@ -684,7 +684,7 @@ export const TEMPLATES: Template[] = [
         { lineHeight: '2' },
       ),
       p(
-        'Each body paragraph makes one point. State it, support it with evidence, quote or cite the source, then explain how the evidence proves the point — that last step is the one students skip.',
+        'Each body paragraph makes one point. State it, support it with evidence, quote or cite the source, then explain how the evidence proves the point - that last step is the one students skip.',
         { lineHeight: '2' },
       ),
       p(
@@ -716,7 +716,7 @@ export const TEMPLATES: Template[] = [
       h(2, 'Learning objectives'),
       p('By the end of this lesson students will be able to:'),
       ul(
-        '[Verb the students can be seen doing — identify, compare, calculate, explain.]',
+        '[Verb the students can be seen doing - identify, compare, calculate, explain.]',
         '[A second objective, if the lesson genuinely has one.]',
       ),
       h(2, 'Materials'),
@@ -725,14 +725,14 @@ export const TEMPLATES: Template[] = [
       table(
         ['Time', 'What the teacher does', 'What students do'],
         ['5 min', 'Starter that surfaces prior knowledge', 'Answer on whiteboards'],
-        ['15 min', '[Direct instruction — the new idea]', '[Take notes, ask questions]'],
+        ['15 min', '[Direct instruction - the new idea]', '[Take notes, ask questions]'],
         ['20 min', '[Guided practice, circulating]', '[Work in pairs on the task]'],
         ['10 min', '[Set the independent task]', '[Work alone]'],
         ['5 min', 'Exit question', 'Answer the exit question'],
       ),
       p(),
       h(2, 'Assessment'),
-      p('How you will know they learned it — the exit question, the task, the marking criteria.'),
+      p('How you will know they learned it - the exit question, the task, the marking criteria.'),
       h(2, 'Differentiation'),
       ul(
         'Support: [scaffold, sentence starters, worked example]',
@@ -781,12 +781,12 @@ export const TEMPLATES: Template[] = [
       rich({}, t('Pages: ', 'bold'), t('[000]')),
       h(2, 'What happens'),
       p(
-        'Summarise the plot in one paragraph without giving away the ending — unless your teacher asked you to.',
+        'Summarise the plot in one paragraph without giving away the ending - unless your teacher asked you to.',
       ),
       h(2, 'Main characters'),
       ul(
-        '[Name] — [who they are and what they want]',
-        '[Name] — [who they are and what they want]',
+        '[Name] - [who they are and what they want]',
+        '[Name] - [who they are and what they want]',
       ),
       h(2, 'Setting'),
       p('[Where and when, and why it matters to the story.]'),
@@ -824,9 +824,9 @@ export const TEMPLATES: Template[] = [
       h(2, 'Schedule'),
       table(
         ['Week', 'Topic', 'Reading', 'Due'],
-        ['1', '[Topic]', '[Reading]', '—'],
+        ['1', '[Topic]', '[Reading]', '-'],
         ['2', '[Topic]', '[Reading]', '[Assignment]'],
-        ['3', '[Topic]', '[Reading]', '—'],
+        ['3', '[Topic]', '[Reading]', '-'],
         ['4', '[Topic]', '[Reading]', '[Assignment]'],
       ),
       p(),
@@ -883,7 +883,7 @@ export const TEMPLATES: Template[] = [
   {
     id: 'forsaleflyer',
     name: 'For Sale Flyer',
-    description: 'Item, price, condition and contact — a noticeboard sheet',
+    description: 'Item, price, condition and contact - a noticeboard sheet',
     category: 'Flyers',
     keywords: ['selling', 'classified', 'advert', 'noticeboard', 'poster'],
     content: doc(
@@ -905,7 +905,7 @@ export const TEMPLATES: Template[] = [
       h(2, 'What is included'),
       ul('[Item and accessories]', '[Manual, box, spares]'),
       p(),
-      p('Insert a photograph above this line — a flyer without one gets ignored.', {
+      p('Insert a photograph above this line - a flyer without one gets ignored.', {
         textAlign: 'center',
         styleId: 'subtitle',
       }),
@@ -957,7 +957,7 @@ export const TEMPLATES: Template[] = [
       h(1, '[Happy Birthday]', { textAlign: 'center', styleId: 'title' }),
       p('[A short line, or leave it blank]', { textAlign: 'center', styleId: 'subtitle' }),
       { type: 'pageBreak' },
-      p('Inside — left panel', { styleId: 'subtitle' }),
+      p('Inside - left panel', { styleId: 'subtitle' }),
       p(),
       p('[Write the message here. Say the specific thing; that is the whole point of a card.]'),
       p(),
@@ -1012,13 +1012,13 @@ export const TEMPLATES: Template[] = [
       p('Dear friends and family,'),
       p(),
       p(
-        'Open with the one thing that actually defined the year for you. Everyone writes "where did the year go" — write something only your family could write.',
+        'Open with the one thing that actually defined the year for you. Everyone writes "where did the year go" - write something only your family could write.',
       ),
       h(2, 'The news'),
       ul(
-        '[Person] — [what they did this year, in one sentence]',
-        '[Person] — [what they did this year, in one sentence]',
-        '[Person] — [what they did this year, in one sentence]',
+        '[Person] - [what they did this year, in one sentence]',
+        '[Person] - [what they did this year, in one sentence]',
+        '[Person] - [what they did this year, in one sentence]',
       ),
       h(2, 'Where we went'),
       p('[The trip, the move, the weekend that was worth the drive.]'),
@@ -1053,7 +1053,7 @@ export const TEMPLATES: Template[] = [
       h(2, 'Waiting on someone else'),
       checklist('[What, who, and since when]'),
       h(2, 'Someday'),
-      checklist('[The thing you keep moving forward — decide to drop it or schedule it]'),
+      checklist('[The thing you keep moving forward - decide to drop it or schedule it]'),
     ),
   },
   {

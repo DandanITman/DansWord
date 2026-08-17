@@ -18,7 +18,7 @@ const BUILTIN_IDS = new Set(BUILTIN_STYLES.map((s) => s.id));
 /**
  * Edit the document's style set.
  *
- * Previously this filtered the built-in ids out of `styles` — but a new
+ * Previously this filtered the built-in ids out of `styles` - but a new
  * document's `customStyles` *is* exactly those built-ins, so the list was
  * always empty. Editing also ran three sequential modal prompts (family, then
  * size, then a Bold confirm) instead of showing a form.
@@ -75,7 +75,7 @@ export function StyleEditorDialog({ open, styles, onChange, onClose }: StyleEdit
                   <strong>{style.name}</strong>
                   <span className="muted">
                     {' '}
-                    — {style.fontFamily} {style.fontSize}
+                    , {style.fontFamily} {style.fontSize}
                     {style.bold ? ' bold' : ''}
                   </span>
                 </button>

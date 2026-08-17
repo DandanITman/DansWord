@@ -5,7 +5,7 @@ export type { OfficewriteAPI, ListedDocument, ImportDocResult } from './api';
 /**
  * Officewrite's file, print and spell-check features are provided by the Electron
  * host process. Opened as a plain web page there is no bridge, and every one of
- * those calls would throw — previously as an unguarded `TypeError` during the
+ * those calls would throw - previously as an unguarded `TypeError` during the
  * first mount effect, which blanked the screen. Resolve it once, here, and let
  * callers ask before reaching.
  */

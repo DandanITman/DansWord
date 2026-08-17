@@ -37,7 +37,7 @@ const LABEL: Record<string, string> = {
 /**
  * The reading-comfort strip Immersive Reader shows above the page.
  *
- * Everything here is presentation only — none of it touches the document — so
+ * Everything here is presentation only - none of it touches the document - so
  * leaving the mode restores exactly what was there.
  */
 export function ImmersiveReaderBar({

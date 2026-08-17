@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
  * The dev server port.
  *
  * Overridable because `reuseExistingServer` will happily adopt whatever is
- * already listening on the default — including an unrelated project's dev
+ * already listening on the default - including an unrelated project's dev
  * server, in which case every test runs against the wrong app and fails in a
  * way that looks nothing like a port clash. Set OFFICEWRITE_TEST_PORT to move.
  */

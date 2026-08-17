@@ -62,7 +62,7 @@ export function RibbonGroup({
             aria-label={launchTitle ?? `${label} options`}
             onClick={onLaunch}
           >
-            {/* Word's launcher is a corner arrow, not a dropdown chevron —
+            {/* Word's launcher is a corner arrow, not a dropdown chevron -
                 the distinct glyph is how users tell "opens the full dialog"
                 apart from "opens a menu". */}
             <span aria-hidden>⌟</span>
@@ -189,8 +189,8 @@ export function RibbonPopover({
      * The markup claimed `role="menu"` while implementing none of the contract:
      * nothing focused the menu when it opened, so a keyboard user could open
      * Paste or Styles and then Tab straight past the items into the next
-     * ribbon control. That made the entire menu layer — bullets, numbering,
-     * styles, margins, breaks, wrap text — mouse-only.
+     * ribbon control. That made the entire menu layer - bullets, numbering,
+     * styles, margins, breaks, wrap text - mouse-only.
      */
     const items = () =>
       Array.from(
@@ -534,14 +534,14 @@ export function RibbonSpin({
  *
  * Deliberately not an `<input list>` + `<datalist>`. A datalist filters its
  * options against whatever is already in the field, so a box that always holds
- * the current value could only ever offer that value back — the font list
+ * the current value could only ever offer that value back - the font list
  * showed "Calibri" and the size list showed "11". Worse, a datalist pick
  * arrives as an ordinary change event, so committing on change also fired on
  * any keystroke that happened to complete an option: that handed focus back to
  * the document mid-edit and let the next keypress overwrite the selection.
  *
  * So the list is owned here and is always complete, typing only narrows it, and
- * a value is committed on Enter, on blur, or on picking an option — never on a
+ * a value is committed on Enter, on blur, or on picking an option - never on a
  * keystroke.
  */
 export function RibbonCombo({

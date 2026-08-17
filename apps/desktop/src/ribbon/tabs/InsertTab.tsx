@@ -242,7 +242,7 @@ export function InsertTab({ editor, state, actions, flags }: RibbonTabProps) {
             testId="ribbon-link"
           />
           {/* Word keeps Bookmark in Links, and Table of Contents only on
-              References — so Insert drops from eleven groups to eight. */}
+              References - so Insert drops from eleven groups to eight. */}
           <RibbonButton
             icon={<BookmarkIcon size={14} />}
             label="Bookmark"

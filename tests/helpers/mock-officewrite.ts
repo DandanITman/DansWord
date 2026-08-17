@@ -16,6 +16,8 @@ export interface OfficewriteTestHarness {
   reset: () => void;
   setOpenFileResult: (path: string | null) => void;
   setOpenImageFileResult: (path: string | null) => void;
+  /** Mailings > Select Recipients picks through its own dialog. */
+  setOpenDataFileResult: (path: string | null) => void;
   setSaveFileResult: (path: string | null) => void;
   setImportDocResult: (result: ImportDocResult) => void;
   setSpellCheckResults: (results: boolean[]) => void;
@@ -77,6 +79,7 @@ function bytesToBase64(bytes: Uint8Array) {
 export function installMockOfficewrite(target: Window & typeof globalThis): OfficewriteTestHarness {
   let nextOpenFile: string | null = null;
   let nextOpenImageFile: string | null = null;
+  let nextOpenDataFile: string | null = null;
   let nextSaveFile: string | null | undefined = undefined;
   let nextImportDoc: ImportDocResult | null = null;
   let spellResults: boolean[] | null = null;
@@ -114,6 +117,14 @@ export function installMockOfficewrite(target: Window & typeof globalThis): Offi
     openImageFile: async () => {
       const path = nextOpenImageFile ?? nextOpenFile;
       nextOpenImageFile = null;
+      nextOpenFile = null;
+      return path;
+    },
+    openDataFile: async () => {
+      // Falls back to the generic open result so a test that only needs "the
+      // user picked a file" does not have to know which picker was used.
+      const path = nextOpenDataFile ?? nextOpenFile;
+      nextOpenDataFile = null;
       nextOpenFile = null;
       return path;
     },
@@ -292,6 +303,7 @@ export function installMockOfficewrite(target: Window & typeof globalThis): Offi
     reset: () => {
       nextOpenFile = null;
       nextOpenImageFile = null;
+      nextOpenDataFile = null;
       nextSaveFile = undefined;
       nextImportDoc = null;
       spellResults = null;
@@ -316,6 +328,9 @@ export function installMockOfficewrite(target: Window & typeof globalThis): Offi
     },
     setOpenImageFileResult: (path) => {
       nextOpenImageFile = path ? normalizePath(path) : null;
+    },
+    setOpenDataFileResult: (path) => {
+      nextOpenDataFile = path ? normalizePath(path) : null;
     },
     setSaveFileResult: (path) => {
       nextSaveFile = path ? normalizePath(path) : null;

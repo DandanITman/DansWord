@@ -176,7 +176,7 @@ export function ViewTab({ actions, flags }: RibbonTabProps) {
             testId="view-zoom-one-page"
           />
           {/* Multiple Pages was built and wired into the Zoom dialog, but had
-              no button here — Word's Zoom group carries it between One Page
+              no button here - Word's Zoom group carries it between One Page
               and Page Width. */}
           <RibbonButton
             label="Multiple Pages"

@@ -140,7 +140,7 @@ const EMPTY: RibbonState = {
  *
  * The ribbon used to call `editor.isActive(...)` directly during App's render.
  * In TipTap v2 `useEditor` re-renders only the component that owns the hook,
- * and App re-rendered only when the document *content* changed — so a
+ * and App re-rendered only when the document *content* changed - so a
  * selection-only transaction (moving the caret, clicking an image) updated
  * nothing. Bold stayed lit after leaving bold text, the font dropdowns showed
  * whatever was true at the last edit, and the contextual picture group never

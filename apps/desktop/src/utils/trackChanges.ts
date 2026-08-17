@@ -131,7 +131,7 @@ export async function rejectTrackChangeInSelection(editor: Editor) {
  *
  * Adjacent ranges of the same kind are one change. The mark records the time it
  * was made, so every keystroke produces a separate mark instance and its own
- * text node — counting those raw would report a ten-character word as ten
+ * text node - counting those raw would report a ten-character word as ten
  * changes. Word counts the contiguous run as one revision, and so does Accept.
  */
 export function countTrackChanges(editor: Editor): { insertions: number; deletions: number } {

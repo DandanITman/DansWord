@@ -63,7 +63,7 @@ export function StatusBar({
   return (
     <div className="status-bar office-status" data-testid="status-bar">
       <div className="status-bar-left">
-        {/* Clicking the page count opens Go To, as it does in Word — the
+        {/* Clicking the page count opens Go To, as it does in Word - the
             word count beside it was already a button. */}
         <button
           className="status-flat-btn status-page-indicator"
@@ -94,7 +94,7 @@ export function StatusBar({
             !spellCheckEnabled
               ? 'Proofing is turned off'
               : proofingIssues > 0
-                ? `${proofingIssues} spelling or grammar ${proofingIssues === 1 ? 'problem' : 'problems'} — click to review`
+                ? `${proofingIssues} spelling or grammar ${proofingIssues === 1 ? 'problem' : 'problems'}, click to review`
                 : 'No proofing errors'
           }
           data-testid="status-proofing"

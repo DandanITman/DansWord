@@ -14,8 +14,8 @@ import type { ImportDocResult, ListedDocument, OfficewriteAPI } from './api';
  *               <input type="file"> for opening and a download for saving
  *   settings    localStorage
  *
- * Where the browser genuinely cannot do the job — converting legacy .doc via
- * LibreOffice, or running Hunspell — it degrades openly rather than pretending.
+ * Where the browser genuinely cannot do the job - converting legacy .doc via
+ * LibreOffice, or running Hunspell - it degrades openly rather than pretending.
  * See DEGRADED below; the app surfaces those limits rather than failing.
  *
  * Nothing here may be imported from `src/` directly. It is installed onto
@@ -95,6 +95,14 @@ const IMAGE_TYPES: PickerAcceptType[] = [
   {
     description: 'Images',
     accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp'] },
+  },
+];
+
+/** Mail-merge recipient lists, matching the desktop picker's filter. */
+const DATA_TYPES: PickerAcceptType[] = [
+  {
+    description: 'Recipient lists',
+    accept: { 'text/csv': ['.csv', '.tsv'], 'text/plain': ['.txt'] },
   },
 ];
 
@@ -211,7 +219,7 @@ function writeJson(key: string, value: unknown): boolean {
   }
 }
 
-/** Offer the bytes as a download — the only way out on Firefox and Safari. */
+/** Offer the bytes as a download - the only way out on Firefox and Safari. */
 function downloadBytes(name: string, data: Uint8Array): void {
   const blob = new Blob([data.slice().buffer as ArrayBuffer], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
@@ -298,6 +306,20 @@ export function createBrowserHost(): OfficewriteAPI {
         }
       }
       const file = await promptForFile('image/*');
+      return file ? adopt(file) : null;
+    },
+
+    openDataFile: async () => {
+      if (picker.showOpenFilePicker) {
+        try {
+          const [handle] = await picker.showOpenFilePicker({ types: DATA_TYPES });
+          if (!handle) return null;
+          return await adopt(await handle.getFile());
+        } catch {
+          return null;
+        }
+      }
+      const file = await promptForFile('.csv,.tsv,.txt');
       return file ? adopt(file) : null;
     },
 
@@ -505,7 +527,7 @@ export function createBrowserHost(): OfficewriteAPI {
 
     importDoc: async (): Promise<ImportDocResult> => {
       throw new Error(
-        'Converting legacy .doc files needs the desktop app — it runs LibreOffice to do it. ' +
+        'Converting legacy .doc files needs the desktop app, which runs LibreOffice to do it. ' +
           'Save the file as .docx and open that instead.',
       );
     },

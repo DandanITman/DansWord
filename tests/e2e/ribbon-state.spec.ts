@@ -15,7 +15,7 @@ import {
  *
  * This is the defect that made the app feel broken: ribbon state was computed
  * during App's render, and App re-rendered only when document *content*
- * changed. A selection-only transaction — moving the caret, clicking an image —
+ * changed. A selection-only transaction - moving the caret, clicking an image -
  * updated nothing, so Bold stayed lit after leaving bold text and the font
  * dropdowns showed whatever was true at the last edit.
  *
@@ -75,7 +75,7 @@ test.describe('Ribbon tracks the caret', () => {
     await clickRibbon(page, 'home', 'ribbon-align-center');
     await expectRibbonActive(page, 'ribbon-align-center', true);
 
-    // Up into the first paragraph — selection only.
+    // Up into the first paragraph - selection only.
     await editorParagraph(page, 1).click();
     await page.keyboard.press('ArrowUp');
     await expectRibbonActive(page, 'ribbon-align-center', false);
@@ -92,7 +92,7 @@ test.describe('Ribbon tracks the caret', () => {
     await expectRibbonActive(page, 'ribbon-bullet-list', true);
 
     // The bulleted line is now a list item, so it is no longer a top-level
-    // paragraph — click it where it lives.
+    // paragraph - click it where it lives.
     await page.getByTestId('word-editor').locator('li p').first().click();
     await page.keyboard.press('ArrowUp');
     await expectRibbonActive(page, 'ribbon-bullet-list', false);

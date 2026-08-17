@@ -62,11 +62,11 @@ export interface OfficewriteDocument {
 }
 
 /**
- * The eight tabs on the strip, followed by the three contextual ones that only
+ * The nine tabs on the strip, followed by the three contextual ones that only
  * appear while the matching object is selected: `draw` with a drawing canvas,
  * `pictureFormat` with a picture, `tableLayout` inside a table.
  *
- * `file` is on the strip but has no panel — it opens a dropdown menu instead.
+ * `file` is on the strip but has no panel - it opens a dropdown menu instead.
  */
 export type RibbonTab =
   | 'file'
@@ -74,6 +74,7 @@ export type RibbonTab =
   | 'insert'
   | 'pageLayout'
   | 'references'
+  | 'mailings'
   | 'review'
   | 'view'
   | 'help'

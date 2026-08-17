@@ -3,9 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Titles and descriptions carry no em dash, deliberately.
+      Google prints the meta description verbatim in the result snippet, and an
+      em dash there reads as machine-written. Ordinary punctuation says the same
+      thing and survives every font and encoding a crawler might use.
+    -->
     <meta
       name="description"
-      content="A free, open-source word processor that opens and saves .docx. Use it in your browser or download it for Windows — no account, no subscription."
+      content="A free, open-source alternative to Microsoft Word, LibreOffice and OpenOffice. Opens and saves .docx in your browser or offline on Windows. No account, no subscription."
     />
     <link rel="canonical" href="https://officewrite.com/" />
 
@@ -17,10 +23,10 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Officewrite" />
     <meta property="og:url" content="https://officewrite.com/" />
-    <meta property="og:title" content="Officewrite — a free word processor for everyone" />
+    <meta property="og:title" content="Officewrite: a free Word, LibreOffice and OpenOffice alternative" />
     <meta
       property="og:description"
-      content="Free and open source. Opens and saves .docx. Runs offline on Windows."
+      content="Free and open source. A Microsoft Word, LibreOffice and OpenOffice alternative that opens and saves .docx, in a browser or offline on Windows."
     />
     <meta property="og:image" content="https://officewrite.com/shots/editor.png" />
     <meta property="og:image:width" content="1440" />
@@ -28,14 +34,14 @@
     <meta property="og:image:alt" content="The Officewrite editor with a report open" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Officewrite — a free word processor for everyone" />
+    <meta name="twitter:title" content="Officewrite: a free Word, LibreOffice and OpenOffice alternative" />
     <meta
       name="twitter:description"
-      content="Free and open source. Opens and saves .docx. Runs offline on Windows."
+      content="Free and open source. A Microsoft Word, LibreOffice and OpenOffice alternative that opens and saves .docx, in a browser or offline on Windows."
     />
     <meta name="twitter:image" content="https://officewrite.com/shots/editor.png" />
 
-    <title>Officewrite — a free, open-source word processor for Windows</title>
+    <title>Officewrite: a free Word, LibreOffice and OpenOffice alternative</title>
     <link rel="icon" href="logo.png" />
     <link rel="stylesheet" href="site.css" />
 
@@ -49,12 +55,12 @@
         "@type": "SoftwareApplication",
         "name": "Officewrite",
         "url": "https://officewrite.com/",
-        "description": "A free, open-source word processor. Opens and saves Microsoft Word .docx files, runs in a browser or offline on Windows, and needs no account or subscription.",
+        "description": "A free, open-source word processor, and an alternative to Microsoft Word, LibreOffice Writer and Apache OpenOffice Writer. Opens and saves Microsoft Word .docx files, runs in a browser or offline on Windows, and needs no account or subscription.",
         "applicationCategory": "BusinessApplication",
         "applicationSubCategory": "Word Processor",
         "operatingSystem": "Windows, Web browser",
         "installUrl": "https://officewrite.com/#download",
-        "softwareVersion": "0.4.0",
+        "softwareVersion": "0.5.0",
         "isAccessibleForFree": true,
         "license": "https://github.com/DandanITman/Officewrite/blob/main/LICENSE",
         "codeRepository": "https://github.com/DandanITman/Officewrite",
@@ -66,6 +72,7 @@
         },
         "featureList": [
           "Opens and saves Microsoft Word .docx files",
+          "A free alternative to Microsoft Word, LibreOffice and OpenOffice",
           "Runs in a browser with no installation",
           "Works offline with no account or subscription",
           "Track changes, comments and review workflow",
@@ -99,8 +106,9 @@
           <p class="eyebrow">Free · Open source · Non-profit educational project</p>
           <h1>A free word processor that doesn't ask for your card.</h1>
           <p class="lede">
-            Officewrite is a free alternative to Microsoft Word for essays, letters, reports and CVs
-            — with the ribbon, the styles and the <code>.docx</code> files you already know. Use it
+            Officewrite is a free alternative to Microsoft Word, LibreOffice and OpenOffice for
+            essays, letters, reports and CVs, with the ribbon, the styles and the
+            <code>.docx</code> files you already know. Use it
             <a href="app/">free in your browser</a>, or download it for Windows and work offline.
             No account, no subscription, nothing uploaded.
           </p>
@@ -133,7 +141,7 @@
             height="900"
             loading="eager"
           />
-          <figcaption>The real thing — every screenshot on this page is the actual app.</figcaption>
+          <figcaption>Every screenshot on this page is the actual app.</figcaption>
         </figure>
       </section>
 
@@ -151,6 +159,7 @@
             <button role="tab" aria-selected="false" data-shot="insert">Insert</button>
             <button role="tab" aria-selected="false" data-shot="references">References</button>
             <button role="tab" aria-selected="false" data-shot="review">Review</button>
+            <button role="tab" aria-selected="false" data-shot="mailings">Mailings</button>
             <button role="tab" aria-selected="false" data-shot="navigation">Navigation</button>
             <button role="tab" aria-selected="false" data-shot="dark">Dark mode</button>
           </div>
@@ -169,8 +178,8 @@
         <h2>What it does</h2>
         <p class="section-lede">
           Everything below is built and working today. Anything missing is listed honestly in
-          <a href="https://github.com/DandanITman/Officewrite/blob/main/docs/FEATURES.md">FEATURES.md</a>
-          — including what Officewrite still can't do.
+          <a href="https://github.com/DandanITman/Officewrite/blob/main/docs/FEATURES.md">FEATURES.md</a>,
+          including what Officewrite still can't do.
         </p>
 
         <div class="cards">
@@ -206,6 +215,15 @@
             </p>
           </article>
           <article class="card">
+            <h3>Mail merge</h3>
+            <p>
+              A full Mailings tab. Read recipients from a <code>.csv</code>, insert merge fields,
+              an address block and a greeting line, add rules like If&#8230;Then&#8230;Else and Skip
+              Record If, preview each letter with real values, then merge to a document, the
+              printer, or one file per recipient. Envelopes and labels too.
+            </p>
+          </article>
+          <article class="card">
             <h3>Share</h3>
             <p>
               Open and save <code>.docx</code>, <code>.rtf</code>, <code>.html</code>,
@@ -223,8 +241,8 @@
         </div>
 
         <p class="keyboard-note">
-          <strong>Keyboard first.</strong> The shortcuts are Word's — Ctrl+B, Ctrl+K, Ctrl+G, F7 —
-          and the ribbon itself is fully keyboard-operable: arrow along the tabs, open a menu, and
+          <strong>Keyboard first.</strong> The shortcuts are Word's: Ctrl+B, Ctrl+K, Ctrl+G, F7.
+          The ribbon itself is fully keyboard-operable: arrow along the tabs, open a menu, and
           walk it without touching the mouse. Alt+Q searches every command by name.
         </p>
       </section>
@@ -240,7 +258,7 @@
             <p>
               Officewrite is a non-profit educational project. It was built so students, teachers,
               families and anyone else who needs to write can do it without paying for office
-              software — and so that people learning to program have a real, working application
+              software, and so that people learning to program have a real, working application
               they can read end to end.
             </p>
             <p>
@@ -291,9 +309,9 @@
       <!-- Build --------------------------------------------------------- -->
       <!-- Comparison ---------------------------------------------------- -->
       <section id="compare" class="panel">
-        <h2>Officewrite vs Microsoft Word, LibreOffice Writer and Google Docs</h2>
+        <h2>Officewrite vs Microsoft Word, LibreOffice, OpenOffice and Google Docs</h2>
         <p class="section-lede">
-          The honest version. Officewrite is younger and smaller than any of these — what it offers
+          The honest version. Officewrite is younger and smaller than any of these. What it offers
           is that it is free, opens the same files, and asks nothing of you.
         </p>
 
@@ -305,6 +323,7 @@
                 <th scope="col">Officewrite</th>
                 <th scope="col">Microsoft Word</th>
                 <th scope="col">LibreOffice Writer</th>
+                <th scope="col">OpenOffice Writer</th>
                 <th scope="col">Google Docs</th>
               </tr>
             </thead>
@@ -315,16 +334,19 @@
                 <td>Subscription or licence</td>
                 <td>Free</td>
                 <td>Free</td>
+                <td>Free</td>
               </tr>
               <tr>
                 <th scope="row">Account required</th>
                 <td>No</td>
                 <td>Yes</td>
                 <td>No</td>
+                <td>No</td>
                 <td>Yes</td>
               </tr>
               <tr>
                 <th scope="row">Works offline</th>
+                <td>Yes</td>
                 <td>Yes</td>
                 <td>Yes</td>
                 <td>Yes</td>
@@ -335,6 +357,7 @@
                 <td>Yes</td>
                 <td>Yes</td>
                 <td>No</td>
+                <td>No</td>
                 <td>Yes</td>
               </tr>
               <tr>
@@ -342,12 +365,14 @@
                 <td>Yes</td>
                 <td>Yes</td>
                 <td>Yes</td>
+                <td>Reads only</td>
                 <td>Import / export</td>
               </tr>
               <tr>
                 <th scope="row">Documents stay on your device</th>
                 <td>Yes</td>
                 <td>Optional</td>
+                <td>Yes</td>
                 <td>Yes</td>
                 <td>No</td>
               </tr>
@@ -356,11 +381,18 @@
                 <td>Yes</td>
                 <td>No</td>
                 <td>Yes</td>
+                <td>Yes</td>
                 <td>No</td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        <p class="fine-print">
+          Apache OpenOffice opens a <code>.docx</code> but cannot save one; it writes
+          <code>.odt</code> or the older <code>.doc</code>. Officewrite reads and writes
+          <code>.docx</code> directly.
+        </p>
 
         <p class="fine-print">
           Read more: <a href="free-alternative-to-microsoft-word.html">a free alternative to
@@ -372,7 +404,7 @@
       <section id="build" class="panel alt">
         <h2>Build it yourself</h2>
         <p class="section-lede">
-          Three commands and it's running on your machine. Pull requests welcome — the tests run on
+          Three commands and it's running on your machine. Pull requests welcome; the tests run on
           every one.
         </p>
         <pre class="code-block"><code>git clone https://github.com/DandanITman/Officewrite.git
@@ -406,7 +438,7 @@ npm install &amp;&amp; npm run dev</code></pre>
 
     <footer class="footer">
       <p>
-        <strong>Officewrite</strong> — a free word processor for everyone.
+        <strong>Officewrite</strong>, a free word processor for everyone.
         <a href="https://github.com/DandanITman/Officewrite">github.com/DandanITman/Officewrite</a>
         · <a href="https://github.com/DandanITman/Officewrite/blob/main/CHANGELOG.md">Changelog</a>
         · <a href="https://github.com/DandanITman/Officewrite/blob/main/LICENSE">MIT licence</a>

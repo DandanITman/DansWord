@@ -37,7 +37,7 @@ export function KeyboardShortcutsDialog({ open, onClose }: { open: boolean; onCl
  *
  * The changelog is bundled at build time rather than fetched, so this works
  * offline and in the packaged app. Only the Markdown the file actually uses is
- * rendered — headings, bullets, bold, inline code and links. Links were missing
+ * rendered - headings, bullets, bold, inline code and links. Links were missing
  * before, so the dialog showed readers raw `[text](url)` source.
  */
 export function WhatsNewDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -123,7 +123,7 @@ function renderChangelog(source: string): React.ReactElement[] {
   return blocks;
 }
 
-/** Bold, inline code and links — every inline construct the changelog uses. */
+/** Bold, inline code and links - every inline construct the changelog uses. */
 function renderInline(text: string): React.ReactNode {
   const pattern = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
   const parts = text.split(pattern).filter(Boolean);

@@ -33,7 +33,7 @@ async function tableTool(page: Page, testId: string) {
  * The table tools had no coverage at all.
  *
  * Before this feature existed the app could insert a 3x3 table and never touch
- * it again — there was no way to add or remove a row or column, merge cells,
+ * it again - there was no way to add or remove a row or column, merge cells,
  * toggle a header row, or delete the table except with undo.
  */
 test.describe('Table tools', () => {
@@ -160,7 +160,7 @@ test.describe('Table tools', () => {
 
   /**
    * Word's Cell Size group. There was no way to give a column a specific
-   * width at all — the only width control reset them.
+   * width at all - the only width control reset them.
    */
   test('TC-TBL-012: column width and row height can be set explicitly', async ({ page }) => {
     await insertTable(page);
@@ -197,7 +197,7 @@ test.describe('Table tools', () => {
   /**
    * Distribute measured the FIRST table in the document, not the caret's, so
    * in a two-table document it sized the second from the first one's width and
-   * wrote widths the table could not hold — persisted through save.
+   * wrote widths the table could not hold - persisted through save.
    */
   test('TC-TBL-014: distribute sizes the caret table, not the first one', async ({ page }) => {
     await insertTable(page);
