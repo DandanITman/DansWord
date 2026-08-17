@@ -10,6 +10,38 @@ The project was called **DansWord** until 0.3.0. Entries below that version have
 been rewritten to use the current name, so they describe the same application
 under the name it now has rather than the one it shipped with at the time.
 
+## [Unreleased]
+
+### Changed
+
+- **The site navigation is shorter and says what it points at.** Screenshots,
+  About Project, Compare, Download. "What it does" was a vague label, and the
+  two article pages it sat beside are gone.
+- **"Why it exists" and "What it does" are one section now, About Project.**
+  They were the same subject split in two, and the smaller of the two carried a
+  comparison table that only repeated the full one further down.
+
+### Removed
+
+- **The `free-alternative-to-microsoft-word` and `open-docx-without-word`
+  pages.** Their subject is the home page's now: the title, the description and
+  the comparison table all name Microsoft Word, LibreOffice and OpenOffice.
+
+### Added
+
+- **A 404 page.** Removing those two pages leaves stale links behind, and
+  GitHub's own 404 is a bare wall of text. This one carries the site's chrome
+  and offers the home page, the browser app and the download.
+
+### Fixed
+
+- **The fine print under the download button sat off to the left** while the
+  heading and the button above it were centred. A rule written for the article
+  pages capped every panel paragraph at 62ch with no automatic margins, so the
+  block was centred but its text was not.
+- `npm run package` no longer breaks across two lines, which read as two
+  separate commands.
+
 ## [0.5.0]
 
 **Mail merge arrives, and every template card now shows the template.** The

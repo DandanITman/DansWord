@@ -47,8 +47,6 @@ same code in both.
 
 - Website: https://officewrite.com/
 - Use it in a browser: https://officewrite.com/app/
-- Free alternative to Microsoft Word: https://officewrite.com/free-alternative-to-microsoft-word.html
-- How to open a .docx without Word: https://officewrite.com/open-docx-without-word.html
 - Source code: https://github.com/DandanITman/Officewrite
 - Feature list: https://officewrite.com/FEATURES.md
 

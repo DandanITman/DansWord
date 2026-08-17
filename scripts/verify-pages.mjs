@@ -14,10 +14,9 @@ const required = [
   'docs/robots.txt',
   'docs/sitemap.xml',
   'docs/llms.txt',
-  // Content pages carrying the search terms the landing page cannot target on
-  // its own. Both are linked from the nav, so losing one orphans the other.
-  'docs/free-alternative-to-microsoft-word.html',
-  'docs/open-docx-without-word.html',
+  // Catches every stale URL, including the two article pages folded into the
+  // home page. Without it GitHub serves its own generic 404.
+  'docs/404.html',
 ];
 let failed = false;
 

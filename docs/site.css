@@ -201,6 +201,11 @@ code {
   margin: 22px 0 10px;
 }
 
+/* The 404 page centres its buttons; the hero's row stays left with its text. */
+.cta-row-centred {
+  justify-content: center;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -473,15 +478,47 @@ code {
   text-align: center;
 }
 
-.download-panel .section-lede {
+/* Centre every block in the panel, not only the lede.
+   The paragraphs carry a max-width for readability, and a max-width with no
+   auto margins sits hard left inside a centred section - which is exactly how
+   the fine print under the download button ended up off to one side while the
+   heading and the button above it were centred. */
+.download-panel > p,
+.download-panel .section-lede,
+.download-panel .fine-print {
   margin-left: auto;
   margin-right: auto;
+  max-width: 62ch;
+}
+
+/* A command is one token to a reader, so it must not wrap mid-way: "npm run"
+   on one line and "package" on the next reads as two commands. */
+.fine-print code {
+  white-space: nowrap;
 }
 
 .fine-print {
   font-size: 0.85rem;
   color: var(--ink-faint);
   margin-top: 14px;
+}
+
+/* About Project --------------------------------------------------------- */
+
+/* The project's reason for existing, above the feature cards. */
+.about-intro {
+  color: var(--ink-soft);
+  line-height: 1.7;
+  max-width: 72ch;
+  margin: 0 0 30px;
+}
+
+/* "What it does" now sits inside About Project rather than owning a section,
+   so it needs a heading that reads as a step down from the h2. */
+.about-subhead {
+  font-size: 1.28rem;
+  color: var(--ink);
+  margin: 0 0 10px;
 }
 
 /* Footer ---------------------------------------------------------------- */
@@ -596,38 +633,3 @@ code {
   border-bottom: none;
 }
 
-/* Article lists --------------------------------------------------------- */
-
-/* The content pages use ordinary prose lists. The reset strips list styling
-   globally, so restore it here rather than fighting it inline. */
-.plain-list {
-  margin: 1rem 0 1.25rem;
-  padding-left: 1.5rem;
-  list-style: disc;
-  color: var(--ink-soft);
-  line-height: 1.7;
-}
-
-ol.plain-list {
-  list-style: decimal;
-}
-
-.plain-list li {
-  margin-bottom: 0.5rem;
-}
-
-.plain-list strong {
-  color: var(--ink);
-}
-
-/* Prose inside the article panels needs breathing room the landing page
-   sections get from their own spacing rules. */
-.panel > h2 {
-  margin-top: 2.25rem;
-}
-
-.panel > p {
-  color: var(--ink-soft);
-  line-height: 1.7;
-  max-width: 62ch;
-}
