@@ -16,12 +16,19 @@ export type ImportDocResult =
  *
  * Every member here must have a matching `ipcMain.handle` in `electron/` and a
  * matching stub in the test harness. Nothing in `src/` may reach for
- * `window.officewrite` directly — go through `platform` in ./index.ts so the
+ * `window.officewrite` directly - go through `platform` in ./index.ts so the
  * missing-bridge case stays handled in exactly one place.
  */
 export interface OfficewriteAPI {
   openFile: () => Promise<string | null>;
   openImageFile: () => Promise<string | null>;
+  /**
+   * Mailings > Select Recipients. A separate picker rather than `openFile`
+   * because the merge wants a CSV and the document picker filters those out -
+   * users would have had to switch the filter to "All Files" to find their own
+   * mailing list.
+   */
+  openDataFile: () => Promise<string | null>;
   saveFile: (defaultPath?: string) => Promise<string | null>;
   openFolder: () => Promise<string | null>;
   readFile: (filePath: string) => Promise<Uint8Array>;
@@ -54,7 +61,7 @@ export interface OfficewriteAPI {
 
   /**
    * Help tab: open a project URL in the user's browser. Resolves false when the
-   * host rejects it — the allowlist lives in the main process, not here.
+   * host rejects it - the allowlist lives in the main process, not here.
    */
   openExternal: (url: string) => Promise<boolean>;
 

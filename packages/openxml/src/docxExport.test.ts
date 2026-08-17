@@ -182,8 +182,8 @@ describe('docxExport', () => {
   });
 
   // taskList had no case in the exporter, so it fell through to the branch that
-  // recurses into children: the item text was written but the checkbox — the
-  // only thing that makes it a checklist — was silently dropped.
+  // recurses into children: the item text was written but the checkbox - the
+  // only thing that makes it a checklist - was silently dropped.
   it('keeps checkbox state when exporting a task list', async () => {
     const doc = {
       type: 'doc',

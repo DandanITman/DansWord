@@ -11,7 +11,7 @@ import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view';
  *
  * The drag itself only touches `style.height` on the row element. Committing a
  * transaction per mousemove would flood the history and make undo useless, so
- * the document is updated once, on release — one drag, one undo step.
+ * the document is updated once, on release - one drag, one undo step.
  */
 
 /** How close to the border counts as grabbing it. Word's target is similar. */
@@ -84,8 +84,8 @@ function targetUnder(view: EditorView, event: MouseEvent): Target | null {
   if (Math.abs(event.clientY - rowBox.bottom) > GRAB) {
     /*
      * Exactly on a border, the element under the pointer is the row *below* it.
-     * That line belongs to the row above — dragging it is what Word treats as
-     * resizing that row — so step back one row when the pointer is on this
+     * That line belongs to the row above - dragging it is what Word treats as
+     * resizing that row - so step back one row when the pointer is on this
      * row's top edge instead.
      */
     if (Math.abs(event.clientY - rowBox.top) > GRAB) return null;
@@ -160,7 +160,7 @@ export const TableRowResizing = TableRow.extend({
         /*
          * Listeners are attached to the editor element directly rather than
          * through `handleDOMEvents`. ProseMirror runs those through `someProp`,
-         * which stops at the first plugin that returns a truthy value — and
+         * which stops at the first plugin that returns a truthy value - and
          * prosemirror-tables' own column resizer sits ahead of this one in the
          * chain, so the row handler never saw a mousemove at all.
          */
@@ -201,7 +201,7 @@ export const TableRowResizing = TableRow.extend({
                 MIN_HEIGHT,
                 Math.round(dragging.startHeight + (move.clientY - dragging.startY)),
               );
-              // Preview on the element only — see the note at the top.
+              // Preview on the element only - see the note at the top.
               dragging.target.rowDom.style.height = `${height}px`;
             };
 

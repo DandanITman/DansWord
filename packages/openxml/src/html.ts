@@ -1,3 +1,5 @@
+import { mergeFieldLabel, type MergeFieldAttrs } from '@officewrite/core';
+
 type TipTapNode = {
   type?: string;
   text?: string;
@@ -75,6 +77,20 @@ function inlineFromNode(node: TipTapNode): string {
     return wrapMarks(node.text, node.marks);
   }
   if (node.type === 'hardBreak') return '<br />';
+  /**
+   * A merge field carries its whole configuration in a data attribute, so an
+   * Officewrite-native reopen restores a real field while every other reader sees
+   * the «FieldName» text. Without this the fall-through below returned an empty
+   * string, since a merge field is an atom with no children.
+   */
+  if (node.type === 'mergeField') {
+    const attrs = node.attrs as unknown as MergeFieldAttrs;
+    return (
+      `<span data-merge-field="${escapeHtml(String(attrs.field ?? ''))}" ` +
+      `data-merge-config="${escapeHtml(JSON.stringify(attrs))}" class="doc-merge-field">` +
+      `${escapeHtml(mergeFieldLabel(attrs))}</span>`
+    );
+  }
   return (node.content ?? []).map(inlineFromNode).join('');
 }
 

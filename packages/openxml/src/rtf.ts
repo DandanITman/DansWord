@@ -1,3 +1,5 @@
+import { mergeFieldLabel, type MergeFieldAttrs } from '@officewrite/core';
+
 type TipTapNode = {
   type?: string;
   text?: string;
@@ -11,6 +13,15 @@ function escapeRtf(text: string) {
 }
 
 function nodeToRtf(node: TipTapNode): string {
+  /**
+   * A merge field is an inline atom with no children, so the recursive
+   * fall-through at the end of this function returned nothing for it - an RTF
+   * export of a merge main document lost every field. It writes as its own
+   * «FieldName» text, which is what Word displays.
+   */
+  if (node.type === 'mergeField') {
+    return escapeRtf(mergeFieldLabel(node.attrs as unknown as MergeFieldAttrs));
+  }
   if (node.type === 'text' && node.text) {
     let prefix = '';
     let suffix = '';

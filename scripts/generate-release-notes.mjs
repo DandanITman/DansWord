@@ -73,7 +73,7 @@ function section(title, items) {
  * happened, not what changed for someone using the app. The changelog is where
  * that is written, so it leads and the commits become the supporting detail.
  *
- * Every version between the previous tag and this one is included — a release
+ * Every version between the previous tag and this one is included, because a release
  * that spans 0.2.1 to 0.2.8 should show all eight, not just the last.
  */
 function changelogSections(tag, sinceTag) {
@@ -129,7 +129,7 @@ const compareUrl = previousTag
 const body = [
   `# Officewrite ${version}`,
   '',
-  'Non-profit educational word processor — free Word alternative for everyone.',
+  'Non-profit educational word processor. A free alternative to Microsoft Word, LibreOffice and OpenOffice.',
   '',
   previousTag
     ? `Changes since [${previousTag}](https://github.com/DandanITman/Officewrite/releases/tag/${previousTag}).`
@@ -150,7 +150,7 @@ const body = [
   section('Other changes', groups.other),
   commits.length
     ? ''
-    : '_No commits found in range — tag may point at the same commit as the previous release._\n',
+    : '_No commits found in range. The tag may point at the same commit as the previous release._\n',
   '</details>',
   '',
   '---',

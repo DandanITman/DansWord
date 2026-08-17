@@ -8,8 +8,8 @@ import { clearWidths, distributeColumns, distributeRows } from '../utils/tableSi
  * The command registry behind the header's search box (Alt+Q).
  *
  * Hand-written on purpose. `RibbonActions` is a TypeScript interface with no
- * runtime existence, and more than half the ribbon — bold, the alignments, the
- * lists, indent, line spacing, headings, table insert, page break — calls
+ * runtime existence, and more than half the ribbon - bold, the alignments, the
+ * lists, indent, line spacing, headings, table insert, page break - calls
  * `editor.chain()` straight from its tab file and never touches `RibbonActions`
  * at all. A registry derived from the actions object would therefore miss most
  * of the ribbon and label the rest with property names.
@@ -47,9 +47,9 @@ const chain = (ctx: CommandContext) => ctx.editor?.chain().focus();
  * The groups each tab actually renders, so a command's breadcrumb cannot name
  * a group that does not exist.
  *
- * Five breadcrumbs rotted silently when the ribbon was restructured — Alt+Q
+ * Five breadcrumbs rotted silently when the ribbon was restructured - Alt+Q
  * was still offering "Home > Undo" and "View > Window" after both groups were
- * deleted — because the test beside this file checked `tab` and never `group`.
+ * deleted - because the test beside this file checked `tab` and never `group`.
  * It does now.
  *
  * Two entries are deliberately not RibbonGroups: undo/redo live in the Quick
@@ -73,6 +73,13 @@ export const RIBBON_GROUPS: Partial<Record<RibbonTab, readonly string[]>> = {
   draw: ['Pens', 'Tools', 'Canvas'],
   pageLayout: ['Page Setup', 'Paragraph', 'Page Background', 'Arrange'],
   references: ['Table of Contents', 'Footnotes', 'Citations & Bibliography', 'Captions', 'Index'],
+  mailings: [
+    'Create',
+    'Start Mail Merge',
+    'Write & Insert Fields',
+    'Preview Results',
+    'Finish',
+  ],
   review: [
     'Proofing',
     'Accessibility',
@@ -207,6 +214,27 @@ export function buildCommands(): RibbonCommand[] {
     { id: 'references.caption', label: 'Insert caption', tab: 'references', group: 'Captions', run: (c) => c.actions.onInsertCaption('Figure') },
     { id: 'references.indexEntry', label: 'Mark index entry', tab: 'references', group: 'Index', shortcut: 'Alt+Shift+X', enabled: (c) => c.state.hasSelection, run: (c) => c.actions.onMarkIndexEntry() },
     { id: 'references.index', label: 'Insert index', tab: 'references', group: 'Index', run: (c) => c.actions.onInsertIndex() },
+
+    // ---- Mailings ----
+    // Enabled-gated the same way the tab is, so Alt+Q cannot route around the
+    // "attach a list first" rule the ribbon enforces.
+    { id: 'mailings.envelopes', label: 'Envelopes', tab: 'mailings', group: 'Create', keywords: ['envelope', 'post', 'mail'], run: (c) => c.actions.onOpenEnvelopes() },
+    { id: 'mailings.labels', label: 'Labels', tab: 'mailings', group: 'Create', keywords: ['avery', 'address labels', 'sticker'], run: (c) => c.actions.onOpenLabels() },
+    { id: 'mailings.startMerge', label: 'Start mail merge', tab: 'mailings', group: 'Start Mail Merge', keywords: ['mail merge', 'bulk letters'], run: (c) => c.goToTab('mailings') },
+    { id: 'mailings.wizard', label: 'Step-by-step mail merge wizard', tab: 'mailings', group: 'Start Mail Merge', keywords: ['mail merge wizard', 'guide'], run: (c) => c.actions.onOpenMergeWizard() },
+    { id: 'mailings.selectRecipients', label: 'Select recipients', tab: 'mailings', group: 'Start Mail Merge', keywords: ['recipient list', 'csv', 'data source'], run: (c) => c.actions.onUseExistingRecipientList() },
+    { id: 'mailings.newList', label: 'Type a new recipient list', tab: 'mailings', group: 'Start Mail Merge', keywords: ['address list'], run: (c) => c.actions.onNewRecipientList() },
+    { id: 'mailings.editRecipients', label: 'Edit recipient list', tab: 'mailings', group: 'Start Mail Merge', enabled: (c) => Boolean(c.flags.mailMerge.source), run: (c) => c.actions.onEditRecipientList() },
+    { id: 'mailings.insertField', label: 'Insert merge field', tab: 'mailings', group: 'Write & Insert Fields', keywords: ['merge field'], enabled: (c) => Boolean(c.flags.mailMerge.source), run: (c) => c.actions.onOpenInsertMergeField() },
+    { id: 'mailings.addressBlock', label: 'Address block', tab: 'mailings', group: 'Write & Insert Fields', enabled: (c) => Boolean(c.flags.mailMerge.source), run: (c) => c.actions.onOpenAddressBlock() },
+    { id: 'mailings.greetingLine', label: 'Greeting line', tab: 'mailings', group: 'Write & Insert Fields', enabled: (c) => Boolean(c.flags.mailMerge.source), run: (c) => c.actions.onOpenGreetingLine() },
+    { id: 'mailings.matchFields', label: 'Match fields', tab: 'mailings', group: 'Write & Insert Fields', enabled: (c) => Boolean(c.flags.mailMerge.source), run: (c) => c.actions.onOpenMatchFields() },
+    { id: 'mailings.highlightFields', label: 'Highlight merge fields', tab: 'mailings', group: 'Write & Insert Fields', enabled: (c) => Boolean(c.flags.mailMerge.source), run: (c) => c.actions.onToggleHighlightMergeFields() },
+    { id: 'mailings.updateLabels', label: 'Update labels', tab: 'mailings', group: 'Write & Insert Fields', enabled: (c) => Boolean(c.flags.mailMerge.source), run: (c) => c.actions.onUpdateLabels() },
+    { id: 'mailings.preview', label: 'Preview results', tab: 'mailings', group: 'Preview Results', keywords: ['preview merge'], enabled: (c) => c.flags.mailMerge.recordCount > 0, run: (c) => c.actions.onTogglePreviewResults() },
+    { id: 'mailings.findRecipient', label: 'Find recipient', tab: 'mailings', group: 'Preview Results', enabled: (c) => c.flags.mailMerge.recordCount > 0, run: (c) => c.actions.onOpenFindRecipient() },
+    { id: 'mailings.checkErrors', label: 'Check for errors', tab: 'mailings', group: 'Preview Results', keywords: ['merge errors', 'validate'], run: (c) => c.actions.onCheckMergeErrors() },
+    { id: 'mailings.finish', label: 'Finish and merge', tab: 'mailings', group: 'Finish', keywords: ['merge to new document'], enabled: (c) => c.flags.mailMerge.recordCount > 0, run: (c) => c.actions.onFinishMerge('documents') },
 
     // ---- Review ----
     { id: 'review.spelling', label: 'Spelling & Grammar', tab: 'review', group: 'Proofing', keywords: ['spell check', 'proofing', 'editor'], shortcut: 'F7', run: (c) => c.actions.onOpenProofing() },

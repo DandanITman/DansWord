@@ -5,7 +5,7 @@ import path from 'node:path';
 import { renameSync } from 'node:fs';
 
 /**
- * The web entry cannot be called index.html in apps/desktop — that name is
+ * The web entry cannot be called index.html in apps/desktop - that name is
  * already the Electron renderer's. Vite names the output after the input, so
  * rename it once the bundle is on disk; /app/ has to serve an index.
  */
@@ -21,7 +21,7 @@ function emitAsIndexHtml(outDir: string): Plugin {
 /**
  * Three build modes share this config:
  *
- *   default   the Electron app — renderer plus main and preload bundles
+ *   default   the Electron app - renderer plus main and preload bundles
  *   test      the Playwright harness, which mocks the host bridge
  *   web       officewrite.com/app, which implements the bridge for real
  *

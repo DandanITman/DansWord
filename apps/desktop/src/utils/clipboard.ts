@@ -4,7 +4,7 @@ import type { Editor } from '@tiptap/react';
  * Clipboard actions for the ribbon buttons.
  *
  * These used `document.execCommand('cut' | 'copy' | 'paste')`. Chromium blocks
- * script-initiated `paste` outright, so the Paste button was a silent no-op —
+ * script-initiated `paste` outright, so the Paste button was a silent no-op -
  * no error, no clipboard read, no fallback. Cut and copy happened to work, but
  * only as a side effect of the editor keeping the DOM selection.
  */

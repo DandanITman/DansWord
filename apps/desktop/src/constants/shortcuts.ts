@@ -2,7 +2,7 @@
  * Every keyboard shortcut Officewrite binds, in one place.
  *
  * Help > Keyboard Shortcuts renders this, and `docs/FEATURES.md` is written
- * from it — so a binding added to `App.tsx` without a line here is a binding the
+ * from it - so a binding added to `App.tsx` without a line here is a binding the
  * user has no way to discover.
  */
 export interface KeyboardShortcut {

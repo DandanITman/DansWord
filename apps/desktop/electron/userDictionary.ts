@@ -16,7 +16,7 @@ async function load(): Promise<Set<string>> {
  * Words the user accepted via "Add to dictionary".
  *
  * The spell suggestion menu previously offered only "Ignore", which closed the
- * menu and did nothing — there was no way to teach the checker a word.
+ * menu and did nothing - there was no way to teach the checker a word.
  */
 export async function getUserDictionary(): Promise<string[]> {
   return [...(await load())];

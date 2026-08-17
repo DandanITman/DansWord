@@ -5,6 +5,8 @@ import { ensureDir } from '../store';
 
 const DOCUMENT_EXTENSIONS = ['docx', 'officewrite', 'doc', 'txt', 'rtf', 'html', 'htm'];
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'];
+/** Mail-merge recipient lists. Delimited text only; the parser sniffs which. */
+const DATA_EXTENSIONS = ['csv', 'tsv', 'txt'];
 
 export function registerFileIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('dialog:openFile', async () => {
@@ -27,6 +29,19 @@ export function registerFileIpc(getWindow: () => BrowserWindow | null) {
       properties: ['openFile'],
       filters: [
         { name: 'Images', extensions: IMAGE_EXTENSIONS },
+        { name: 'All Files', extensions: ['*'] },
+      ],
+    });
+    return result.canceled ? null : (result.filePaths[0] ?? null);
+  });
+
+  ipcMain.handle('dialog:openDataFile', async () => {
+    const win = getWindow();
+    if (!win) return null;
+    const result = await dialog.showOpenDialog(win, {
+      properties: ['openFile'],
+      filters: [
+        { name: 'Recipient lists', extensions: DATA_EXTENSIONS },
         { name: 'All Files', extensions: ['*'] },
       ],
     });

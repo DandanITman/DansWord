@@ -138,7 +138,7 @@ test.describe('Reworked features', () => {
     await openRibbonDialog(page, 'home', 'Styles pane');
 
     // The list filtered out the five built-in ids, but a new document's
-    // customStyles *is* those built-ins — so it was always empty.
+    // customStyles *is* those built-ins - so it was always empty.
     const list = page.getByTestId('style-list');
     await expect(list).toBeVisible();
     await expect(list.getByRole('button')).not.toHaveCount(0);
@@ -380,7 +380,7 @@ test.describe('Reworked features', () => {
     await switchRibbonTab(page, 'tableLayout');
     await expect(page.locator('.ribbon-tab.active')).toHaveText('Table Layout');
 
-    // Click the paragraph above the table — focus is on the ribbon button
+    // Click the paragraph above the table - focus is on the ribbon button
     // after switching tabs, so a keystroke would never reach the editor.
     await page.getByTestId('word-editor').locator('p').first().click();
     await expect(page.locator('.ribbon-tab.active')).toHaveText('Review');
@@ -389,7 +389,7 @@ test.describe('Reworked features', () => {
   /**
    * The Print pane was a heading and one button. Because the editor scrolls
    * continuously and never reflows pages on screen, it was the only place a
-   * user could have seen where the pages actually break — so they could not.
+   * user could have seen where the pages actually break - so they could not.
    */
   test('TC-FILE-012: the print pane previews the document and carries settings', async ({
     page,

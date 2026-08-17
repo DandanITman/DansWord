@@ -17,8 +17,8 @@ function has(command) {
 }
 
 /**
- * Electron needs a display. On a headless Linux box — a container, a CI runner,
- * an SSH session — the step used to abort the whole suite with an X error
+ * Electron needs a display. On a headless Linux box - a container, a CI runner,
+ * an SSH session - the step used to abort the whole suite with an X error
  * partway through, so nothing after it ran either.
  */
 function runElectronTests() {
@@ -36,6 +36,8 @@ function runElectronTests() {
   console.log('Install it (apt-get install xvfb) or run with a display attached.\n');
 }
 
+// Cheap and first: a punctuation slip should not wait behind a full build.
+run('Em dash check', 'npm', ['run', 'check:em-dashes']);
 run('Typecheck', 'npm', ['run', 'typecheck']);
 run('Build', 'npm', ['run', 'build']);
 run('Unit tests', 'npm', ['run', 'test:unit']);

@@ -63,7 +63,7 @@ describe('format export fidelity', () => {
 /**
  * Column breaks were added to the editor before any exporter knew about them.
  * `columnBreak` is an atom with no content, so the exporters' default branch
- * recursed into nothing and dropped it — the break survived typing but not
+ * recursed into nothing and dropped it - the break survived typing but not
  * saving, which is the worse of the two failures.
  */
 describe('column breaks survive export', () => {
@@ -98,7 +98,7 @@ describe('column breaks survive export', () => {
 
 /**
  * Headers and footers were a single centred string, so "title on the left,
- * page number on the right" — the commonest arrangement there is — could not
+ * page number on the right" - the commonest arrangement there is - could not
  * be expressed, let alone survive a save. Word lays the zones out against a
  * centre and a right tab stop.
  */

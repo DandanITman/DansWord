@@ -43,7 +43,7 @@ export function AccessibilityPane({
   const goTo = (issue: AccessibilityIssue) => {
     if (!editor) return;
     // The checker counts positions the same way ProseMirror does, but a stale
-    // report can outrun an edit — clamp rather than throw.
+    // report can outrun an edit - clamp rather than throw.
     const pos = Math.min(Math.max(1, issue.pos), editor.state.doc.content.size);
     editor.chain().focus().setTextSelection(pos).scrollIntoView().run();
   };

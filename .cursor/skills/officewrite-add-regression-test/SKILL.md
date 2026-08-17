@@ -11,7 +11,7 @@ description: >-
 ## Project context
 
 - **Stack:** npm workspaces, Electron + React + TipTap, Vitest (unit), Playwright (e2e + visual)
-- **Harness:** Browser tests use `apps/desktop/test.html` with mock `window.officewrite` — not real Electron IPC
+- **Harness:** Browser tests use `apps/desktop/test.html` with mock `window.officewrite` - not real Electron IPC
 - **Catalog:** Every scenario has an ID in `tests/catalog/test-catalog.json`
 - **Daniel preference:** Do not run tests, browser QA, visual checks, screenshots, builds, or other automated verification unless Daniel explicitly asks for it in the current turn.
 
@@ -74,7 +74,7 @@ test.describe('feature area', () => {
 - Do not skip tests without documenting reason in catalog
 - Do not run tests locally unless Daniel explicitly asks in the current turn
 - Include automated catalog IDs in spec/unit test source, not only in docs or catalog JSON
-- Use deterministic fixtures — no real user data or paid services
+- Use deterministic fixtures - no real user data or paid services
 - Mask dynamic UI in visual tests via `visualMaskLocators()`
 - Update `docs/testing.md` coverage section when adding major flows
 

@@ -101,7 +101,7 @@ export const ResizableImage = Image.extend({
       offsetY: numeric('offsetY', 0),
       rotation: numeric('rotation', 0),
       // Stacking order for floating objects. Two overlapping floats could be
-      // created and then never reordered — Word's Bring Forward / Send Backward.
+      // created and then never reordered - Word's Bring Forward / Send Backward.
       z: numeric('z', 0),
       brightness: numeric('brightness', 100),
       contrast: numeric('contrast', 100),

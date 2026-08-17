@@ -1,8 +1,8 @@
 /**
  * The font list, in one place.
  *
- * There used to be three hardcoded lists — fifteen names in the ribbon,
- * fourteen in the Font dialog, five in the style editor — which disagreed with
+ * There used to be three hardcoded lists - fifteen names in the ribbon,
+ * fourteen in the Font dialog, five in the style editor - which disagreed with
  * each other and with the machine. Word offers every installed font, so this
  * measures which of a broad candidate set the system can actually render and
  * offers those.
@@ -50,7 +50,7 @@ export const FONT_CANDIDATES: readonly string[] = [
 ];
 
 /**
- * What to offer when measurement is unavailable — a headless test environment,
+ * What to offer when measurement is unavailable - a headless test environment,
  * or a canvas the platform refuses. Word's own defaults, so the app is never
  * left without a usable list.
  */
@@ -97,7 +97,7 @@ export function detectInstalledFonts(
 let cached: readonly string[] | null = null;
 
 /**
- * The fonts to offer. Measured once per session — the installed set does not
+ * The fonts to offer. Measured once per session - the installed set does not
  * change while the app runs, and probing ~160 faces is not free.
  *
  * The baseline set is always included, even when this machine cannot render it.

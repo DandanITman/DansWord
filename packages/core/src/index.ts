@@ -8,3 +8,5 @@ export * from './references';
 export * from './thesaurus';
 export * from './contrast';
 export * from './accessibility';
+export * from './mailMerge';
+export * from './mailMergeDocument';

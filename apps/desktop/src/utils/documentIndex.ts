@@ -59,7 +59,7 @@ export function collectIndexEntries(editor: Editor): string[] {
   return [...entries].sort((a, b) => a.localeCompare(b));
 }
 
-/** Replace the attributes of every node of a type — how the field blocks update. */
+/** Replace the attributes of every node of a type - how the field blocks update. */
 export function updateGeneratedBlocks(
   editor: Editor,
   nodeName: string,

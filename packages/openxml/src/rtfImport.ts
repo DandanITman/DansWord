@@ -16,7 +16,7 @@ type Token =
  * Tokenise RTF into groups, control words and literal text.
  *
  * The previous importer ran `text.replace(/\\[a-z]+\d* ?/gi, '')` over the
- * whole file, which discarded every control word — so bold, italic,
+ * whole file, which discarded every control word - so bold, italic,
  * alignment, headings and colours were lost and every RTF opened as
  * unformatted paragraphs.
  */
@@ -62,7 +62,7 @@ function tokenize(rtf: string): Token[] {
     }
 
     if (next === "'") {
-      // \'hh — a byte in the current code page.
+      // \'hh - a byte in the current code page.
       const hex = rtf.slice(i + 2, i + 4);
       const code = parseInt(hex, 16);
       if (Number.isFinite(code)) buffer += String.fromCharCode(code);
@@ -290,7 +290,7 @@ export function importFromRtf(rtf: string): TipTapNode {
       continue;
     }
     if (word === '*') {
-      // \*\destination — an ignorable destination.
+      // \*\destination - an ignorable destination.
       if (skipDepth === null) skipDepth = depth;
       continue;
     }

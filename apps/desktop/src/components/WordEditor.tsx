@@ -251,7 +251,7 @@ export function WordEditor({
   useEffect(() => {
     if (!editor) return;
     // emitUpdate: false. setEditable fires TipTap's `update` event by default,
-    // which App treats as an edit and flags the document dirty — so saving,
+    // which App treats as an edit and flags the document dirty - so saving,
     // which re-renders this component, immediately re-dirtied the document and
     // the unsaved-changes asterisk never cleared. Editability is not content.
     editor.setEditable(!readOnly, false);
@@ -429,11 +429,11 @@ export function WordEditor({
           style={pageStyle}
           // Word puts the caret on the nearest line when you click a margin.
           // Here the margins are page padding outside the editable element, so
-          // clicking one did nothing at all — the page looked dead.
+          // clicking one did nothing at all - the page looked dead.
           onMouseDown={(event) => {
             if (!editor || readOnly) return;
             /*
-             * Only a hit on the page element itself is a margin click — the
+             * Only a hit on the page element itself is a margin click - the
              * margins are this element's own padding. Testing instead for
              * "outside the known regions" stole mousedown from everything not
              * on the list, including the footnote editors, which lost focus to
@@ -457,7 +457,7 @@ export function WordEditor({
               {watermark.text}
             </div>
           )}
-          {/* Three zones against the page margins, as Word lays them out —
+          {/* Three zones against the page margins, as Word lays them out -
               a title on the left and a page number on the right is the
               commonest arrangement and was impossible with one field. */}
           {showHeaderFooter && !zonesEmpty(headerZones) && (

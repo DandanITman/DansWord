@@ -5,7 +5,7 @@ import { Mark, Node, mergeAttributes } from '@tiptap/core';
  * entries, and the generated blocks (bibliography, index, table of figures).
  *
  * The generated blocks hold a snapshot of their entries, exactly as a Word field
- * holds its last-updated result. The ribbon's Update commands recompute them —
+ * holds its last-updated result. The ribbon's Update commands recompute them -
  * which is why Word makes you press Update Table too.
  */
 

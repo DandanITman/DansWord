@@ -4,15 +4,15 @@ import { Extension } from '@tiptap/core';
  * Table Design: the table style gallery, banded rows and cell shading.
  *
  * The style is one attribute on the table node and the rest is CSS, which is
- * how Word's table styles behave too — changing the style must not rewrite
+ * how Word's table styles behave too - changing the style must not rewrite
  * every cell.
  */
 
 export const TABLE_STYLES = [
   { id: 'grid', label: 'Table Grid' },
   { id: 'plain', label: 'Plain Table' },
-  { id: 'listAccent', label: 'List Table — Accent' },
-  { id: 'gridAccent', label: 'Grid Table — Accent' },
+  { id: 'listAccent', label: 'List Table Accent' },
+  { id: 'gridAccent', label: 'Grid Table Accent' },
   { id: 'bandedRows', label: 'Banded Rows' },
   { id: 'bandedColumns', label: 'Banded Columns' },
   { id: 'borderless', label: 'No Borders' },

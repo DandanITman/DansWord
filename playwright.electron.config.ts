@@ -4,7 +4,7 @@ import { defineConfig } from '@playwright/test';
  * Real Electron process tests.
  *
  * The browser suite runs against a localStorage mock of the host, so nothing
- * ever executed main.ts, preload.ts, spell.ts or docImport.ts — the entire
+ * ever executed main.ts, preload.ts, spell.ts or docImport.ts - the entire
  * Electron layer shipped with zero test coverage, and the one file that
  * claimed to cover it held three skipped `expect(true).toBe(true)` bodies.
  */

@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>A word processor that doesn't ask for your card.</strong><br />
-  Free, open source, and yours to keep — a non-profit educational project.
+  Free, open source, and yours to keep. A non-profit educational project.
 </p>
 
 <p align="center">
@@ -20,8 +20,9 @@
 
 ---
 
-Officewrite writes essays, letters, reports and CVs — with the ribbon, the styles and the `.docx`
-files you already know. It runs on your own Windows PC, works offline, and costs nothing.
+Officewrite is a free alternative to Microsoft Word, LibreOffice and OpenOffice. It writes essays,
+letters, reports and CVs, with the ribbon, the styles and the `.docx` files you already know. It
+runs on your own Windows PC, works offline, and costs nothing.
 
 There is **no account, no cloud, and no telemetry.** Your documents stay on your machine, and the
 app makes no network requests of its own.
@@ -56,18 +57,18 @@ npm run dev
 | **Share** | Open and save `.docx`, `.rtf`, `.html`, `.txt` and the native `.officewrite` · export PDF · print with a preview so you see the page breaks first |
 | **Keep safe** | Auto-save · up to twenty versions kept per document · delete goes to the recycle bin |
 
-The ribbon is fully keyboard-operable — arrow along the tabs, open a menu and walk it without
+The ribbon is fully keyboard-operable: arrow along the tabs, open a menu and walk it without
 touching the mouse. `Alt+Q` searches every command by name, and the shortcuts are the ones you
 already use: `Ctrl+B`, `Ctrl+K`, `Ctrl+G`, `F7`.
 
-**[docs/FEATURES.md](docs/FEATURES.md) is the honest list** — it records what exists *and* what
+**[docs/FEATURES.md](docs/FEATURES.md) is the honest list**: it records what exists *and* what
 doesn't, including the known limitations.
 
 ## Why it exists
 
 Writing a school essay shouldn't need a subscription. Officewrite is a non-profit educational
 project, built so students, teachers, families and anyone else who needs to write can do it
-without paying for office software — and so that people learning to program have a real, working
+without paying for office software, and so that people learning to program have a real, working
 application they can read end to end.
 
 It is not trying to be a clone. It borrows the layout conventions a Word user already has in their
@@ -75,7 +76,7 @@ fingers, then stops. Where it differs, it says so.
 
 ## Contributing
 
-Contributions are welcome, and small ones are genuinely useful — a typo, a clearer error message,
+Contributions are welcome, and small ones are genuinely useful: a typo, a clearer error message,
 a missing test. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
 A few things worth knowing before you open a pull request:
@@ -88,7 +89,7 @@ npm run test:electron # against a real Electron process
 ```
 
 **Tests reach the app through the controls a person actually clicks.** There is deliberately no
-back door for a test to drive the editor directly — a test that cannot click its way to the
+back door for a test to drive the editor directly. A test that cannot click its way to the
 feature is testing the wrong thing. [docs/testing.md](docs/testing.md) explains the approach.
 
 Screenshots on the website are regenerated from the real app, never mocked up:
@@ -115,7 +116,7 @@ npm run package     # output lands in apps/desktop/release/
 
 ## Licence
 
-[MIT](LICENSE) — use it, change it, share it, ship it.
+[MIT](LICENSE). Use it, change it, share it, ship it.
 
 ---
 

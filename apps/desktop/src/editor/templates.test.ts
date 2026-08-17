@@ -12,7 +12,7 @@ afterEach(() => {
 
 /**
  * Templates are hand-written TipTap JSON. ProseMirror does not throw on a node
- * it cannot place — it silently drops it — so a typo in a table row or a task
+ * it cannot place - it silently drops it - so a typo in a table row or a task
  * item would ship as a template that quietly opens half empty. Loading each one
  * through the production schema and comparing the JSON back out is the only
  * check that catches that.

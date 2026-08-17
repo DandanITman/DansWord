@@ -78,7 +78,7 @@ export const BUILTIN_STYLES: DocumentStyle[] = [
  * Calibri 11, and that is what export wrote. New documents start from these
  * instead, which puts the preference in the document where export can see it.
  *
- * The size applies to the body styles only — headings define their own, exactly
+ * The size applies to the body styles only - headings define their own, exactly
  * as changing the body font in Word leaves heading sizes alone.
  */
 export function builtinStylesWithDefaults(

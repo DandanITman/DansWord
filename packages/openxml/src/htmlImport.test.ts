@@ -131,4 +131,62 @@ describe('HTML import', () => {
     expect(collect(doc, 'table')).toHaveLength(1);
     expect(textOf(doc)).toContain('cell');
   });
+  /**
+   * The HTML round-trip is a real path: the app opens and saves `.html`. A merge
+   * field is an inline atom, so the importer's generic branch read its visible
+   * text and turned every field into the literal characters «FirstName» - which
+   * opens without complaint and then merges to nothing.
+   */
+  it('restores merge fields, with their configuration, from exported HTML', () => {
+    const html = exportToHtml(
+      {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Dear ' },
+              { type: 'mergeField', attrs: { kind: 'field', field: 'First Name' } },
+            ],
+          },
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'mergeField',
+                attrs: {
+                  kind: 'rule',
+                  rule: 'ifThenElse',
+                  compareField: 'Balance',
+                  comparison: 'greaterThan',
+                  compareTo: '100',
+                  trueText: 'Overdue',
+                  falseText: 'Thanks',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      'Merge',
+    );
+
+    const doc = importFromHtml(html);
+    const fields = collect(doc, 'mergeField');
+    expect(fields).toHaveLength(2);
+    expect(fields[0].attrs?.field).toBe('First Name');
+    expect(fields[1].attrs?.rule).toBe('ifThenElse');
+    expect(fields[1].attrs?.trueText).toBe('Overdue');
+    // The ordinary text around them is untouched.
+    expect(textOf(doc)).toContain('Dear ');
+  });
+
+  it('degrades a corrupt merge-field attribute to a plain named field', () => {
+    const doc = importFromHtml(
+      '<p><span data-merge-field="City" data-merge-config="{not json">«City»</span></p>',
+    );
+    const fields = collect(doc, 'mergeField');
+    expect(fields).toHaveLength(1);
+    expect(fields[0].attrs).toMatchObject({ kind: 'field', field: 'City' });
+  });
 });

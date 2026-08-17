@@ -8,6 +8,10 @@ import type {
   PageOrientation,
   LineNumberMode,
   CaptionLabel,
+  FieldMapping,
+  MergeDataSource,
+  MergeRuleKind,
+  MergeType,
 } from '@officewrite/core';
 import type { ShapeType } from '../extensions/DocShape';
 import type { InkTool } from '../extensions/InkDrawing';
@@ -28,6 +32,32 @@ export interface MarkupOptions {
 
 export type PasteMode = 'default' | 'text' | 'match';
 
+/** Where a Finish & Merge lands. */
+export type MergeDestination = 'documents' | 'print' | 'email';
+
+/** Mailings > Preview Results record stepping. */
+export type MergeRecordStep = 'first' | 'previous' | 'next' | 'last';
+
+/**
+ * Everything the Mailings tab needs to draw itself.
+ *
+ * Grouped rather than spread across `RibbonFlags` because the whole tab is one
+ * feature with one lifecycle - attach a list, insert fields, preview, finish -
+ * and half of it is disabled until a list exists.
+ */
+export interface MailMergeFlags {
+  type: MergeType;
+  source: MergeDataSource | null;
+  mapping: FieldMapping;
+  /** Preview Results is on, so fields draw the current record's values. */
+  previewActive: boolean;
+  highlightFields: boolean;
+  /** 1-based position among the ticked recipients; 0 when there are none. */
+  recordIndex: number;
+  /** Ticked recipients, which is what the record navigator counts. */
+  recordCount: number;
+}
+
 /** Every command the ribbon can invoke on the surrounding app. */
 export interface RibbonActions {
   // File and Quick Access
@@ -35,7 +65,7 @@ export interface RibbonActions {
   onOpenFile: () => void;
   onSave: () => void;
   onSaveAs: () => void;
-  /** Backstage on the Export section — File > Export. */
+  /** Backstage on the Export section - File > Export. */
   onOpenBackstage: () => void;
   /** Backstage on the New section, for the templates. */
   onOpenNewBackstage: () => void;
@@ -111,11 +141,37 @@ export interface RibbonActions {
   onMarkIndexEntry: () => void;
   onInsertIndex: () => void;
 
+  // Mailings
+  /** Create group, which works with or without a recipient list. */
+  onOpenEnvelopes: () => void;
+  onOpenLabels: () => void;
+  onSetMergeType: (type: MergeType) => void;
+  onOpenMergeWizard: () => void;
+  /** Select Recipients > Type a New List / Use an Existing List. */
+  onNewRecipientList: () => void;
+  onUseExistingRecipientList: () => void;
+  onEditRecipientList: () => void;
+  onToggleHighlightMergeFields: () => void;
+  onOpenAddressBlock: () => void;
+  onOpenGreetingLine: () => void;
+  onInsertMergeField: (field: string) => void;
+  onOpenInsertMergeField: () => void;
+  /** Rules. The four that need no configuration insert straight away. */
+  onInsertMergeRule: (rule: MergeRuleKind) => void;
+  onOpenMatchFields: () => void;
+  onUpdateLabels: () => void;
+  onTogglePreviewResults: () => void;
+  onStepMergeRecord: (step: MergeRecordStep) => void;
+  onGoToMergeRecord: (index: number) => void;
+  onOpenFindRecipient: () => void;
+  onCheckMergeErrors: () => void;
+  onFinishMerge: (destination: MergeDestination) => void;
+
   // Review
   onOpenProofing: () => void;
   onOpenThesaurus: () => void;
   onOpenWordCount: () => void;
-  /** Word's Ctrl+G — jump to a page, line or bookmark. */
+  /** Word's Ctrl+G - jump to a page, line or bookmark. */
   onOpenGoTo: () => void;
   onSetLanguage: (language: string) => void;
   onToggleSpellCheck: () => void;
@@ -202,6 +258,7 @@ export interface RibbonFlags {
   ink: { tool: InkTool; color: string; width: number };
   /** Spelling and grammar problems the checker currently reports. */
   proofingIssues: number;
+  mailMerge: MailMergeFlags;
 }
 
 export interface RibbonTabProps {

@@ -78,7 +78,7 @@ export function checkAccessibility(doc: unknown, pageColor?: string | null): Acc
           rule: 'drawing-alt',
           severity: 'warning',
           title: 'Drawing has no text alternative',
-          fix: 'Describe the drawing in the surrounding text — ink cannot be read aloud.',
+          fix: 'Describe the drawing in the surrounding text. Ink cannot be read aloud.',
           pos: nodePos,
         });
         break;

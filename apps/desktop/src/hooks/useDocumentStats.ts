@@ -36,8 +36,8 @@ function measure(editor: Editor): Omit<DocumentStats, 'pages'> {
  * Document statistics for the status bar and the Review tab.
  *
  * These were computed as `getWordCount(editor, pageCount)` in App's render
- * body, so every render — including ones caused by opening a menu or moving a
- * dialog — walked the whole document to build a plain-text copy of it. Counting
+ * body, so every render - including ones caused by opening a menu or moving a
+ * dialog - walked the whole document to build a plain-text copy of it. Counting
  * on a debounce after the document actually changes does the same work once per
  * pause instead of once per render.
  */

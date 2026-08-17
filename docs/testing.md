@@ -2,10 +2,10 @@
 
 Officewrite uses a layered regression suite:
 
-1. **Typecheck + build** — compile the Electron/React app and shared packages
-2. **Unit/component tests** — Vitest for document logic, OpenXML, and TipTap editor behavior
-3. **End-to-end tests** — Playwright click-through flows against a browser test harness
-4. **Visual regression** — Playwright screenshot baselines for key UI states
+1. **Typecheck + build**: compile the Electron/React app and shared packages
+2. **Unit/component tests**: Vitest for document logic, OpenXML, and TipTap editor behavior
+3. **End-to-end tests**: Playwright click-through flows against a browser test harness
+4. **Visual regression**: Playwright screenshot baselines for key UI states
 
 Run everything locally with one command:
 
@@ -37,13 +37,13 @@ npx playwright install chromium
 
 Playwright browser install is required once per machine/CI image. The regression script assumes dependencies are already installed.
 
-**Note:** Playwright is a local project dependency, not a global command. Use `npm run test:e2e` or `npx playwright test` — running `playwright test` directly in PowerShell will fail with "not recognized".
+**Note:** Playwright is a local project dependency, not a global command. Use `npm run test:e2e` or `npx playwright test`; running `playwright test` directly in PowerShell will fail with "not recognized".
 
 ## Why tests may not drive the editor directly
 
 The suite used to expose `runEditorCommand`, which called TipTap commands
 straight from a test. Ten tests used it, including one named "applies heading
-style from ribbon" that never touched the ribbon — so the wiring between the
+style from ribbon" that never touched the ribbon, so the wiring between the
 controls and the editor shipped almost entirely untested, and the ribbon's
 state went stale on every caret move without a single test noticing.
 
@@ -63,7 +63,7 @@ Electron IPC is not available in CI, so Playwright tests load `apps/desktop/test
 - persists mock files in `localStorage` for save/reload scenarios
 - disables animations via `[data-test-mode]`
 - exposes `window.__OFFICEWRITE_TEST__` helpers for deterministic file dialogs and editor content injection
-- stubs `window.prompt` / `window.alert` where tests need them (the packaged Electron app uses in-app dialogs instead — native browser prompts freeze in Electron)
+- stubs `window.prompt` / `window.alert` where tests need them (the packaged Electron app uses in-app dialogs instead, because native browser prompts freeze in Electron)
 
 This keeps tests local, deterministic, and free of production services.
 
@@ -86,9 +86,9 @@ Commit updated baselines together with the UI change.
 
 When a visual test fails, Playwright writes:
 
-- `*-expected.png` — committed baseline
-- `*-actual.png` — current render
-- `*-diff.png` — highlighted differences
+- `*-expected.png`: committed baseline
+- `*-actual.png`: current render
+- `*-diff.png`: highlighted differences
 
 Local HTML report:
 
@@ -152,7 +152,7 @@ Visual snapshots catch differences from the committed baseline. If a bad layout 
 - Accept/reject single track change (accept/reject all is covered)
 - Multi-page print pagination layout
 
-### Out of scope (not built — no tests planned)
+### Out of scope (not built, no tests planned)
 
 - Password protection, equations, section breaks, document compare, thesaurus, macros, cloud sync, AI assistant
 
@@ -171,7 +171,7 @@ Visual snapshots are generated on Windows. Run `npm run test:visual:update` on W
 
 ## Safety rules
 
-- Tests use mock/local fixtures only — no production services or real user data.
+- Tests use mock/local fixtures only. No production services or real user data.
 - Existing package tests were kept; the old in-app “Visual QA Auto-Pilot” was removed in favor of this Playwright-based suite.
 - Do not skip failing tests without documenting why in this file.
 

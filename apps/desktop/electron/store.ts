@@ -21,7 +21,7 @@ export function ensureDataDir() {
  * Where the app kept its data before the DansWord → Officewrite rename.
  *
  * Electron derives userData from the package name, and this one is scoped, so
- * the real folder is `%APPDATA%\@dansword\desktop` — not `%APPDATA%\DansWord`,
+ * the real folder is `%APPDATA%\@dansword\desktop` - not `%APPDATA%\DansWord`,
  * which is what you would assume and which never existed. Both spellings are
  * tried anyway: a build that set a plain productName would have used the
  * second, and checking costs nothing.
@@ -44,7 +44,7 @@ function legacyDataDirs(): string[] {
  * Electron derives userData from the product name, so renaming the app moved
  * the whole folder from %APPDATA%\DansWord to %APPDATA%\Officewrite. Without
  * this, anyone who had used the app would have been returned to a first-run
- * state — no recents, no pinned files, and no revision history for documents
+ * state - no recents, no pinned files, and no revision history for documents
  * they had been keeping versions of.
  *
  * The guard is simply whether this install already has a data folder. If it

@@ -10,6 +10,92 @@ The project was called **DansWord** until 0.3.0. Entries below that version have
 been rewritten to use the current name, so they describe the same application
 under the name it now has rather than the one it shipped with at the time.
 
+## [0.5.0]
+
+**Mail merge arrives, and every template card now shows the template.** The
+ribbon gains a ninth tab, Mailings, carrying a complete mail merge from the
+recipient list to the finished documents. The template gallery stops drawing
+grey placeholder bars and renders each template's real first page instead.
+
+### Added
+
+- **A Mailings tab, with a real mail merge.** The ninth tab on the strip, laid
+  out group for group as Word's is: Create, Start Mail Merge, Write & Insert
+  Fields, Preview Results, Finish.
+  - **Recipients**: read a list from `.csv`, `.tsv` or delimited `.txt`, or type
+    one by hand. The reader copes with quoted cells, separators inside quotes,
+    doubled quotes, a byte order mark, short rows and duplicate headers, and
+    sniffs comma, tab, semicolon or pipe from the header. Edit Recipient List
+    ticks rows in or out, edits cells in place, and sorts or filters by column.
+  - **Fields**: Insert Merge Field for any column, plus Address Block and
+    Greeting Line with a live preview of the first recipient. Match Fields points
+    sixteen standard address fields at your columns, and attaching a list guesses
+    the mapping (`fname`, `LAST_NAME`, `postcode` and friends all match).
+  - **Rules**: all nine of Word's: Ask, Fill-in, If…Then…Else, Merge Record #,
+    Merge Sequence #, Next Record, Next Record If, Skip Record If, Set Bookmark.
+  - **Preview Results**: step through records and see real values in place of
+    the fields, with Find Recipient and a Check for Errors that reports fields
+    with no column behind them.
+  - **Finish & Merge**: into a new document, to the printer, or one file per
+    recipient. Officewrite makes no network requests, so the e-mail merge writes
+    files to attach rather than sending mail.
+  - **Envelopes and Labels**, from one typed address or merged: seven envelope
+    sizes and eight label stocks, with Update Labels to propagate the first
+    label across the sheet.
+  - A six-step **Step-by-Step Mail Merge Wizard** in a task pane, and every
+    command reachable from Alt+Q.
+
+### Changed
+
+- **Template cards now show the template.** Each card renders a miniature of the
+  template's own first page, meaning its real headings, text, lists and tables, instead
+  of the four grey placeholder bars it drew before, which could not tell an
+  invoice from an invitation. A corner button opens the same page at readable
+  size with a Create button beside it. The cards are wider to suit, and the
+  backstage New pane uses the same previews in place of a single initial on a
+  tile.
+
+- **The package descriptions name the alternatives too**, and lost the stray
+  hyphen they carried. They read as a sentence now, which is what the installer
+  and the repository listing show.
+- **The site names what it is an alternative to.** The page title, description,
+  Open Graph tags and structured data now say Microsoft Word, LibreOffice and
+  OpenOffice rather than only Word, and the comparison table gained an
+  OpenOffice Writer column. It records the difference that matters: OpenOffice
+  opens a `.docx` but cannot save one, while Officewrite reads and writes it
+  directly.
+- **No em dashes anywhere in the project.** Every one was removed from the site,
+  the app's copy, the templates, the documentation and the code comments. The
+  search snippet Google prints is the reason: the title read "Officewrite - a
+  free, open-source word processor for Windows" with an em dash in it, which
+  reads as machine-written. User-facing prose was rewritten with ordinary
+  punctuation; comments use a spaced hyphen. `npm run check:em-dashes` fails the
+  build if one comes back, and runs first in the regression suite.
+
+  Four places keep the character because it is data rather than prose: the
+  Symbol picker offers it for insertion, AutoCorrect turns `--` into one exactly
+  as Word does, the smart-quote rule needs it to spot an opening quote, and an
+  RTF import test asserts it survives a round trip.
+
+### Fixed
+
+- Choosing a label stock built the sheet and then immediately threw it away. The
+  handler remounted the editor, which re-read the document from a debounced
+  mirror still holding the pre-label content.
+- Merge fields that resolve to nothing now stay visible while previewing, marked
+  as blank, so a column you forgot to match does not look identical to a field
+  you never inserted.
+- Pressing Update Labels twice no longer doubles each cell's Next Record rule,
+  which made the sheet skip every other recipient.
+- All three exporters dropped merge fields entirely. A field is an inline atom
+  with no text of its own, and each exporter walked inline content looking for
+  text nodes or children, so saving a merge main document as `.docx`, `.rtf` or
+  HTML silently lost every field, and the file opened and looked fine. They now
+  write as their «FieldName» text, and the HTML carries the configuration so
+  reopening restores real fields rather than the literal characters.
+- The Finish & Merge dialog reset its own form whenever anything upstream
+  re-rendered, so choosing a record range and pressing OK merged everybody.
+
 ## [0.4.0]
 
 Released automatically from `main`. The entries below are commit
@@ -26,13 +112,13 @@ subjects; see the release notes for the full detail.
 
 ## [0.3.0]
 
-**The project is now Officewrite.** Same application, new name — everywhere:
+**The project is now Officewrite.** Same application, new name, everywhere:
 the window and start screen, the installer and Start menu entry, the file
 association, the package names, the repository, and the project site.
 
 ### Changed
 
-- **Renamed throughout** — 546 references across 110 files, covering the app
+- **Renamed throughout**: 546 references across 110 files, covering the app
   itself, the `@officewrite/*` package scope, the `window.officewrite` host
   bridge, the `com.officewrite.app` application id, and every URL.
 - **The native document format is now `.officewrite`.** This is a breaking
@@ -64,31 +150,31 @@ Documentation and the project website. No behaviour changes in the app.
 
 - **The website shows the actual application.** It previously showed a
   hand-drawn mock-up of a window that matched nothing in the app, and listed
-  tabs and features that do not exist — a Design tab, a Mailings tab and mail
+  tabs and features that do not exist, such as a Design tab, a Mailings tab and mail
   merge, which was removed from the codebase some time ago. Every screenshot
   is now a real render, generated from the app by a Playwright spec so they
   can be refreshed rather than going stale:
   `OFFICEWRITE_CAPTURE=1 npx playwright test tests/e2e/zz-capture-shots.spec.ts`.
-- **The site uses Word's own palette** — the #2B579A brand blue, Office's warm
-  grey surfaces and Segoe UI — so it looks like it belongs to the application
+- **The site uses Word's own palette**: the #2B579A brand blue, Office's warm
+  grey surfaces and Segoe UI, so it looks like it belongs to the application
   it advertises. The gradient headline and the emoji bullet list are gone.
 - **A screenshot tour** with ribbon-style tabs: start screen, writing, insert,
   references, review, navigation and dark mode. The tabs are keyboard
   navigable, as the app's own ribbon now is.
 - **The README leads with what the app is for** rather than a feature dump,
-  shows a real screenshot, and points at `FEATURES.md` as the honest list —
+  shows a real screenshot, and points at `FEATURES.md` as the honest list,
   the one that records what is missing as well as what is built.
 
 ## [0.2.7]
 
-Headers and footers become real three-zone regions — the third of the four
+Headers and footers become real three-zone regions, the third of the four
 structural gaps.
 
 ### Added
 
 - **Header and footer zones.** Both were a single line of text rendered
-  centred, so a title on the left with a page number on the right — the
-  commonest arrangement there is — could not be expressed at all. They now
+  centred, so a title on the left with a page number on the right, the
+  commonest arrangement there is, could not be expressed at all. They now
   have left, centre and right zones, laid out against the page margins on
   screen and against Word's own centre and right tab stops in DOCX, so the
   arrangement survives a round trip.
@@ -123,8 +209,8 @@ keyboard, and Print shows what will actually print.
   `role="menu"` while honouring neither contract: arrow keys did nothing on
   the tab strip, and opening a menu left focus on the button, so a keyboard
   user could Tab straight past every item into the next control. That made the
-  whole menu layer — bullets, numbering, styles, margins, breaks, wrap text,
-  Display for Review — reachable only with a mouse. Now Left/Right/Home/End
+  whole menu layer, meaning bullets, numbering, styles, margins, breaks, wrap
+  text and Display for Review, reachable only with a mouse. Now Left/Right/Home/End
   move along the tabs with a single roving tab stop, opening a menu focuses
   its first item, Up/Down/Home/End walk the items, Tab is trapped inside the
   open surface, and Escape closes and returns focus to the button.
@@ -132,7 +218,7 @@ keyboard, and Print shows what will actually print.
   heading and one button that went straight to the OS dialog. This matters
   more here than it would in Word: the editor scrolls continuously and never
   reflows pages on screen, so this was the only place a user could ever see
-  where the pages break — and it did not show them. The preview is the same
+  where the pages break, and it did not show them. The preview is the same
   PDF the exporter produces, so it cannot disagree with what prints.
 
 ### Known limitations
@@ -154,7 +240,7 @@ them a crash. Fixing my own work came first.
   added in 0.2.4 measures the caret's cell on every render, and
   prosemirror-tables' `selectedRect` *throws* outside a table rather than
   returning null. The Table Layout panel renders for a frame after the caret
-  leaves, so the exception unmounted the whole React tree — a white window,
+  leaves, so the exception unmounted the whole React tree, leaving a white window,
   with the document still unsaved. Every call now goes through a guard.
 - **Distribute Rows and Columns sized the wrong table.** Both measured the
   first table in the document instead of the caret's, so in a two-table
@@ -197,7 +283,7 @@ get real sizing, and floating objects get a stacking order.
 
 ### Added
 
-- **Cell Size on the Table Layout tab** — Row Height and Column Width in
+- **Cell Size on the Table Layout tab**: Row Height and Column Width in
   inches, Distribute Rows, Distribute Columns, and AutoFit (Contents, Window,
   Fixed). There was no way to give a column a specific width at all; the one
   width control reset them. The boxes write the same attributes the drag
@@ -216,8 +302,8 @@ get real sizing, and floating objects get a stacking order.
   hardcoded a jump to Home, so editing from Insert or Review and clicking away
   landed you somewhere you had never been. It returns to the tab you came
   from.
-- **The Crop icon was on a button that does not crop.** "Fit to Column" — a
-  resize — wore the crop glyph, so a Word user scanning for crop found it and
+- **The Crop icon was on a button that does not crop.** "Fit to Column", which is a
+  resize, wore the crop glyph, so a Word user scanning for crop found it and
   got something else. It is "Reset Size" with a resize icon now. The size and
   position dialog was likewise labelled with a brightness icon.
 - **Go To ▸ Line assumed every line was 24px tall.** Any document using the
@@ -240,20 +326,20 @@ fixes were incomplete. This closes them.
   a real node, but no exporter knew about it: `columnBreak` is an atom with no
   content, so the DOCX, RTF and HTML writers fell through to a branch that
   recurses into children and it vanished. DOCX is the default save format, so
-  the normal save path lost it — the bug had moved from insert-time to
+  the normal save path lost it, because the bug had moved from insert-time to
   save-time, which is the worse of the two. All three formats now write it,
   DOCX and HTML read it back, and a round-trip test covers it.
 - **The Styles gallery vanished below 1100px** instead of collapsing. 0.2.2's
   compact density hid the tiles outright, and what remained was an unlabelled
-  `T` — exactly what the gallery replaced. The menu is labelled "Styles" now,
+  `T`, exactly what the gallery replaced. The menu is labelled "Styles" now,
   and Home shows four tiles at full density so the gallery survives at 1280px
   rather than compacting away.
 - **The ribbon latched into compact density** and stayed there at 1280px with
-  400px to spare. It decided by measuring `scrollWidth` — but compacting
+  400px to spare. It decided by measuring `scrollWidth`, but compacting
   changes what `scrollWidth` reports, so the measurement fed back into itself.
   It is a width threshold now.
 - **Five command-search breadcrumbs pointed at groups deleted in 0.2.1 and
-  0.2.2** — Alt+Q still offered "Home > Undo", "Insert > Bookmarks", "Insert >
+  0.2.2**: Alt+Q still offered "Home > Undo", "Insert > Bookmarks", "Insert >
   Table of Contents", "Insert > Emojis" and "View > Window". 0.2.1 fixed only
   the sixth. They rotted unnoticed because the test beside the registry
   checked `tab` and never `group`; `RIBBON_GROUPS` now lists what each tab
@@ -269,7 +355,7 @@ has had no route in Officewrite at all.
 - **File > New and File > Open are real backstage panes.** New shows the
   template gallery; Open lists recent documents above Browse. Both existed
   only on the start screen, so once a document was open they were unreachable
-  — the panes behind them were a single button each.
+  The panes behind them were a single button each.
 - **Layout > Arrange** appears when a shape or text box is selected, with Wrap
   Text and alignment. Only pictures had a contextual tab, so a shape could be
   inserted and then never wrapped or positioned. Shapes gained the alignment
@@ -281,7 +367,7 @@ has had no route in Officewrite at all.
 
 - **The ribbon no longer scrolls sideways.** It stepped groups off behind a
   horizontal scrollbar once they outgrew the window, and the window can be
-  dragged to 900px. A compact density now steps in first — tighter padding,
+  dragged to 900px. A compact density now steps in first: tighter padding,
   narrower large buttons, and the Styles tiles collapsing to their menu, which
   is the same trade Word makes when it collapses a group. Every tab holds down
   to 1100px.
@@ -300,7 +386,7 @@ Word-parity pass over the ribbon: the audit compared every tab against Word
 
 ### Added
 
-- **Go To (Ctrl+G)** — jump to a page, line or bookmark. Word's primary
+- **Go To (Ctrl+G)**: jump to a page, line or bookmark. Word's primary
   long-document navigation had no equivalent here at all. It opens from the
   Find split button and from the status bar's page indicator, which is now a
   button rather than dead text.
@@ -314,14 +400,14 @@ Word-parity pass over the ribbon: the audit compared every tab against Word
 - **"Select Table" selected the whole document.** It ran `selectAll()`, so
   choosing it and then typing destroyed everything outside the table. It now
   selects exactly the table.
-- **Layout > Breaks > Column inserted a page break**, silently — it called the
+- **Layout > Breaks > Column inserted a page break**, silently, because it called the
   page-break command. Column breaks are now their own node and break the
   column, not the page.
 - **Lock Aspect Ratio could not be unlocked.** The button read `imageActive`,
   so it was lit whenever the tab was visible and only ever wrote `true`.
 - **Picture Height and Width were in screen pixels**, which mean nothing on a
   printed page. They are in inches, as Word's are.
-- **Display for Review never showed the current setting** — the label was
+- **Display for Review never showed the current setting**: the label was
   hardcoded, so the review state was invisible until the menu was opened.
 - The **dialog launcher** used the same chevron as every dropdown. It is now a
   corner arrow parked in the group's corner, the way Word draws it.
@@ -330,12 +416,12 @@ Word-parity pass over the ribbon: the audit compared every tab against Word
 
 ### Changed
 
-- **Home follows Word's group order** — Clipboard, Font, Paragraph, Styles,
+- **Home follows Word's group order**: Clipboard, Font, Paragraph, Styles,
   Editing. The Undo group is gone; undo and redo remain in the Quick Access
   toolbar, where Word keeps them.
 - **Insert drops from eleven groups to eight.** Bookmark moves into Links and
   Emoji into Symbols, both as Word places them, and the duplicate Table of
-  Contents group is gone — References still has it.
+  Contents group is gone; References still has it.
 - View's **"Window" group is now "Tools"**. It held Find, Print and Word Count,
   none of which are window commands.
 
@@ -352,7 +438,7 @@ Word-parity pass over the ribbon: the audit compared every tab against Word
 
 ### Fixed
 
-- **The font and size boxes offered only the value already in them** — the font
+- **The font and size boxes offered only the value already in them**: the font
   list showed just "Calibri" and "Calibri Light", the size list just "11". They
   were an `<input list>` with a `<datalist>`, which filters its options against
   the field's contents.
@@ -380,11 +466,11 @@ Word-parity pass over the ribbon: the audit compared every tab against Word
 
 ### Added
 
-- **Help tab** — Help, Contact Support and Feedback open the project on GitHub in
+- **Help tab**: Help, Contact Support and Feedback open the project on GitHub in
   your own browser; Keyboard Shortcuts and What's New open in the app.
-- **Layout > Page Background** — watermark, page colour and page borders, moved
+- **Layout > Page Background**: watermark, page colour and page borders, moved
   here from the removed Design tab.
-- **Insert > Illustrations > Drawing** — inserts a drawing canvas. The pen,
+- **Insert > Illustrations > Drawing**: inserts a drawing canvas. The pen,
   highlighter, eraser and colour controls now appear on a contextual **Draw**
   tab whenever a canvas is selected, the way Picture Format and Table Layout do.
 - **Home > Styles > More Styles** now lists the style sets, so a whole document
@@ -392,8 +478,8 @@ Word-parity pass over the ribbon: the audit compared every tab against Word
 
 ### Changed
 
-- The ribbon is trimmed to eight tabs — File, Home, Insert, Layout, References,
-  Review, View and Help — matching Word for the web.
+- The ribbon is trimmed to eight tabs (File, Home, Insert, Layout, References,
+  Review, View and Help), matching Word for the web.
 - The spell and grammar checker is named **Spelling & Grammar** throughout,
   rather than "Editor". The checker itself is unchanged.
 - Layout no longer carries an Arrange group; the Picture Format contextual tab

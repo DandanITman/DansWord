@@ -198,7 +198,7 @@ export function PictureFormatTab({ editor, state, actions }: RibbonTabProps) {
               testId="picture-rotate-left"
             />
             {/* Two overlapping floats could be created and then never
-                reordered — a picture behind text had no way back in front. */}
+                reordered - a picture behind text had no way back in front. */}
             <RibbonButton
               icon={<BringToFront size={15} />}
               title="Bring Forward"
@@ -258,7 +258,7 @@ export function PictureFormatTab({ editor, state, actions }: RibbonTabProps) {
           />
         </RibbonStack>
         <RibbonStack>
-          {/* This wore the Crop icon while doing nothing of the sort — a Word
+          {/* This wore the Crop icon while doing nothing of the sort - a Word
               user scanning for crop found it and got a resize. There is no
               crop yet, so the glyph goes back to what the button does. */}
           <RibbonButton

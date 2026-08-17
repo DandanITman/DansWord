@@ -55,6 +55,28 @@ function inlineOf(node: Node, marks: Mark[]): TipTapNode[] {
 
   if (tag === 'BR') return [{ type: 'hardBreak' }];
 
+  /**
+   * A mail-merge field, restored from the configuration the exporter stashed on
+   * the element.
+   *
+   * Without this the span fell through to the generic branch below, which reads
+   * an element's *text* - so opening an exported `.html` turned every field into
+   * the literal characters «FirstName», and the next merge did nothing. A
+   * corrupt or truncated attribute degrades to a plain field named by the
+   * `data-merge-field` value rather than failing the whole import.
+   */
+  if (el.hasAttribute('data-merge-field')) {
+    const field = el.getAttribute('data-merge-field') ?? '';
+    let config: Record<string, unknown> = {};
+    try {
+      const raw = el.getAttribute('data-merge-config');
+      if (raw) config = JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      config = {};
+    }
+    return [{ type: 'mergeField', attrs: { kind: 'field', ...config, field: config.field ?? field } }];
+  }
+
   if (tag === 'IMG') {
     const src = el.getAttribute('src');
     if (!src) return [];
@@ -239,7 +261,7 @@ function blocksOf(parent: HTMLElement): TipTapNode[] {
  * Parse an HTML document into the editor's model.
  *
  * `exportToHtml` has existed since the start and the project site advertises
- * "Open & save DOCX, RTF, HTML, TXT", but there was no import path at all —
+ * "Open & save DOCX, RTF, HTML, TXT", but there was no import path at all -
  * opening a .html file hit the "Unsupported file type" branch.
  */
 export function importFromHtml(html: string): TipTapNode {

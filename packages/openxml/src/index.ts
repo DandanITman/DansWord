@@ -11,7 +11,7 @@ import { importDocx, type DocxImportResult, type TipTapNode } from './ooxml/docx
 /**
  * Read a .docx into the full document model.
  *
- * Returns page setup, headers/footers and footnotes alongside the content —
+ * Returns page setup, headers/footers and footnotes alongside the content -
  * all of which the previous mammoth-based importer silently discarded.
  */
 export async function importFromDocx(

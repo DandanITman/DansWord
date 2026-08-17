@@ -2,7 +2,7 @@
  * Officewrite project site.
  *
  * The palette is Word's own: the #2B579A brand blue on the chrome, the warm
- * grey neutrals Office uses for surfaces (#F3F2F1, #FAF9F8), and Segoe UI —
+ * grey neutrals Office uses for surfaces (#F3F2F1, #FAF9F8), and Segoe UI -
  * so the site looks like it belongs to the application it is advertising
  * rather than to a generic landing-page template.
  */
@@ -103,7 +103,7 @@ code {
   white-space: nowrap;
 }
 
-/* Top bar — the Word title-bar blue ------------------------------------ */
+/* Top bar - the Word title-bar blue ------------------------------------ */
 .topbar {
   position: sticky;
   top: 0;
@@ -325,7 +325,7 @@ code {
   margin-bottom: 26px;
 }
 
-/* Tour — tabs styled after the ribbon's own tab strip -------------------- */
+/* Tour - tabs styled after the ribbon's own tab strip -------------------- */
 .tour-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -548,7 +548,7 @@ code {
 /* Comparison table ------------------------------------------------------ */
 
 /* The table is wider than a phone. Scroll it inside its own box so the page
-   body never scrolls sideways — the same guard TC-UI-002 enforces in the app. */
+   body never scrolls sideways - the same guard TC-UI-002 enforces in the app. */
 .compare-wrap {
   overflow-x: auto;
   margin-top: 1.5rem;
@@ -585,7 +585,7 @@ code {
   white-space: nowrap;
 }
 
-/* Officewrite's own column — the one a reader is scanning for. */
+/* Officewrite's own column - the one a reader is scanning for. */
 .compare-table thead th:nth-child(2),
 .compare-table tbody td:nth-child(1) {
   color: var(--word-blue);

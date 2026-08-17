@@ -94,7 +94,7 @@ export async function switchRibbonTab(page: Page, tab: string) {
  *
  * Tests must reach the editor through the controls a user actually clicks.
  * The harness used to expose `runEditorCommand`, which called TipTap chains
- * directly — so tests named "applies heading style from ribbon" never touched
+ * directly - so tests named "applies heading style from ribbon" never touched
  * the ribbon, and the wiring between the two shipped almost entirely untested.
  */
 export async function clickRibbon(page: Page, tab: string, testId: string) {
@@ -275,6 +275,52 @@ export async function loadRegressionFixture(page: Page) {
 export async function loadHeadingFixture(page: Page) {
   await openBlankDocument(page);
   await page.evaluate((doc) => window.__OFFICEWRITE_TEST__?.loadEditorContent(doc), getHeadingFixtureJson());
+}
+
+/**
+ * The recipient list the Mailings tests merge against.
+ *
+ * Deliberately awkward in the ways real exported lists are: a quoted cell with
+ * a comma in it, a row with no company, a row with no street, and two
+ * countries so the address block's country rule has something to decide.
+ */
+export const MERGE_CSV = [
+  'First Name,Last Name,Company,Address 1,City,State,ZIP,Country,Email,Balance',
+  'Ada,Lovelace,Analytical Engines,12 Mill Lane,Cambridge,Cambs,CB1 2AB,United Kingdom,ada@example.com,240',
+  'Grace,Hopper,,"1 Navy Yard, Building 3",Arlington,VA,22202,United States,grace@example.com,0',
+  'Alan,Turing,Bletchley Park,,Milton Keynes,Bucks,MK3 6EB,United Kingdom,alan@example.com,90',
+].join('\n');
+
+export const MERGE_CSV_PATH = 'C:\\OfficewriteTest\\contacts.csv';
+
+/**
+ * Attach a recipient list through the ribbon, the way a user does.
+ *
+ * Through Select Recipients rather than by poking state: the mapping is guessed
+ * when the list is attached, so a test that skipped this step would exercise
+ * Address Block against a mapping nothing had ever produced.
+ */
+export async function attachRecipientList(page: Page, csv = MERGE_CSV, path = MERGE_CSV_PATH) {
+  await page.evaluate(
+    ({ filePath, content }) => {
+      window.__OFFICEWRITE_TEST__?.seedFile(filePath, content);
+      window.__OFFICEWRITE_TEST__?.setOpenDataFileResult(filePath);
+    },
+    { filePath: path, content: csv },
+  );
+  await switchRibbonTab(page, 'mailings');
+  await page.getByTestId('mailings-select-recipients').click();
+  await page.getByTestId('mailings-existing-list').click();
+  // Edit Recipient List is disabled until a list is attached, so its enabled
+  // state is the signal that the attach actually landed.
+  await expect(page.getByTestId('mailings-edit-recipients')).toBeEnabled();
+}
+
+/** Insert one merge field for a column, through the Insert Merge Field menu. */
+export async function insertMergeFieldFor(page: Page, field: string) {
+  await switchRibbonTab(page, 'mailings');
+  await page.getByTestId('mailings-insert-merge-field-more').click();
+  await page.getByTestId(`mailings-field-${field}`).click();
 }
 
 export const visualMaskSelectors = [

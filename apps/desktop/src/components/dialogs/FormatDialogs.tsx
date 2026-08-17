@@ -10,7 +10,7 @@ import type { RibbonState } from '../../ribbon/useRibbonState';
  * The dialogs behind Word's dialog launchers.
  *
  * Each one edits the live document as you change a control, the way Word's own
- * dialogs preview, and closes with Done — there is no separate Apply step to
+ * dialogs preview, and closes with Done - there is no separate Apply step to
  * forget.
  */
 

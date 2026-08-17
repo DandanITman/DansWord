@@ -350,7 +350,7 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
         <RibbonButton
           icon={<GitCompare size={20} />}
           label="Compare"
-          title="Compare this document with another — the differences arrive as tracked changes"
+          title="Compare this document with another. The differences arrive as tracked changes"
           size="large"
           onClick={actions.onCompareDocuments}
           testId="ribbon-compare"
@@ -359,7 +359,7 @@ export function ReviewTab({ editor, actions, flags }: RibbonTabProps) {
 
       {/* Restrict Editing used to have its own Protect group here. The tab
           strip's Editing / Reviewing / Viewing picker sets exactly the same
-          flag and is far easier to find, so keeping both was duplication —
+          flag and is far easier to find, so keeping both was duplication -
           and the eighth group pushed the tab past the window at 1280px. */}
     </>
   );

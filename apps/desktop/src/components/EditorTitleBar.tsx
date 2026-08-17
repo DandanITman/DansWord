@@ -22,7 +22,7 @@ interface EditorTitleBarProps {
  * name, then the command search box in the middle.
  *
  * Two deliberate departures from the mockup. There is no account picture,
- * because Officewrite has no account — and no cloud-save tick, because it saves to
+ * because Officewrite has no account - and no cloud-save tick, because it saves to
  * disk. The quick-access buttons stay, for the same reason: nothing here
  * autosaves to a server, so Save has to be reachable without opening a menu.
  */

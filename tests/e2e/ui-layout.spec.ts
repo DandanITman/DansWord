@@ -21,7 +21,7 @@ async function expectNoClippedControls(root: Locator, label: string) {
      * The template rail has always been `overflow-x: auto`, but until the
      * catalogue grew past a handful of templates it never actually overflowed,
      * so this guard had never met a scroller. A card past the right edge of a
-     * scroller is reachable, not clipped — flagging it would force the rail to
+     * scroller is reachable, not clipped - flagging it would force the rail to
      * be trimmed to whatever fits at one specific viewport width. Vertical
      * clipping is still reported, and so is everything else below.
      */
@@ -100,6 +100,7 @@ test.describe('UI layout guards', () => {
       'insert',
       'pageLayout',
       'references',
+      'mailings',
       'review',
       'view',
       'help',
@@ -118,16 +119,18 @@ test.describe('UI layout guards', () => {
 
   /**
    * The ribbon used to scroll sideways as soon as the groups outgrew the
-   * window, hiding the rightmost groups behind a scrollbar — Word never does
+   * window, hiding the rightmost groups behind a scrollbar - Word never does
    * that. The compact density now holds every tab down to 1100px.
    *
    * Review, the densest tab at eight groups, still overflows below about
    * 1050px; closing that needs real group collapse, which needs the tabs to
-   * declare their groups as data.
+   * declare their groups as data. Mailings is in the same position: five groups
+   * of large buttons, and its widest labels ("Highlight Merge Fields", "Insert
+   * Merge Field") do not shorten at compact density.
    *
    * That residual is deliberately NOT asserted as a pixel budget. An earlier
    * version bounded it at 130px, which passed on Windows and failed every CI
-   * run on Linux — text metrics differ enough between platforms that any
+   * run on Linux - text metrics differ enough between platforms that any
    * hardcoded overflow figure is a coin toss. What is asserted instead is the
    * behaviour the budget was standing in for: the compact density is actually
    * engaged at that width.
@@ -143,7 +146,7 @@ test.describe('UI layout guards', () => {
       });
 
     await page.setViewportSize({ width: 1100, height: 700 });
-    for (const tab of ['home', 'insert', 'references', 'review', 'view'] as const) {
+    for (const tab of ['home', 'insert', 'references', 'mailings', 'review', 'view'] as const) {
       await switchRibbonTab(page, tab);
       expect(await overflowOf(), `ribbon ${tab} tab overflows at 1100px`).toBeLessThanOrEqual(1);
     }
@@ -154,7 +157,13 @@ test.describe('UI layout guards', () => {
       expect(await overflowOf(), `ribbon ${tab} tab overflows at 900px`).toBeLessThanOrEqual(1);
     }
 
-    await switchRibbonTab(page, 'review');
-    await expect(page.locator('.office-ribbon-panel')).toHaveClass(/is-compact/);
+    // The two dense tabs get the behavioural assertion rather than a pixel
+    // budget, for the reason in the comment above. Mailings was briefly held to
+    // the budget: it cleared it by 2px on Windows and missed it by 23px on
+    // Linux, which is the same coin toss all over again.
+    for (const tab of ['review', 'mailings'] as const) {
+      await switchRibbonTab(page, tab);
+      await expect(page.locator('.office-ribbon-panel'), tab).toHaveClass(/is-compact/);
+    }
   });
 });
