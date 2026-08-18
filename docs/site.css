@@ -167,12 +167,17 @@ code {
 /* Hero ------------------------------------------------------------------ */
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: 48px;
-  align-items: center;
+  /* The two columns are close in width so the copy wraps to fewer, longer
+     lines. A narrow copy column made the headline four lines deep, which left
+     the shot beside it floating in a block of white. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+  gap: 40px;
+  /* Top, not centre. Centring a short shot against tall copy padded the space
+     above the screenshot with nothing. */
+  align-items: start;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 64px 24px 56px;
+  padding: 40px 24px 20px;
 }
 
 .eyebrow {
@@ -191,7 +196,7 @@ code {
 .lede {
   font-size: 1.1rem;
   color: var(--ink-soft);
-  max-width: 46ch;
+  max-width: 56ch;
 }
 
 .cta-row {
@@ -211,7 +216,7 @@ code {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 11px 20px;
+  padding: 11px 18px;
   border-radius: var(--radius);
   font-size: 0.97rem;
   font-weight: 600;
@@ -249,15 +254,19 @@ code {
 .download-meta {
   font-size: 0.86rem;
   color: var(--ink-faint);
-  margin: 0 0 20px;
+  /* Last line of the hero copy now that the three facts sit below the hero. */
+  margin: 0;
 }
 
+/* A full-width strip under the hero, three across. */
 .hero-facts {
   list-style: none;
-  margin: 0;
-  padding: 0;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 12px 24px 10px;
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px 32px;
   font-size: 0.94rem;
   color: var(--ink-soft);
 }
@@ -304,8 +313,9 @@ code {
 }
 
 /* Sections -------------------------------------------------------------- */
+/* Same 1240 the hero uses, so every section lines up on one left edge. */
 .panel {
-  max-width: 1160px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 62px 24px;
 }
@@ -318,7 +328,7 @@ code {
 }
 
 .panel.alt > * {
-  max-width: 1160px;
+  max-width: 1192px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -539,19 +549,27 @@ code {
 }
 
 /* Responsive ------------------------------------------------------------ */
+/* Below this the two hero columns are too narrow to sit side by side: the
+   headline breaks to four lines and the buttons wrap, so the copy runs far
+   deeper than the screenshot and leaves white beside it. Stacked, the shot
+   takes the full width and the gap disappears. */
+@media (max-width: 1080px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-top: 36px;
+  }
+
+  /* Full width would give the lede lines too long to read comfortably. */
+  .lede {
+    max-width: 62ch;
+  }
+}
+
 @media (max-width: 940px) {
-  .hero,
   .why-grid {
     grid-template-columns: 1fr;
     gap: 32px;
-  }
-
-  .hero {
-    padding-top: 40px;
-  }
-
-  .lede {
-    max-width: none;
   }
 }
 
